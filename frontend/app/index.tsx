@@ -337,12 +337,17 @@ export default function SafeWalkApp() {
       return;
     }
 
+    // Process high-priority alerts first
     for (const alert of alerts) {
       if (alert.priority === 'high' || alert.priority === 'critical') {
-        await showNotification(`Safety Alert - ${alert.type}`, alert.message);
+        await showNotification(`⚠️ Safety Alert - ${alert.type}`, alert.message);
         
         if (voiceAlertsEnabled) {
-          await speakAlert(alert.message);
+          let voiceMessage = `Safety alert: ${alert.message}`;
+          if (alert.priority === 'critical') {
+            voiceMessage = `Critical safety warning: ${alert.message}. Please exercise extreme caution.`;
+          }
+          await speakAlert(voiceMessage);
         }
         
         setLastAlertTime(now);
@@ -350,11 +355,43 @@ export default function SafeWalkApp() {
       }
     }
 
-    // Check overall safety score
-    if (analysis.safety_score.overall_score < 30) {
+    // Check overall safety score and provide intelligent voice guidance
+    const score = analysis.safety_score.overall_score;
+    if (voiceAlertsEnabled && now - lastAlertTime > 60000) { // Voice guidance every minute
+      let voiceGuidance = "";
+      
+      if (score >= 85) {
+        voiceGuidance = "Your current area looks very safe. Continue with confidence.";
+      } else if (score >= 70) {
+        voiceGuidance = `Safety score is ${score}. Stay alert and follow basic safety precautions.`;
+      } else if (score >= 50) {
+        voiceGuidance = `Moderate safety concerns detected. Your safety score is ${score}. Consider increased caution.`;
+      } else if (score >= 30) {
+        voiceGuidance = `Safety score is low at ${score}. Please exercise significant caution and stay aware of your surroundings.`;
+      } else {
+        voiceGuidance = `Critical safety alert! Your score is only ${score}. Consider finding a safer route or location immediately.`;
+      }
+
+      // Add weather-specific guidance
+      if (analysis.weather.ice_risk) {
+        voiceGuidance += " Ice conditions detected. Watch for slippery surfaces.";
+      }
+      
+      // Add recommendations if available
+      if (analysis.safety_score.recommendations.length > 0) {
+        const topRecommendation = analysis.safety_score.recommendations[0];
+        voiceGuidance += ` Recommendation: ${topRecommendation}`;
+      }
+
+      await speakAlert(voiceGuidance);
+      setLastAlertTime(now);
+    }
+
+    // Visual notification for low scores
+    if (score < 40) {
       await showNotification(
-        'Low Safety Score',
-        `Current safety score: ${analysis.safety_score.overall_score}/100. Exercise extreme caution.`
+        '🚨 Low Safety Score',
+        `Current safety score: ${score}/100. Exercise extreme caution.`
       );
     }
   };
