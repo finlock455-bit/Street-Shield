@@ -349,6 +349,11 @@ async def get_safety_history(user_id: str, limit: int = 50):
             {"user_context.user_id": user_id}
         ).sort("timestamp", -1).limit(limit).to_list(limit)
         
+        # Convert ObjectId to string for JSON serialization
+        for analysis in analyses:
+            if "_id" in analysis:
+                analysis["_id"] = str(analysis["_id"])
+        
         return {"analyses": analyses}
     except Exception as e:
         logging.error(f"Error getting safety history: {e}")
