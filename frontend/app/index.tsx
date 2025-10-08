@@ -355,6 +355,15 @@ export default function SafeWalkApp() {
       }
     }
 
+    // Enhanced weather warnings with specific guidance
+    if (analysis.weather.ice_risk && voiceAlertsEnabled) {
+      await speakAlert("Ice hazard detected! Surface conditions are dangerous. Walk slowly and avoid sudden movements. Consider finding an alternate route.");
+    }
+    
+    if (analysis.weather.weather_condition === 'fog' && analysis.weather.visibility && analysis.weather.visibility < 2 && voiceAlertsEnabled) {
+      await speakAlert("Dense fog detected with very low visibility. Wear bright colors and use lights if available. Stay close to safe areas.");
+    }
+
     // Check overall safety score and provide intelligent voice guidance
     const score = analysis.safety_score.overall_score;
     if (voiceAlertsEnabled && now - lastAlertTime > 60000) { // Voice guidance every minute
@@ -370,11 +379,6 @@ export default function SafeWalkApp() {
         voiceGuidance = `Safety score is low at ${score}. Please exercise significant caution and stay aware of your surroundings.`;
       } else {
         voiceGuidance = `Critical safety alert! Your score is only ${score}. Consider finding a safer route or location immediately.`;
-      }
-
-      // Add weather-specific guidance
-      if (analysis.weather.ice_risk) {
-        voiceGuidance += " Ice conditions detected. Watch for slippery surfaces.";
       }
       
       // Add recommendations if available
