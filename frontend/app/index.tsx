@@ -218,7 +218,7 @@ export default function SafeWalkApp() {
       
       // Voice prompt for starting
       if (voiceAlertsEnabled) {
-        await speakAlert("SafeWalk protection is now active. I'm monitoring your safety and surroundings.");
+        await speakAlert("Street Shield protection is now active. I'm monitoring your safety and surroundings.");
       }
 
       // Try to get real location, fallback to demo if needed
