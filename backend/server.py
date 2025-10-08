@@ -520,11 +520,14 @@ async def get_simulated_weather_data(lat: float, lon: float) -> WeatherData:
     
     # Enhanced ice risk calculation
     ice_risk = False
+    ice_confidence = 0.0
     if temp <= 4:  # Expanded ice risk threshold
         if condition in ["rain", "snow"]:
             ice_risk = True
+            ice_confidence = 0.8
         elif humidity > 80 and temp <= 1:  # Frost conditions
             ice_risk = True
+            ice_confidence = 0.6
     
     # More accurate hazard level assessment
     hazard_level = "low"
