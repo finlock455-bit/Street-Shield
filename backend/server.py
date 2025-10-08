@@ -56,6 +56,7 @@ class WeatherData(BaseModel):
     ice_risk: bool = False
     ice_confidence: Optional[float] = 0.0  # 0.0 to 1.0 confidence in ice risk assessment
     hazard_level: str = "low"  # low, medium, high, critical
+    specific_hazards: Optional[List[str]] = Field(default_factory=list)  # detailed hazard list
 
 class SafetyScore(BaseModel):
     overall_score: int = Field(ge=0, le=100)  # 0 = extremely dangerous, 100 = very safe
