@@ -30,7 +30,7 @@ app = FastAPI()
 api_router = APIRouter(prefix="/api")
 
 # Configuration
-OPENWEATHER_API_KEY = "YOUR_API_KEY_HERE"  # You'll need to get a free API key from OpenWeatherMap
+OPENWEATHER_API_KEY = os.environ.get('OPENWEATHER_API_KEY', None)  # Set this with your free API key
 EMERGENT_LLM_KEY = os.environ.get('EMERGENT_LLM_KEY')
 
 # Models
