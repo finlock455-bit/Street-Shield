@@ -612,7 +612,8 @@ async def get_simulated_weather_data(lat: float, lon: float) -> WeatherData:
         feels_like=round(feels_like, 1),
         ice_risk=ice_risk,
         ice_confidence=round(ice_confidence, 2),
-        hazard_level=hazard_level
+        hazard_level=hazard_level,
+        specific_hazards=specific_hazards
     )
 
 async def get_weather_data(lat: float, lon: float) -> WeatherData:
