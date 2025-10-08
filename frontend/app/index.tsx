@@ -808,6 +808,104 @@ export default function SafeWalkApp() {
           </View>
         )}
       </ScrollView>
+
+      {/* Emergency Setup Modal */}
+      <Modal
+        visible={isEmergencySetupOpen}
+        animationType="slide"
+        presentationStyle="pageSheet"
+      >
+        <SafeAreaView style={styles.modalContainer}>
+          <View style={styles.modalHeader}>
+            <Text style={styles.modalTitle}>Emergency Setup</Text>
+            <TouchableOpacity onPress={() => setIsEmergencySetupOpen(false)}>
+              <Ionicons name="close" size={24} color="#333" />
+            </TouchableOpacity>
+          </View>
+
+          <ScrollView style={styles.modalContent}>
+            <Text style={styles.modalDescription}>
+              Set up a voice trigger word that will immediately alert emergency contacts and authorities if you're in danger.
+            </Text>
+
+            <View style={styles.inputGroup}>
+              <Text style={styles.inputLabel}>Emergency Trigger Word</Text>
+              <Text style={styles.inputHint}>
+                Choose a unique word you can say clearly in an emergency (e.g., "RedAlert", "SafeWord911", "HelpNow")
+              </Text>
+              <TextInput
+                style={styles.textInput}
+                value={emergencyTriggerWord}
+                onChangeText={setEmergencyTriggerWord}
+                placeholder="Enter your secret trigger word"
+                autoCapitalize="words"
+              />
+            </View>
+
+            <View style={styles.inputGroup}>
+              <Text style={styles.inputLabel}>Emergency Contacts</Text>
+              <Text style={styles.inputHint}>
+                Enter phone numbers that will be notified immediately. In a real emergency, authorities will also be contacted.
+              </Text>
+              {emergencyContacts.map((contact, index) => (
+                <View key={index} style={styles.contactRow}>
+                  <TextInput
+                    style={styles.contactInput}
+                    value={contact}
+                    onChangeText={(text) => {
+                      const newContacts = [...emergencyContacts];
+                      newContacts[index] = text;
+                      setEmergencyContacts(newContacts);
+                    }}
+                    placeholder="Phone number"
+                    keyboardType="phone-pad"
+                  />
+                  <TouchableOpacity
+                    onPress={() => {
+                      const newContacts = emergencyContacts.filter((_, i) => i !== index);
+                      setEmergencyContacts(newContacts);
+                    }}
+                  >
+                    <Ionicons name="remove-circle" size={24} color="#F44336" />
+                  </TouchableOpacity>
+                </View>
+              ))}
+              
+              <TouchableOpacity
+                style={styles.addContactButton}
+                onPress={() => setEmergencyContacts([...emergencyContacts, ''])}
+              >
+                <Ionicons name="add" size={20} color="#2196F3" />
+                <Text style={styles.addContactText}>Add Contact</Text>
+              </TouchableOpacity>
+            </View>
+
+            <View style={styles.warningBox}>
+              <Ionicons name="warning" size={24} color="#FF9800" />
+              <Text style={styles.warningText}>
+                Important: This is a safety demonstration. In a real emergency, always call your local emergency number (911, 112, etc.) directly.
+              </Text>
+            </View>
+          </ScrollView>
+
+          <View style={styles.modalFooter}>
+            <TouchableOpacity
+              style={styles.cancelButton}
+              onPress={() => setIsEmergencySetupOpen(false)}
+            >
+              <Text style={styles.cancelButtonText}>Cancel</Text>
+            </TouchableOpacity>
+            
+            <TouchableOpacity
+              style={[styles.saveButton, (!emergencyTriggerWord || emergencyContacts.filter(c => c.length > 0).length === 0) && styles.saveButtonDisabled]}
+              onPress={() => saveEmergencySettings(emergencyTriggerWord, emergencyContacts.filter(c => c.length > 0))}
+              disabled={!emergencyTriggerWord || emergencyContacts.filter(c => c.length > 0).length === 0}
+            >
+              <Text style={styles.saveButtonText}>Save Emergency Settings</Text>
+            </TouchableOpacity>
+          </View>
+        </SafeAreaView>
+      </Modal>
     </SafeAreaView>
   );
 }
