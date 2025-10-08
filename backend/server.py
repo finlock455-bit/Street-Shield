@@ -833,6 +833,44 @@ async def report_emergency_vehicle(location: LocationData, detection_method: str
         logging.error(f"Error reporting emergency vehicle: {e}")
         raise HTTPException(status_code=500, detail="Error reporting emergency vehicle")
 
+@api_router.post("/proximity/analyze")
+async def analyze_proximity_threats(
+    location: LocationData,
+    movement_history: List[LocationData] = [],
+    user_context: Dict = {}
+):
+    """Dedicated endpoint for proximity threat analysis"""
+    try:
+        proximity_analysis = await detect_proximity_threats(location, movement_history, user_context)
+        
+        # Store analysis in database
+        proximity_doc = proximity_analysis.dict()
+        proximity_doc['user_id'] = user_context.get('user_id', 'anonymous')
+        await db.proximity_analyses.insert_one(proximity_doc)
+        
+        return proximity_analysis
+    except Exception as e:
+        logging.error(f"Error analyzing proximity threats: {e}")
+        raise HTTPException(status_code=500, detail="Error analyzing proximity threats")
+
+@api_router.get("/proximity/history/{user_id}")
+async def get_proximity_history(user_id: str, limit: int = 50):
+    """Get proximity analysis history for a user"""
+    try:
+        analyses = await db.proximity_analyses.find(
+            {"user_id": user_id}
+        ).sort("timestamp", -1).limit(limit).to_list(limit)
+        
+        # Convert ObjectId to string for JSON serialization
+        for analysis in analyses:
+            if "_id" in analysis:
+                analysis["_id"] = str(analysis["_id"])
+        
+        return {"proximity_analyses": analyses}
+    except Exception as e:
+        logging.error(f"Error getting proximity history: {e}")
+        raise HTTPException(status_code=500, detail="Error retrieving proximity history")
+
 @api_router.get("/")
 async def root():
     return {"message": "SafeWalk API - Keeping pedestrians safe with AI-powered analysis"}
