@@ -266,7 +266,7 @@ export default function SafeWalkApp() {
         }
       }, 15000); // Analyze every 15 seconds for better responsiveness
 
-      showNotification('🛡️ Street Shield Active', 'Advanced AI protection monitoring your safety');
+      showNotification('🛡️ Street Shield Activated', 'Advanced AI protection system engaged');
       
       // Initial safety check after 3 seconds
       setTimeout(() => {
