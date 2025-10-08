@@ -177,6 +177,17 @@ export default function SafeWalkApp() {
       if (voiceEnabled !== null) {
         setVoiceAlertsEnabled(JSON.parse(voiceEnabled));
       }
+      
+      // Load emergency settings
+      const triggerWord = await AsyncStorage.getItem('emergencyTriggerWord');
+      if (triggerWord) {
+        setEmergencyTriggerWord(triggerWord);
+      }
+      
+      const contacts = await AsyncStorage.getItem('emergencyContacts');
+      if (contacts) {
+        setEmergencyContacts(JSON.parse(contacts));
+      }
     } catch (error) {
       console.error('Error loading settings:', error);
     }
