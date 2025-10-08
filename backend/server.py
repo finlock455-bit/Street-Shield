@@ -634,7 +634,8 @@ async def health_check():
         "timestamp": datetime.utcnow(),
         "services": {
             "database": "connected",
-            "ai": "available" if EMERGENT_LLM_KEY else "not configured"
+            "ai": "available" if EMERGENT_LLM_KEY else "not configured",
+            "weather_api": "real weather available" if OPENWEATHER_API_KEY else "simulation mode"
         }
     }
 
