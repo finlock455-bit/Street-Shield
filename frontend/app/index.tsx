@@ -730,59 +730,95 @@ export default function SafeWalkApp() {
           </View>
         )}
 
-        {/* Control Buttons */}
+        {/* Enhanced Control Panel */}
         <View style={styles.controlsContainer}>
+          {/* Main Action Button */}
           <TouchableOpacity
-            style={[styles.controlButton, isTracking && styles.controlButtonActive]}
+            style={[
+              styles.primaryActionButton, 
+              isTracking && styles.primaryActionButtonActive,
+              isLoading && styles.primaryActionButtonLoading
+            ]}
             onPress={isTracking ? stopTracking : startTracking}
             disabled={isLoading}
           >
-            <Ionicons
-              name={isTracking ? "stop" : "play"}
-              size={24}
-              color="#fff"
-            />
-            <Text style={styles.controlButtonText}>
-              {isTracking ? 'Stop Monitoring' : 'Start Monitoring'}
-            </Text>
+            <View style={styles.buttonGradientOverlay} />
+            <View style={styles.buttonContent}>
+              <Ionicons
+                name={isTracking ? "stop-circle" : "play-circle"}
+                size={32}
+                color="#fff"
+              />
+              <Text style={styles.primaryButtonText}>
+                {isLoading ? 'INITIALIZING...' : isTracking ? 'STOP SHIELD' : 'ACTIVATE SHIELD'}
+              </Text>
+            </View>
+            {isTracking && <View style={styles.activeIndicator} />}
           </TouchableOpacity>
 
-          <TouchableOpacity
-            style={[styles.controlButton, styles.settingsButton]}
-            onPress={toggleVoiceAlerts}
-          >
-            <Ionicons
-              name={voiceAlertsEnabled ? "volume-high" : "volume-mute"}
-              size={24}
-              color="#fff"
-            />
-            <Text style={styles.controlButtonText}>
-              Voice Alerts {voiceAlertsEnabled ? 'ON' : 'OFF'}
-            </Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={[styles.controlButton, styles.emergencyButton]}
-            onPress={setupEmergencyTrigger}
-          >
-            <Ionicons name="shield-checkmark" size={24} color="#fff" />
-            <Text style={styles.controlButtonText}>
-              Emergency Setup
-            </Text>
-          </TouchableOpacity>
-
-          {/* Emergency Trigger Test Button */}
-          {emergencyTriggerWord && (
+          {/* Feature Controls Grid */}
+          <View style={styles.controlGrid}>
             <TouchableOpacity
-              style={[styles.controlButton, styles.testEmergencyButton]}
-              onPress={() => simulateVoiceTrigger(emergencyTriggerWord)}
+              style={[styles.featureButton, voiceAlertsEnabled && styles.featureButtonActive]}
+              onPress={toggleVoiceAlerts}
             >
-              <Ionicons name="megaphone" size={24} color="#fff" />
-              <Text style={styles.controlButtonText}>
-                Test Emergency ({emergencyTriggerWord})
+              <View style={styles.featureIcon}>
+                <Ionicons
+                  name={voiceAlertsEnabled ? "volume-high" : "volume-mute"}
+                  size={20}
+                  color={voiceAlertsEnabled ? "#00FF88" : "#666"}
+                />
+              </View>
+              <Text style={[styles.featureButtonText, voiceAlertsEnabled && styles.featureButtonTextActive]}>
+                Voice AI
+              </Text>
+              <Text style={styles.featureStatus}>
+                {voiceAlertsEnabled ? 'ACTIVE' : 'OFF'}
               </Text>
             </TouchableOpacity>
-          )}
+
+            <TouchableOpacity
+              style={styles.featureButton}
+              onPress={setupEmergencyTrigger}
+            >
+              <View style={styles.featureIcon}>
+                <Ionicons name="warning" size={20} color="#FF6B6B" />
+              </View>
+              <Text style={styles.featureButtonText}>Emergency</Text>
+              <Text style={styles.featureStatus}>
+                {emergencyTriggerWord ? 'READY' : 'SETUP'}
+              </Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[styles.featureButton, proximityAlertsEnabled && styles.featureButtonActive]}
+              onPress={() => setProximityAlertsEnabled(!proximityAlertsEnabled)}
+            >
+              <View style={styles.featureIcon}>
+                <Ionicons name="radar" size={20} color={proximityAlertsEnabled ? "#4ECDC4" : "#666"} />
+              </View>
+              <Text style={[styles.featureButtonText, proximityAlertsEnabled && styles.featureButtonTextActive]}>
+                Radar
+              </Text>
+              <Text style={styles.featureStatus}>
+                {proximityAlertsEnabled ? 'ACTIVE' : 'OFF'}
+              </Text>
+            </TouchableOpacity>
+
+            {/* Emergency Test Button */}
+            {emergencyTriggerWord && (
+              <TouchableOpacity
+                style={[styles.featureButton, styles.emergencyTestButton]}
+                onPress={() => simulateVoiceTrigger(emergencyTriggerWord)}
+              >
+                <View style={styles.featureIcon}>
+                  <Ionicons name="flash" size={20} color="#FFA726" />
+                </View>
+                <Text style={styles.featureButtonText}>Test</Text>
+                <Text style={styles.featureStatus}>DEMO</Text>
+              </TouchableOpacity>
+            )}
+          </View>
         </View>
 
         {/* Loading Indicator */}
