@@ -391,13 +391,29 @@ export default function SafeWalkApp() {
       }
     }
 
-    // Enhanced weather warnings with specific guidance
+    // MUSIC-FRIENDLY ENHANCED WEATHER WARNINGS
     if (analysis.weather.ice_risk && voiceAlertsEnabled) {
-      await speakAlert("Ice hazard detected! Surface conditions are dangerous. Walk slowly and avoid sudden movements. Consider finding an alternate route.");
+      const iceMessage = analysis.weather.ice_confidence && analysis.weather.ice_confidence > 0.8 
+        ? "High confidence ice hazard detected. Surface conditions are dangerous. Walk slowly and consider an alternate route."
+        : "Ice conditions possible. Use caution on surfaces and watch for slippery areas.";
+      
+      await processVoiceAlert(iceMessage, 'ice_warning', analysis.weather);
     }
     
     if (analysis.weather.weather_condition === 'fog' && analysis.weather.visibility && analysis.weather.visibility < 2 && voiceAlertsEnabled) {
-      await speakAlert("Dense fog detected with very low visibility. Wear bright colors and use lights if available. Stay close to safe areas.");
+      await processVoiceAlert("Dense fog detected with very low visibility. Wear bright colors and use lights if available. Stay close to safe areas.", 'severe_weather', analysis.weather);
+    }
+
+    // Process specific hazards with targeted alerts
+    if (analysis.weather.specific_hazards && analysis.weather.specific_hazards.length > 0) {
+      const criticalHazards = analysis.weather.specific_hazards.filter(h => 
+        h.includes('extreme') || h.includes('hurricane') || h.includes('black_ice') || h.includes('zero_visibility')
+      );
+      
+      if (criticalHazards.length > 0 && voiceAlertsEnabled) {
+        const hazardMessage = `Critical weather conditions: ${criticalHazards.join(', ').replace(/_/g, ' ')}. Exercise extreme caution.`;
+        await processVoiceAlert(hazardMessage, 'severe_weather', analysis.weather);
+      }
     }
 
     // Check overall safety score and provide intelligent voice guidance
