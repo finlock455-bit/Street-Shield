@@ -675,13 +675,60 @@ async def analyze_safety(request: SafetyAnalysisRequest):
         # Analyze safety using AI
         safety_score = await analyze_location_safety(request.location, weather, request.user_context)
         
+        # Perform proximity threat detection
+        proximity_analysis = await detect_proximity_threats(
+            request.location, 
+            request.movement_history or [], 
+            request.user_context
+        )
+        
+        # Integrate proximity threats into safety score
+        if proximity_analysis.detected_threats:
+            # Reduce safety score based on proximity threats
+            threat_penalty = 0
+            for threat in proximity_analysis.detected_threats:
+                if threat.threat_level == "critical":
+                    threat_penalty += 30
+                elif threat.threat_level == "high":
+                    threat_penalty += 20
+                elif threat.threat_level == "medium":
+                    threat_penalty += 10
+                else:
+                    threat_penalty += 5
+            
+            safety_score.overall_score = max(0, safety_score.overall_score - threat_penalty)
+            
+            # Add proximity-based risk factors and alerts
+            for threat in proximity_analysis.detected_threats:
+                risk_msg = f"Potential {threat.threat_type} detected {threat.distance:.0f}m {threat.direction}"
+                safety_score.risk_factors.append(risk_msg)
+                
+                alert_priority = "high" if threat.threat_level in ["high", "critical"] else "medium"
+                safety_score.alerts.append({
+                    "type": "proximity_threat",
+                    "message": f"{threat.threat_type.replace('_', ' ').title()} detected. {threat.recommended_action.replace('_', ' ').title()}.",
+                    "priority": alert_priority
+                })
+            
+            # Add proximity-specific recommendations
+            if proximity_analysis.nearby_safe_locations:
+                safety_score.recommendations.append(f"Nearby safe locations: {', '.join(proximity_analysis.nearby_safe_locations[:2])}")
+            
+            if proximity_analysis.isolation_risk:
+                safety_score.recommendations.append("You're in an isolated area. Consider moving to a more populated location.")
+        
         # Create response
         analysis = SafetyAnalysisResponse(
             location=request.location,
             weather=weather,
             safety_score=safety_score,
-            ai_analysis="AI analysis completed successfully"
+            ai_analysis="AI analysis with proximity threat detection completed successfully"
         )
+        
+        # Store proximity analysis separately for detailed analysis
+        proximity_doc = proximity_analysis.dict()
+        proximity_doc['user_id'] = request.user_context.get('user_id', 'anonymous')
+        await db.proximity_analyses.insert_one(proximity_doc)
         
         # Store in database
         await db.safety_analyses.insert_one(analysis.dict())
