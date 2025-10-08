@@ -94,6 +94,28 @@ class CommunityReport(BaseModel):
     timestamp: datetime = Field(default_factory=datetime.utcnow)
     user_id: Optional[str] = None
 
+class ProximityThreat(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    threat_type: str  # "following", "approaching", "loitering", "aggressive_approach"
+    distance: float  # meters
+    duration: float  # seconds being followed/tracked
+    confidence: float = Field(ge=0.0, le=1.0)  # 0.0 to 1.0 confidence score
+    direction: str = "behind"  # "behind", "ahead", "left", "right"
+    movement_pattern: str = "matching_pace"  # "matching_pace", "closing_in", "erratic"
+    threat_level: str = "low"  # "low", "medium", "high", "critical"
+    recommended_action: str = "stay_alert"
+    timestamp: datetime = Field(default_factory=datetime.utcnow)
+
+class ProximityAnalysis(BaseModel):
+    user_location: LocationData
+    detected_threats: List[ProximityThreat] = Field(default_factory=list)
+    safe_radius: float = 20.0  # meters - safe personal space
+    awareness_radius: float = 50.0  # meters - extended awareness zone
+    crowd_density: str = "low"  # "empty", "low", "moderate", "crowded"
+    isolation_risk: bool = False  # true if user is in isolated area
+    nearby_safe_locations: List[str] = Field(default_factory=list)
+    overall_threat_level: str = "safe"
+
 # Utility Functions
 def calculate_distance(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
     """Calculate distance between two points in meters using Haversine formula"""
