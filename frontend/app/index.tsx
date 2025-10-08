@@ -138,7 +138,7 @@ export default function SafeWalkApp() {
         // Voice feedback based on permissions
         if (voiceAlertsEnabled) {
           if (hasLocationPermission && hasNotificationPermission) {
-            await speakAlert("Perfect! All permissions granted. SafeWalk is ready to protect you.");
+            await speakAlert("Perfect! All permissions granted. Street Shield is ready to protect you.");
           } else if (hasLocationPermission) {
             await speakAlert("Location permission granted. I can track your safety, but notifications are limited.");
           } else if (hasNotificationPermission) {
