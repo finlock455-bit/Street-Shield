@@ -180,15 +180,15 @@ async def analyze_location_safety(location: LocationData, weather: WeatherData, 
         7. Any critical alerts
         
         Format your response as JSON with these exact keys:
-        {
-            "overall_score": number,
-            "weather_risk": number,
-            "traffic_risk": number,
-            "location_risk": number,
-            "risk_factors": ["factor1", "factor2"],
-            "recommendations": ["rec1", "rec2"],
-            "alerts": [{"type": "alert_type", "message": "alert message", "priority": "high/medium/low"}]
-        }
+        {{
+            "overall_score": 75,
+            "weather_risk": 80,
+            "traffic_risk": 70,
+            "location_risk": 75,
+            "risk_factors": ["Weather conditions", "Traffic density"],
+            "recommendations": ["Wear bright clothing", "Stay alert"],
+            "alerts": [{{"type": "weather", "message": "Alert message here", "priority": "medium"}}]
+        }}
         """
         
         message = UserMessage(text=analysis_context)
