@@ -54,6 +54,7 @@ class WeatherData(BaseModel):
     wind_speed: Optional[float] = None
     feels_like: Optional[float] = None
     ice_risk: bool = False
+    ice_confidence: Optional[float] = 0.0  # 0.0 to 1.0 confidence in ice risk assessment
     hazard_level: str = "low"  # low, medium, high, critical
 
 class SafetyScore(BaseModel):
