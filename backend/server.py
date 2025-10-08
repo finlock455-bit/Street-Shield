@@ -641,7 +641,8 @@ async def get_weather_data(lat: float, lon: float) -> WeatherData:
             humidity=50.0,
             weather_condition="clear",
             ice_confidence=0.0,
-            hazard_level="low"
+            hazard_level="low",
+            specific_hazards=[]
         )
 
 async def analyze_location_safety(location: LocationData, weather: WeatherData, user_context: Dict) -> SafetyScore:
