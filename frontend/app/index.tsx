@@ -83,6 +83,11 @@ export default function SafeWalkApp() {
   const [voiceAlertsEnabled, setVoiceAlertsEnabled] = useState(true);
   const [lastAlertTime, setLastAlertTime] = useState<number>(0);
   
+  // Proximity threat detection state
+  const [movementHistory, setMovementHistory] = useState<LocationData[]>([]);
+  const [proximityThreats, setProximityThreats] = useState<any[]>([]);
+  const [proximityAlertsEnabled, setProximityAlertsEnabled] = useState(true);
+  
   // Emergency system state
   const [emergencyTriggerWord, setEmergencyTriggerWord] = useState<string>('');
   const [isEmergencySetupOpen, setIsEmergencySetupOpen] = useState(false);
