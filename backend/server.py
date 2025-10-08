@@ -44,6 +44,7 @@ class LocationData(BaseModel):
 class SafetyAnalysisRequest(BaseModel):
     location: LocationData
     user_context: Optional[Dict] = Field(default_factory=dict)  # speed, activity type, etc.
+    movement_history: Optional[List[LocationData]] = Field(default_factory=list)  # Last 10 locations for pattern analysis
 
 class WeatherData(BaseModel):
     temperature: float
