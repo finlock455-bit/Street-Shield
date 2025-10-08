@@ -534,34 +534,57 @@ async def get_simulated_weather_data(lat: float, lon: float) -> WeatherData:
     # More accurate hazard level assessment
     hazard_level = "low"
     hazard_score = 0
+    specific_hazards = []
     
     # Temperature hazards
-    if temp <= -10 or temp >= 40:
+    if temp <= -10:
         hazard_score += 3
-    elif temp <= 0 or temp >= 35:
+        specific_hazards.append("severe_cold")
+    elif temp <= 0:
         hazard_score += 2
-    elif temp <= 2 or temp >= 32:
+        specific_hazards.append("freezing")
+    elif temp <= 2:
         hazard_score += 1
+        specific_hazards.append("near_freezing")
+    elif temp >= 40:
+        hazard_score += 3
+        specific_hazards.append("extreme_heat")
+    elif temp >= 35:
+        hazard_score += 2
+        specific_hazards.append("high_heat")
+    elif temp >= 32:
+        hazard_score += 1
+        specific_hazards.append("hot_weather")
         
     # Weather condition hazards
     if condition == "snow":
         hazard_score += 3
+        specific_hazards.append("snow_accumulation")
     elif condition == "rain" and temp <= 2:  # Freezing rain
         hazard_score += 4
+        specific_hazards.append("freezing_rain")
     elif condition == "fog" and visibility <= 1:
         hazard_score += 3
-    elif condition in ["rain", "fog"]:
+        specific_hazards.append("poor_visibility")
+    elif condition == "rain":
         hazard_score += 1
+        specific_hazards.append("wet_surfaces")
+    elif condition == "fog":
+        hazard_score += 1
+        specific_hazards.append("reduced_visibility")
         
     # Wind hazards
     if wind_speed >= 25:
         hazard_score += 2
+        specific_hazards.append("strong_winds")
     elif wind_speed >= 15:
         hazard_score += 1
+        specific_hazards.append("moderate_winds")
         
     # Ice risk adds significant hazard
     if ice_risk:
         hazard_score += 3
+        specific_hazards.append("ice_surfaces")
         
     # Determine final hazard level
     if hazard_score >= 6:
