@@ -839,7 +839,17 @@ export default function SafeWalkApp() {
             </Text>
 
             <View style={styles.inputGroup}>
-              <Text style={styles.inputLabel}>Emergency Trigger Word</Text>
+              <View style={styles.labelWithVoice}>
+                <Text style={styles.inputLabel}>Emergency Trigger Word</Text>
+                <TouchableOpacity 
+                  style={styles.voiceHelpButton}
+                  onPress={async () => {
+                    await speakAlert("Choose a unique trigger word that you can say clearly in an emergency. Good examples are RedAlert, SafeWord911, or HelpNow. Avoid common words you might say accidentally like Help or Emergency.");
+                  }}
+                >
+                  <Ionicons name="volume-high" size={16} color="#2196F3" />
+                </TouchableOpacity>
+              </View>
               <Text style={styles.inputHint}>
                 Choose a unique word you can say clearly in an emergency (e.g., "RedAlert", "SafeWord911", "HelpNow")
               </Text>
@@ -847,6 +857,19 @@ export default function SafeWalkApp() {
                 style={styles.textInput}
                 value={emergencyTriggerWord}
                 onChangeText={setEmergencyTriggerWord}
+                onFocus={async () => {
+                  if (voiceAlertsEnabled) {
+                    await speakAlert("Now enter your emergency trigger word. Make it memorable but unique.");
+                  }
+                }}
+                onChangeText={(text) => {
+                  setEmergencyTriggerWord(text);
+                  if (text.length >= 3 && voiceAlertsEnabled) {
+                    setTimeout(async () => {
+                      await speakAlert(`Your trigger word is ${text}. Make sure you can say this clearly even under stress.`);
+                    }, 1500);
+                  }
+                }}
                 placeholder="Enter your secret trigger word"
                 autoCapitalize="words"
               />
