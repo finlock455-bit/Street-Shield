@@ -277,7 +277,7 @@ async def get_real_weather_data(lat: float, lon: float) -> Optional[WeatherData]
         return None
     
     try:
-        url = f"http://api.openweathermap.org/data/2.5/weather"
+        url = "http://api.openweathermap.org/data/2.5/weather"
         params = {
             "lat": lat,
             "lon": lon,
