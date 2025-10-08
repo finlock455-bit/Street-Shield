@@ -1079,7 +1079,7 @@ export default function SafeWalkApp() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: '#0A0A0F',
   },
   scrollView: {
     flex: 1,
