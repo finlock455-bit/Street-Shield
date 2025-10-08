@@ -242,6 +242,12 @@ export default function SafeWalkApp() {
                 timestamp: new Date().toISOString(),
               };
               setLocation(locationData);
+              
+              // Update movement history (keep last 10 locations for proximity analysis)
+              setMovementHistory(prev => {
+                const updated = [...prev, locationData];
+                return updated.slice(-10); // Keep only last 10 positions
+              });
             }
           );
         } else {
