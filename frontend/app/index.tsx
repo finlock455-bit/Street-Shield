@@ -652,6 +652,22 @@ export default function SafeWalkApp() {
           </View>
         )}
 
+        {/* Emergency Mode Indicator */}
+        {isEmergencyModeActive && (
+          <View style={styles.emergencyBanner}>
+            <Ionicons name="warning" size={24} color="#fff" />
+            <Text style={styles.emergencyBannerText}>
+              🚨 EMERGENCY MODE ACTIVE 🚨
+            </Text>
+            <TouchableOpacity 
+              style={styles.deactivateButton}
+              onPress={deactivateEmergencyMode}
+            >
+              <Text style={styles.deactivateButtonText}>Deactivate</Text>
+            </TouchableOpacity>
+          </View>
+        )}
+
         {/* Control Buttons */}
         <View style={styles.controlsContainer}>
           <TouchableOpacity
@@ -682,6 +698,29 @@ export default function SafeWalkApp() {
               Voice Alerts {voiceAlertsEnabled ? 'ON' : 'OFF'}
             </Text>
           </TouchableOpacity>
+
+          <TouchableOpacity
+            style={[styles.controlButton, styles.emergencyButton]}
+            onPress={setupEmergencyTrigger}
+          >
+            <Ionicons name="shield-checkmark" size={24} color="#fff" />
+            <Text style={styles.controlButtonText}>
+              Emergency Setup
+            </Text>
+          </TouchableOpacity>
+
+          {/* Emergency Trigger Test Button */}
+          {emergencyTriggerWord && (
+            <TouchableOpacity
+              style={[styles.controlButton, styles.testEmergencyButton]}
+              onPress={() => simulateVoiceTrigger(emergencyTriggerWord)}
+            >
+              <Ionicons name="megaphone" size={24} color="#fff" />
+              <Text style={styles.controlButtonText}>
+                Test Emergency ({emergencyTriggerWord})
+              </Text>
+            </TouchableOpacity>
+          )}
         </View>
 
         {/* Loading Indicator */}
