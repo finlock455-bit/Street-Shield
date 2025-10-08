@@ -299,6 +299,10 @@ async def get_nearby_alerts(lat: float, lon: float, radius: float = 1000):
         # Filter by distance (simplified)
         nearby_alerts = []
         for alert in alerts:
+            # Convert ObjectId to string for JSON serialization
+            if "_id" in alert:
+                alert["_id"] = str(alert["_id"])
+            
             alert_location = alert["location"]
             distance = calculate_distance(
                 lat, lon,
