@@ -100,27 +100,62 @@ export default function SafeWalkApp() {
 
   const requestPermissions = async () => {
     try {
+      // Provide voice guidance about permissions
+      if (voiceAlertsEnabled) {
+        await speakAlert("Welcome to SafeWalk! I need to request some permissions to keep you safe.");
+      }
+
       // Request location permissions
       const locationStatus = await Location.requestForegroundPermissionsAsync();
-      const backgroundLocationStatus = await Location.requestBackgroundPermissionsAsync();
       
-      // Request notification permissions
+      // Request notification permissions  
       const notificationStatus = await Notifications.requestPermissionsAsync();
+
+      // More flexible permission handling - allow partial permissions
+      const hasLocationPermission = locationStatus.status === 'granted';
+      const hasNotificationPermission = notificationStatus.status === 'granted';
       
-      if (locationStatus.status === 'granted' && notificationStatus.status === 'granted') {
+      if (hasLocationPermission || hasNotificationPermission) {
         setPermissionsGranted(true);
+        
+        // Voice feedback based on permissions
+        if (voiceAlertsEnabled) {
+          if (hasLocationPermission && hasNotificationPermission) {
+            await speakAlert("Perfect! All permissions granted. SafeWalk is ready to protect you.");
+          } else if (hasLocationPermission) {
+            await speakAlert("Location permission granted. I can track your safety, but notifications are limited.");
+          } else if (hasNotificationPermission) {
+            await speakAlert("Notification permission granted. I'll use demo mode for safety features.");
+          }
+        }
       } else {
-        Alert.alert(
-          'Permissions Required',
-          'SafeWalk needs location and notification permissions to keep you safe.',
-          [
-            { text: 'Cancel', style: 'cancel' },
-            { text: 'Settings', onPress: () => requestPermissions() }
-          ]
-        );
+        // Still allow demo mode even without permissions
+        if (Platform.OS === 'web') {
+          setPermissionsGranted(true);
+          if (voiceAlertsEnabled) {
+            await speakAlert("Running in demo mode. SafeWalk features will be simulated for your safety.");
+          }
+        } else {
+          Alert.alert(
+            'Permissions Needed for Full Protection',
+            'SafeWalk works best with location and notification permissions. You can still use demo mode or try again.',
+            [
+              { text: 'Demo Mode', onPress: () => {
+                setPermissionsGranted(true);
+                speakAlert("Demo mode activated. SafeWalk will simulate safety features.");
+              }},
+              { text: 'Try Again', onPress: () => requestPermissions() }
+            ]
+          );
+        }
       }
     } catch (error) {
       console.error('Error requesting permissions:', error);
+      // Fallback to demo mode on error
+      setPermissionsGranted(true);
+      if (voiceAlertsEnabled) {
+        await speakAlert("Permission request failed. Running in demo mode for your safety.");
+      }
     }
   };
 
