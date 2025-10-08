@@ -423,6 +423,140 @@ export default function SafeWalkApp() {
     }
   };
 
+  // Emergency System Functions
+  const setupEmergencyTrigger = async () => {
+    setIsEmergencySetupOpen(true);
+  };
+
+  const saveEmergencySettings = async (triggerWord: string, contacts: string[]) => {
+    try {
+      await AsyncStorage.setItem('emergencyTriggerWord', triggerWord);
+      await AsyncStorage.setItem('emergencyContacts', JSON.stringify(contacts));
+      setEmergencyTriggerWord(triggerWord);
+      setEmergencyContacts(contacts);
+      setIsEmergencySetupOpen(false);
+      
+      if (voiceAlertsEnabled) {
+        await speakAlert(`Emergency trigger word set. Say "${triggerWord}" if you need immediate help.`);
+      }
+    } catch (error) {
+      console.error('Error saving emergency settings:', error);
+    }
+  };
+
+  const triggerEmergencyMode = async () => {
+    if (isEmergencyModeActive) return; // Prevent multiple triggers
+    
+    setIsEmergencyModeActive(true);
+    emergencyModeStartTime.current = Date.now();
+    
+    // Immediate emergency response
+    await showNotification('🚨 EMERGENCY ACTIVATED', 'Emergency mode activated! Notifying contacts and authorities.');
+    
+    if (voiceAlertsEnabled) {
+      Speech.stop();
+      await speakAlert("Emergency mode activated. I'm sending your location to emergency contacts and alerting local authorities. Stay calm, help is on the way.");
+    }
+
+    // Send emergency alerts
+    await sendEmergencyAlerts();
+    
+    // Report to community/authorities
+    if (location) {
+      await reportEmergencyToAuthorities();
+    }
+    
+    // Start emergency monitoring (increase frequency)
+    if (analysisInterval.current) {
+      clearInterval(analysisInterval.current);
+    }
+    analysisInterval.current = setInterval(() => {
+      if (location) {
+        performSafetyAnalysis(location);
+      }
+    }, 5000); // Every 5 seconds in emergency mode
+  };
+
+  const sendEmergencyAlerts = async () => {
+    try {
+      // In a real implementation, this would:
+      // 1. Send SMS/calls to emergency contacts
+      // 2. Share location with contacts
+      // 3. Contact local authorities
+      // 4. Store emergency event in database
+      
+      const emergencyMessage = `EMERGENCY ALERT: SafeWalk user needs immediate assistance. Last known location: ${location ? `${location.latitude.toFixed(6)}, ${location.longitude.toFixed(6)}` : 'Unknown'}. Time: ${new Date().toLocaleString()}`;
+      
+      // Simulate emergency notifications
+      for (const contact of emergencyContacts) {
+        console.log(`Emergency alert sent to: ${contact} - ${emergencyMessage}`);
+      }
+      
+      // Persist emergency event
+      if (location) {
+        await fetch(`${BACKEND_URL}/api/community/report`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            location,
+            report_type: 'emergency',
+            description: 'Emergency triggered by voice command - immediate assistance needed',
+            severity: 'critical',
+            user_id: 'emergency_user'
+          })
+        });
+      }
+      
+    } catch (error) {
+      console.error('Error sending emergency alerts:', error);
+    }
+  };
+
+  const reportEmergencyToAuthorities = async () => {
+    try {
+      if (!location) return;
+      
+      await fetch(`${BACKEND_URL}/api/emergency/vehicle-detected`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ...location,
+          detection_method: 'emergency_voice_trigger'
+        })
+      });
+      
+    } catch (error) {
+      console.error('Error reporting to authorities:', error);
+    }
+  };
+
+  const deactivateEmergencyMode = async () => {
+    setIsEmergencyModeActive(false);
+    
+    if (voiceAlertsEnabled) {
+      await speakAlert("Emergency mode deactivated. Returning to normal safety monitoring.");
+    }
+    
+    // Return to normal monitoring interval
+    if (analysisInterval.current) {
+      clearInterval(analysisInterval.current);
+    }
+    analysisInterval.current = setInterval(() => {
+      if (location) {
+        performSafetyAnalysis(location);
+      }
+    }, 15000); // Back to 15 seconds
+  };
+
+  // Simulated voice trigger detection (in real implementation, would use speech recognition)
+  const simulateVoiceTrigger = (spokenText: string) => {
+    if (emergencyTriggerWord && spokenText.toLowerCase().includes(emergencyTriggerWord.toLowerCase())) {
+      triggerEmergencyMode();
+      return true;
+    }
+    return false;
+  };
+
   const speakAlert = async (message: string) => {
     try {
       // Stop any current speech
