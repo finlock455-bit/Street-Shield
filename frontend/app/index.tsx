@@ -657,8 +657,16 @@ export default function SafeWalkApp() {
       <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent}>
         {/* Header */}
         <View style={styles.header}>
-          <Text style={styles.appTitle}>SafeWalk</Text>
-          <Text style={styles.appSubtitle}>AI-Powered Pedestrian Safety</Text>
+          <View style={styles.titleContainer}>
+            <View style={styles.shieldIcon}>
+              <Ionicons name="shield-checkmark" size={32} color="#fff" />
+            </View>
+            <View style={styles.titleText}>
+              <Text style={styles.appTitle}>Street Shield</Text>
+              <Text style={styles.appSubtitle}>Advanced AI Protection</Text>
+            </View>
+          </View>
+          <View style={styles.headerGlow} />
         </View>
 
         {/* Safety Score Display */}
