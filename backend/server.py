@@ -873,7 +873,7 @@ async def get_proximity_history(user_id: str, limit: int = 50):
 
 @api_router.get("/")
 async def root():
-    return {"message": "SafeWalk API - Keeping pedestrians safe with AI-powered analysis"}
+    return {"message": "Street Shield API - Advanced AI protection for pedestrians and runners"}
 
 @api_router.get("/health")
 async def health_check():
