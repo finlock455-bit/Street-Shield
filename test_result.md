@@ -247,8 +247,12 @@ metadata:
 test_plan:
   current_focus:
     - "Google Gemini AI Integration Setup"
-    - "Real-time Location Tracking"
+    - "Location-based Safety Analysis Endpoints"
     - "Weather API Integration (OpenWeatherMap)"
+    - "Emergency Vehicle Detection System"
+    - "Real-time Location Tracking"
+    - "AI Safety Scoring Display"
+    - "Voice Alert System"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
