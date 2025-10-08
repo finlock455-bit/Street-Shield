@@ -1343,4 +1343,19 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#fff',
   },
+  // Voice guidance styles
+  labelWithVoice: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 5,
+  },
+  voiceHelpButton: {
+    padding: 8,
+    borderRadius: 20,
+    backgroundColor: '#E3F2FD',
+    borderWidth: 1,
+    borderColor: '#2196F3',
+    marginLeft: 10,
+  },
 });
