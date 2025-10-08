@@ -875,7 +875,17 @@ export default function SafeWalkApp() {
             </View>
 
             <View style={styles.inputGroup}>
-              <Text style={styles.inputLabel}>Emergency Contacts</Text>
+              <View style={styles.labelWithVoice}>
+                <Text style={styles.inputLabel}>Emergency Contacts</Text>
+                <TouchableOpacity 
+                  style={styles.voiceHelpButton}
+                  onPress={async () => {
+                    await speakAlert("Now add your emergency contacts. These people will receive immediate alerts with your location during an emergency. Add at least two trusted contacts like family members, close friends, or roommates.");
+                  }}
+                >
+                  <Ionicons name="volume-high" size={16} color="#2196F3" />
+                </TouchableOpacity>
+              </View>
               <Text style={styles.inputHint}>
                 Enter phone numbers that will be notified immediately. In a real emergency, authorities will also be contacted.
               </Text>
@@ -884,16 +894,33 @@ export default function SafeWalkApp() {
                   <TextInput
                     style={styles.contactInput}
                     value={contact}
+                    onFocus={async () => {
+                      if (voiceAlertsEnabled && index === 0) {
+                        await speakAlert(`Enter emergency contact ${index + 1}. Use the full phone number including area code.`);
+                      } else if (voiceAlertsEnabled && index > 0) {
+                        await speakAlert(`Adding contact ${index + 1}. The more emergency contacts you have, the safer you'll be.`);
+                      }
+                    }}
                     onChangeText={(text) => {
                       const newContacts = [...emergencyContacts];
                       newContacts[index] = text;
                       setEmergencyContacts(newContacts);
+                      
+                      // Voice feedback for completed phone number
+                      if (text.length >= 10 && voiceAlertsEnabled) {
+                        setTimeout(async () => {
+                          await speakAlert(`Contact ${index + 1} added. This person will be notified immediately if you trigger an emergency.`);
+                        }, 1000);
+                      }
                     }}
                     placeholder="Phone number"
                     keyboardType="phone-pad"
                   />
                   <TouchableOpacity
-                    onPress={() => {
+                    onPress={async () => {
+                      if (voiceAlertsEnabled) {
+                        await speakAlert(`Removing contact ${index + 1}.`);
+                      }
                       const newContacts = emergencyContacts.filter((_, i) => i !== index);
                       setEmergencyContacts(newContacts);
                     }}
@@ -905,7 +932,12 @@ export default function SafeWalkApp() {
               
               <TouchableOpacity
                 style={styles.addContactButton}
-                onPress={() => setEmergencyContacts([...emergencyContacts, ''])}
+                onPress={async () => {
+                  setEmergencyContacts([...emergencyContacts, '']);
+                  if (voiceAlertsEnabled) {
+                    await speakAlert(`Adding a new emergency contact. The more contacts you have, the better your safety coverage.`);
+                  }
+                }}
               >
                 <Ionicons name="add" size={20} color="#2196F3" />
                 <Text style={styles.addContactText}>Add Contact</Text>
