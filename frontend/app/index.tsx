@@ -795,7 +795,7 @@ export default function SafeWalkApp() {
               onPress={() => setProximityAlertsEnabled(!proximityAlertsEnabled)}
             >
               <View style={styles.featureIcon}>
-                <Ionicons name="radar" size={20} color={proximityAlertsEnabled ? "#4ECDC4" : "#666"} />
+                <Ionicons name="locate" size={20} color={proximityAlertsEnabled ? "#4ECDC4" : "#666"} />
               </View>
               <Text style={[styles.featureButtonText, proximityAlertsEnabled && styles.featureButtonTextActive]}>
                 Radar
