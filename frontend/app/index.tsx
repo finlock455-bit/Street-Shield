@@ -958,14 +958,28 @@ export default function SafeWalkApp() {
           <View style={styles.modalFooter}>
             <TouchableOpacity
               style={styles.cancelButton}
-              onPress={() => setIsEmergencySetupOpen(false)}
+              onPress={async () => {
+                if (voiceAlertsEnabled) {
+                  await speakAlert("Emergency setup cancelled. You can set this up anytime for your safety.");
+                }
+                setIsEmergencySetupOpen(false);
+              }}
             >
               <Text style={styles.cancelButtonText}>Cancel</Text>
             </TouchableOpacity>
             
             <TouchableOpacity
               style={[styles.saveButton, (!emergencyTriggerWord || emergencyContacts.filter(c => c.length > 0).length === 0) && styles.saveButtonDisabled]}
-              onPress={() => saveEmergencySettings(emergencyTriggerWord, emergencyContacts.filter(c => c.length > 0))}
+              onPress={async () => {
+                const validContacts = emergencyContacts.filter(c => c.length > 0);
+                if (!emergencyTriggerWord || validContacts.length === 0) {
+                  if (voiceAlertsEnabled) {
+                    await speakAlert("Please complete both your trigger word and at least one emergency contact before saving.");
+                  }
+                  return;
+                }
+                await saveEmergencySettings(emergencyTriggerWord, validContacts);
+              }}
               disabled={!emergencyTriggerWord || emergencyContacts.filter(c => c.length > 0).length === 0}
             >
               <Text style={styles.saveButtonText}>Save Emergency Settings</Text>
