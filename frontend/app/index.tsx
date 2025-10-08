@@ -82,9 +82,18 @@ export default function SafeWalkApp() {
   const [permissionsGranted, setPermissionsGranted] = useState(false);
   const [voiceAlertsEnabled, setVoiceAlertsEnabled] = useState(true);
   const [lastAlertTime, setLastAlertTime] = useState<number>(0);
+  
+  // Emergency system state
+  const [emergencyTriggerWord, setEmergencyTriggerWord] = useState<string>('');
+  const [isEmergencySetupOpen, setIsEmergencySetupOpen] = useState(false);
+  const [isEmergencyModeActive, setIsEmergencyModeActive] = useState(false);
+  const [emergencyContacts, setEmergencyContacts] = useState<string[]>([]);
+  const [voiceListening, setVoiceListening] = useState(false);
 
   const locationSubscription = useRef<Location.LocationSubscription | null>(null);
   const analysisInterval = useRef<NodeJS.Timeout | null>(null);
+  const audioRecording = useRef<Audio.Recording | null>(null);
+  const emergencyModeStartTime = useRef<number>(0);
 
   useEffect(() => {
     initializeApp();
