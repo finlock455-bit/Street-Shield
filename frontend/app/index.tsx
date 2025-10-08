@@ -583,21 +583,114 @@ export default function SafeWalkApp() {
     return false;
   };
 
-  const speakAlert = async (message: string) => {
+  // MUSIC-FRIENDLY VOICE SYSTEM
+  const speakAlert = async (message: string, priority: 'low' | 'medium' | 'high' | 'critical' = 'medium', duckAudio: boolean = true) => {
     try {
-      // Stop any current speech
-      Speech.stop();
+      if (!voiceAlertsEnabled) return;
       
-      // Speak the alert
-      Speech.speak(message, {
+      // Smart audio ducking - lower music instead of stopping
+      if (duckAudio && priority !== 'critical') {
+        // Brief audio duck notification (subtle chime sound)
+        await playAudioDuck();
+        await new Promise(resolve => setTimeout(resolve, 200)); // Brief pause
+      }
+      
+      // Adaptive speech settings based on priority
+      let speechSettings = {
         language: 'en-US',
         pitch: 1.0,
-        rate: 0.8,
+        rate: 0.75, // Slower for better clarity
         quality: Speech.VoiceQuality.Enhanced,
-      });
+      };
+      
+      // Adjust voice characteristics based on priority
+      switch (priority) {
+        case 'critical':
+          // Emergency: Override music, urgent tone
+          Speech.stop(); // Stop any current speech
+          speechSettings.pitch = 1.2;
+          speechSettings.rate = 0.8;
+          break;
+        case 'high':
+          // Important: Brief interruption, clear delivery
+          speechSettings.pitch = 1.1;
+          speechSettings.rate = 0.75;
+          break;
+        case 'medium':
+          // Normal: Gentle tone, doesn't interrupt music flow
+          speechSettings.pitch = 1.0;
+          speechSettings.rate = 0.7;
+          break;
+        case 'low':
+          // Subtle: Very gentle, almost whisper-like
+          speechSettings.pitch = 0.9;
+          speechSettings.rate = 0.65;
+          break;
+      }
+      
+      // Speak the alert with appropriate settings
+      Speech.speak(message, speechSettings);
+      
     } catch (error) {
-      console.error('Error with text-to-speech:', error);
+      console.error('Error with music-friendly text-to-speech:', error);
     }
+  };
+
+  const playAudioDuck = async () => {
+    // Simulate audio ducking with a subtle notification sound
+    // In a real implementation, this would:
+    // 1. Lower music volume temporarily
+    // 2. Play a subtle notification chime
+    // 3. Restore music volume after speech
+    try {
+      // Placeholder for audio ducking implementation
+      console.log('Audio duck: Lowering music volume for voice alert');
+    } catch (error) {
+      console.error('Audio ducking error:', error);
+    }
+  };
+
+  // INTELLIGENT ALERT PROCESSOR - determines when and how to speak
+  const processVoiceAlert = async (message: string, alertType: string, weatherData?: any) => {
+    const now = Date.now();
+    
+    // Smart alert filtering to prevent interruption spam
+    if (now - lastAlertTime < 30000 && alertType !== 'emergency') {
+      return; // Don't interrupt music too frequently
+    }
+    
+    // Determine priority based on alert type and weather severity
+    let priority: 'low' | 'medium' | 'high' | 'critical' = 'medium';
+    
+    if (alertType === 'emergency') {
+      priority = 'critical';
+    } else if (alertType === 'ice_warning' || alertType === 'severe_weather') {
+      priority = 'high';
+    } else if (alertType === 'safety_update' || alertType === 'recommendation') {
+      priority = 'medium';
+    } else {
+      priority = 'low';
+    }
+    
+    // Enhanced message formatting for music listeners
+    let musicFriendlyMessage = message;
+    
+    if (priority === 'critical') {
+      musicFriendlyMessage = `Street Shield Emergency Alert: ${message}`;
+    } else if (priority === 'high') {
+      musicFriendlyMessage = `Safety Alert: ${message}`;
+    } else {
+      musicFriendlyMessage = `Street Shield: ${message}`;
+    }
+    
+    // Weather-specific message enhancement
+    if (weatherData?.ice_risk && weatherData?.ice_confidence > 0.7) {
+      priority = 'high';
+      musicFriendlyMessage = `Ice Alert: Confidence ${Math.round(weatherData.ice_confidence * 100)}%. ${message}`;
+    }
+    
+    await speakAlert(musicFriendlyMessage, priority, true);
+    setLastAlertTime(now);
   };
 
   const showNotification = async (title: string, body: string) => {
