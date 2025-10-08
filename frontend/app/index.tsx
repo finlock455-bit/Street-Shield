@@ -159,7 +159,7 @@ export default function SafeWalkApp() {
             [
               { text: 'Demo Mode', onPress: () => {
                 setPermissionsGranted(true);
-                speakAlert("Demo mode activated. SafeWalk will simulate safety features.");
+                speakAlert("Demo mode activated. Street Shield will simulate safety features.");
               }},
               { text: 'Try Again', onPress: () => requestPermissions() }
             ]
