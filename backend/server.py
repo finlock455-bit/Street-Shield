@@ -131,6 +131,146 @@ def calculate_distance(lat1: float, lon1: float, lat2: float, lon2: float) -> fl
     c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
     return R * c
 
+def calculate_bearing(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
+    """Calculate bearing from point 1 to point 2 in degrees"""
+    lat1_rad = math.radians(lat1)
+    lat2_rad = math.radians(lat2)
+    delta_lon = math.radians(lon2 - lon1)
+    
+    y = math.sin(delta_lon) * math.cos(lat2_rad)
+    x = (math.cos(lat1_rad) * math.sin(lat2_rad) - 
+         math.sin(lat1_rad) * math.cos(lat2_rad) * math.cos(delta_lon))
+    
+    bearing = math.atan2(y, x)
+    return (math.degrees(bearing) + 360) % 360
+
+def analyze_movement_pattern(user_history: List[LocationData], potential_follower_history: List[LocationData]) -> Dict:
+    """Analyze if someone might be following based on movement patterns"""
+    if len(user_history) < 3 or len(potential_follower_history) < 3:
+        return {"confidence": 0.0, "pattern": "insufficient_data"}
+    
+    # Calculate correlation between movement patterns
+    user_bearings = []
+    follower_bearings = []
+    
+    for i in range(1, min(len(user_history), len(potential_follower_history))):
+        user_prev = user_history[i-1]
+        user_curr = user_history[i]
+        follower_prev = potential_follower_history[i-1]
+        follower_curr = potential_follower_history[i]
+        
+        user_bearing = calculate_bearing(user_prev.latitude, user_prev.longitude, user_curr.latitude, user_curr.longitude)
+        follower_bearing = calculate_bearing(follower_prev.latitude, follower_prev.longitude, follower_curr.latitude, follower_curr.longitude)
+        
+        user_bearings.append(user_bearing)
+        follower_bearings.append(follower_bearing)
+    
+    # Check if bearings are similar (following behavior)
+    bearing_similarities = []
+    for ub, fb in zip(user_bearings, follower_bearings):
+        diff = abs(ub - fb)
+        if diff > 180:
+            diff = 360 - diff
+        similarity = 1.0 - (diff / 180.0)
+        bearing_similarities.append(similarity)
+    
+    avg_similarity = sum(bearing_similarities) / len(bearing_similarities) if bearing_similarities else 0
+    
+    # Determine confidence and pattern
+    if avg_similarity > 0.8:
+        return {"confidence": avg_similarity, "pattern": "following", "threat_level": "high"}
+    elif avg_similarity > 0.6:
+        return {"confidence": avg_similarity, "pattern": "possible_following", "threat_level": "medium"}
+    else:
+        return {"confidence": avg_similarity, "pattern": "random", "threat_level": "low"}
+
+async def detect_proximity_threats(location: LocationData, movement_history: List[LocationData], user_context: Dict) -> ProximityAnalysis:
+    """Detect potential threats in user's proximity"""
+    try:
+        # Simulate detection of nearby individuals (in real implementation, this would use various sensors)
+        # For demo, we'll simulate potential threats based on location and time
+        detected_threats = []
+        
+        current_hour = datetime.now().hour
+        
+        # Simulate threat detection based on time and location context
+        threat_probability = 0.0
+        
+        # Higher threat probability at night
+        if 22 <= current_hour or current_hour <= 5:
+            threat_probability += 0.3
+        
+        # Higher threat probability in isolated areas
+        activity = user_context.get("activity_type", "walking")
+        if activity == "running" and (current_hour < 6 or current_hour > 20):
+            threat_probability += 0.2
+        
+        # Check movement history for consistent followers
+        if len(movement_history) >= 5:
+            # Simulate detection of someone following similar path
+            import random
+            if random.random() < threat_probability:
+                # Create a simulated threat
+                follower_threat = ProximityThreat(
+                    threat_type="following",
+                    distance=random.uniform(15, 35),  # 15-35 meters behind
+                    duration=random.uniform(60, 300),  # 1-5 minutes
+                    confidence=random.uniform(0.6, 0.9),
+                    direction="behind",
+                    movement_pattern="matching_pace",
+                    threat_level="medium" if threat_probability > 0.3 else "low",
+                    recommended_action="change_route" if threat_probability > 0.4 else "stay_alert"
+                )
+                detected_threats.append(follower_threat)
+        
+        # Determine crowd density (simulated)
+        crowd_density = "low"
+        if current_hour in [8, 9, 17, 18, 19]:  # Rush hours
+            crowd_density = "moderate"
+        elif current_hour in [12, 13]:  # Lunch time
+            crowd_density = "moderate"
+        elif 22 <= current_hour or current_hour <= 5:
+            crowd_density = "empty"
+        
+        # Assess isolation risk
+        isolation_risk = crowd_density == "empty" and len(detected_threats) > 0
+        
+        # Determine overall threat level
+        overall_threat_level = "safe"
+        if detected_threats:
+            max_threat_level = max([t.threat_level for t in detected_threats], key=lambda x: {"low": 1, "medium": 2, "high": 3, "critical": 4}[x])
+            overall_threat_level = max_threat_level
+        
+        if isolation_risk:
+            if overall_threat_level == "low":
+                overall_threat_level = "medium"
+            elif overall_threat_level == "medium":
+                overall_threat_level = "high"
+        
+        # Suggest nearby safe locations (simulated)
+        safe_locations = []
+        if detected_threats or isolation_risk:
+            safe_locations = ["Nearby convenience store", "Well-lit main street", "Police station (0.5km)"]
+        
+        return ProximityAnalysis(
+            user_location=location,
+            detected_threats=detected_threats,
+            safe_radius=20.0,
+            awareness_radius=50.0,
+            crowd_density=crowd_density,
+            isolation_risk=isolation_risk,
+            nearby_safe_locations=safe_locations,
+            overall_threat_level=overall_threat_level
+        )
+        
+    except Exception as e:
+        logging.error(f"Error in proximity threat detection: {e}")
+        return ProximityAnalysis(
+            user_location=location,
+            detected_threats=[],
+            overall_threat_level="safe"
+        )
+
 async def get_real_weather_data(lat: float, lon: float) -> Optional[WeatherData]:
     """Get real weather data from OpenWeatherMap API"""
     if not OPENWEATHER_API_KEY:
