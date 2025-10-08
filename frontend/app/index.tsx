@@ -426,6 +426,16 @@ export default function SafeWalkApp() {
   // Emergency System Functions
   const setupEmergencyTrigger = async () => {
     setIsEmergencySetupOpen(true);
+    
+    // Voice guidance for emergency setup
+    if (voiceAlertsEnabled) {
+      await speakAlert("Welcome to Emergency Setup. I'll guide you through configuring your personal safety system. This could save your life in a dangerous situation.");
+      
+      // Provide initial guidance after a brief pause
+      setTimeout(async () => {
+        await speakAlert("First, you'll choose a secret trigger word. This should be a unique word you can say clearly during an emergency. Avoid common words you might say accidentally.");
+      }, 3000);
+    }
   };
 
   const saveEmergencySettings = async (triggerWord: string, contacts: string[]) => {
