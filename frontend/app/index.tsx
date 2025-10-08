@@ -119,7 +119,7 @@ export default function SafeWalkApp() {
     try {
       // Provide voice guidance about permissions
       if (voiceAlertsEnabled) {
-        await speakAlert("Welcome to SafeWalk! I need to request some permissions to keep you safe.");
+        await speakAlert("Welcome to Street Shield! I need to request some permissions to keep you safe.");
       }
 
       // Request location permissions
