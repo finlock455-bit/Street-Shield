@@ -856,7 +856,6 @@ export default function SafeWalkApp() {
               <TextInput
                 style={styles.textInput}
                 value={emergencyTriggerWord}
-                onChangeText={setEmergencyTriggerWord}
                 onFocus={async () => {
                   if (voiceAlertsEnabled) {
                     await speakAlert("Now enter your emergency trigger word. Make it memorable but unique.");
