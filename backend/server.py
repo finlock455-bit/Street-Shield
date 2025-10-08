@@ -614,6 +614,7 @@ async def get_weather_data(lat: float, lon: float) -> WeatherData:
             temperature=20.0,
             humidity=50.0,
             weather_condition="clear",
+            ice_confidence=0.0,
             hazard_level="low"
         )
 
