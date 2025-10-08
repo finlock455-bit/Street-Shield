@@ -318,66 +318,118 @@ async def get_real_weather_data(lat: float, lon: float) -> Optional[WeatherData]
         
         condition = condition_mapping.get(weather_main, "clear")
         
-        # Enhanced ice risk detection with real data
+        # ENHANCED REAL-TIME ICE RISK DETECTION
         ice_risk = False
-        if temp <= 4:  # Expanded ice risk threshold
+        ice_confidence = 0.0
+        
+        # Multi-factor ice detection algorithm
+        if temp <= 4:
             if condition in ["rain", "snow"]:
                 ice_risk = True
-            elif "freezing" in weather_desc or "ice" in weather_desc:
+                ice_confidence = 0.9
+            elif "freezing" in weather_desc or "ice" in weather_desc or "sleet" in weather_desc:
+                ice_risk = True 
+                ice_confidence = 0.95
+            elif humidity > 85 and temp <= 1:  # High humidity frost conditions
                 ice_risk = True
-            elif humidity > 80 and temp <= 1:  # Frost conditions
+                ice_confidence = 0.7
+            elif temp <= 0 and humidity > 70:  # Below freezing with moisture
                 ice_risk = True
+                ice_confidence = 0.8
         
-        # Real-world hazard level assessment
+        # Black ice specific detection (most dangerous)
+        black_ice_risk = (temp >= -2 and temp <= 2 and 
+                         (condition == "rain" or "drizzle" in weather_desc) and 
+                         humidity > 80)
+        
+        if black_ice_risk:
+            ice_risk = True
+            ice_confidence = 0.95
+        
+        # COMPREHENSIVE HAZARD ASSESSMENT
         hazard_score = 0
+        specific_hazards = []
         
-        # Temperature hazards
-        if temp <= -10 or temp >= 40:
+        # Critical temperature hazards
+        if temp <= -15:
+            hazard_score += 4
+            specific_hazards.append("extreme_cold")
+        elif temp <= -5:
             hazard_score += 3
-        elif temp <= 0 or temp >= 35:
+            specific_hazards.append("severe_cold")
+        elif temp <= 0:
             hazard_score += 2
-        elif temp <= 2 or temp >= 32:
-            hazard_score += 1
-            
-        # Weather condition hazards
+            specific_hazards.append("freezing")
+        elif temp >= 40:
+            hazard_score += 3
+            specific_hazards.append("extreme_heat")
+        elif temp >= 35:
+            hazard_score += 2
+            specific_hazards.append("high_heat")
+        
+        # Precipitation hazards with intensity
         if condition == "snow":
             hazard_score += 3
-        elif condition == "rain" and temp <= 2:  # Freezing rain
-            hazard_score += 4
-        elif condition == "fog" and visibility <= 1:
-            hazard_score += 3
-        elif condition in ["rain", "fog"]:
-            hazard_score += 1
-            
-        # Check for severe weather descriptions
-        severe_keywords = ["heavy", "severe", "extreme", "dangerous", "violent"]
-        if any(keyword in weather_desc for keyword in severe_keywords):
-            hazard_score += 2
-            
-        # Wind hazards
-        if wind_speed >= 50:  # Strong gale
-            hazard_score += 3
-        elif wind_speed >= 35:  # Gale
-            hazard_score += 2
-        elif wind_speed >= 25:  # Strong breeze
-            hazard_score += 1
-            
+            specific_hazards.append("snow_accumulation")
+        elif condition == "rain":
+            if temp <= 2:  # Freezing rain - EXTREMELY dangerous
+                hazard_score += 5
+                specific_hazards.append("freezing_rain")
+            else:
+                hazard_score += 1
+                specific_hazards.append("wet_surfaces")
+        
         # Visibility hazards
-        if visibility <= 0.5:  # Very poor visibility
+        if visibility <= 0.2:  # Dense fog/severe conditions
+            hazard_score += 4
+            specific_hazards.append("zero_visibility")
+        elif visibility <= 0.5:
             hazard_score += 3
-        elif visibility <= 1:  # Poor visibility
+            specific_hazards.append("very_poor_visibility") 
+        elif visibility <= 1:
             hazard_score += 2
-            
-        # Ice risk adds significant hazard
-        if ice_risk:
+            specific_hazards.append("poor_visibility")
+        
+        # Wind hazards for pedestrians
+        if wind_speed >= 60:  # Hurricane force
+            hazard_score += 5
+            specific_hazards.append("hurricane_winds")
+        elif wind_speed >= 50:  # Violent storm
+            hazard_score += 4
+            specific_hazards.append("violent_winds")
+        elif wind_speed >= 35:  # Gale force
             hazard_score += 3
-            
-        # Determine final hazard level
-        if hazard_score >= 7:
+            specific_hazards.append("gale_winds")
+        elif wind_speed >= 25:  # Strong winds
+            hazard_score += 1
+            specific_hazards.append("strong_winds")
+        
+        # Severe weather keywords detection
+        severe_keywords = {
+            "heavy": 2, "severe": 3, "extreme": 4, "dangerous": 4, 
+            "violent": 4, "torrential": 3, "blizzard": 4, "thunderstorm": 2
+        }
+        
+        for keyword, score in severe_keywords.items():
+            if keyword in weather_desc:
+                hazard_score += score
+                specific_hazards.append(f"severe_{keyword}")
+        
+        # Ice hazard amplification
+        if ice_risk:
+            if black_ice_risk:
+                hazard_score += 4  # Black ice is extremely dangerous
+                specific_hazards.append("black_ice")
+            else:
+                hazard_score += 3
+                specific_hazards.append("ice_surfaces")
+        
+        # INTELLIGENT HAZARD LEVEL DETERMINATION
+        if hazard_score >= 10:
             hazard_level = "critical"
-        elif hazard_score >= 4:
-            hazard_level = "high"
-        elif hazard_score >= 2:
+        elif hazard_score >= 6:
+            hazard_level = "high" 
+        elif hazard_score >= 3:
             hazard_level = "medium"
         else:
             hazard_level = "low"
