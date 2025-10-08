@@ -669,19 +669,47 @@ export default function SafeWalkApp() {
           <View style={styles.headerGlow} />
         </View>
 
-        {/* Safety Score Display */}
+        {/* Dynamic Safety Score Display */}
         {safetyAnalysis && (
           <View style={styles.safetyScoreContainer}>
-            <View style={[
-              styles.safetyScoreCircle,
-              { backgroundColor: getSafetyColor(safetyAnalysis.safety_score.overall_score) }
-            ]}>
-              <Text style={styles.safetyScoreNumber}>
-                {safetyAnalysis.safety_score.overall_score}
-              </Text>
-              <Text style={styles.safetyScoreLabel}>
-                {getSafetyLabel(safetyAnalysis.safety_score.overall_score)}
-              </Text>
+            <View style={styles.safetyScoreWrapper}>
+              <View style={styles.pulseRing}>
+                <View style={[styles.pulseRingInner, { borderColor: getSafetyColor(safetyAnalysis.safety_score.overall_score) }]} />
+              </View>
+              <View style={[
+                styles.safetyScoreCircle,
+                { 
+                  backgroundColor: getSafetyColor(safetyAnalysis.safety_score.overall_score),
+                  shadowColor: getSafetyColor(safetyAnalysis.safety_score.overall_score)
+                }
+              ]}>
+                <View style={styles.scoreGlow} />
+                <Text style={styles.safetyScoreNumber}>
+                  {safetyAnalysis.safety_score.overall_score}
+                </Text>
+                <Text style={styles.safetyScoreLabel}>
+                  {getSafetyLabel(safetyAnalysis.safety_score.overall_score)}
+                </Text>
+                <View style={styles.shieldOverlay}>
+                  <Ionicons name="shield-checkmark" size={24} color="rgba(255,255,255,0.3)" />
+                </View>
+              </View>
+            </View>
+            
+            {/* Real-time Status Indicators */}
+            <View style={styles.statusIndicators}>
+              <View style={styles.statusItem}>
+                <Ionicons name="eye" size={16} color="#00FF88" />
+                <Text style={styles.statusText}>MONITORING</Text>
+              </View>
+              <View style={styles.statusItem}>
+                <Ionicons name="pulse" size={16} color="#FF6B6B" />
+                <Text style={styles.statusText}>ANALYZING</Text>
+              </View>
+              <View style={styles.statusItem}>
+                <Ionicons name="shield" size={16} color="#4ECDC4" />
+                <Text style={styles.statusText}>PROTECTED</Text>
+              </View>
             </View>
           </View>
         )}
