@@ -1109,8 +1109,7 @@ const styles = StyleSheet.create({
     lineHeight: 24,
   },
   header: {
-    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-    backgroundColor: '#667eea', // fallback
+    backgroundColor: '#667eea',
     padding: 25,
     alignItems: 'center',
     position: 'relative',
