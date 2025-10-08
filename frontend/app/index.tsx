@@ -337,10 +337,12 @@ export default function SafeWalkApp() {
         },
         body: JSON.stringify({
           location: locationData,
+          movement_history: movementHistory,
           user_context: {
             activity_type: 'walking',
             speed: 'pedestrian',
             time_of_day: new Date().getHours(),
+            user_id: 'demo_user'
           },
         }),
       });
