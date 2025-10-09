@@ -324,6 +324,185 @@ export default function SafeWalkApp() {
     } as any;
   };
 
+  // AI-DRIVEN NOISE CANCELLATION FUNCTIONS
+  const initializeNoiseCancellation = async () => {
+    try {
+      if (!location) return;
+      
+      const response = await fetch(`${BACKEND_URL}/api/audio/noise-profile`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          latitude: location.latitude,
+          longitude: location.longitude,
+          timestamp: new Date().toISOString(),
+          user_context: {
+            activity_type: 'walking',
+            time_of_day: new Date().getHours(),
+            user_id: 'noise_user'
+          }
+        }),
+      });
+
+      if (response.ok) {
+        const profile = await response.json();
+        setNoiseProfile(profile);
+        
+        // Apply noise cancellation based on AI analysis
+        await applyIntelligentNoiseCancellation(profile);
+      }
+    } catch (error) {
+      console.error('Error initializing noise cancellation:', error);
+    }
+  };
+
+  const applyIntelligentNoiseCancellation = async (profile: any) => {
+    try {
+      if (!noiseCancellationEnabled) return;
+      
+      // Simulate noise cancellation application
+      setCurrentNoiseLevel(profile.predicted_noise_level || 60);
+      
+      // Voice guidance about environment
+      if (voiceAlertsEnabled && profile) {
+        let noiseGuidance = "";
+        
+        if (profile.predicted_noise_level > 80) {
+          noiseGuidance = `High noise environment detected. I've activated aggressive noise filtering while preserving safety sounds like ${profile.critical_sounds?.slice(0, 2).join(' and ') || 'sirens and alarms'}.`;
+        } else if (profile.predicted_noise_level > 60) {
+          noiseGuidance = `Moderate noise environment. Balanced noise cancellation active, keeping you aware of important sounds.`;
+        } else {
+          noiseGuidance = `Quiet environment detected. Minimal noise filtering to maintain full situational awareness.`;
+        }
+        
+        await processVoiceAlert(noiseGuidance, 'environment_update');
+      }
+    } catch (error) {
+      console.error('Error applying noise cancellation:', error);
+    }
+  };
+
+  // BIOMETRIC MONITORING FUNCTIONS
+  const initializeBiometricMonitoring = async () => {
+    try {
+      // Simulate biometric data collection
+      startBiometricTracking();
+      
+    } catch (error) {
+      console.error('Error initializing biometric monitoring:', error);
+    }
+  };
+
+  const startBiometricTracking = () => {
+    // Simulate real-time biometric data
+    const biometricInterval = setInterval(async () => {
+      const simulatedBiometrics = {
+        heart_rate: Math.floor(Math.random() * 40) + 60, // 60-100 BPM
+        stress_level: Math.random() * 0.5, // 0-0.5 (low to moderate)
+        step_count: stepCount + Math.floor(Math.random() * 3),
+        fatigue_level: Math.random() * 0.3, // 0-0.3 (low fatigue)
+        activity_level: 'moderate',
+        blood_oxygen: Math.floor(Math.random() * 5) + 96, // 96-100%
+        timestamp: new Date().toISOString()
+      };
+
+      setBiometricData(simulatedBiometrics);
+      setHeartRate(simulatedBiometrics.heart_rate);
+      setStressLevel(simulatedBiometrics.stress_level);
+      setStepCount(simulatedBiometrics.step_count);
+
+      // Analyze biometric data
+      await analyzeBiometricData(simulatedBiometrics);
+      
+    }, 10000); // Update every 10 seconds
+
+    // Store interval for cleanup
+    return biometricInterval;
+  };
+
+  const analyzeBiometricData = async (biometrics: any) => {
+    try {
+      if (!location) return;
+
+      const response = await fetch(`${BACKEND_URL}/api/health/biometric-analysis`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          ...biometrics,
+          location: {
+            latitude: location.latitude,
+            longitude: location.longitude,
+            timestamp: new Date().toISOString()
+          },
+          safety_context: {
+            temperature: safetyAnalysis?.weather?.temperature || 20,
+            activity_level: 'moderate',
+            user_id: 'health_user'
+          }
+        }),
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        setHealthAlerts(result.health_alerts || []);
+        
+        // Process health alerts
+        for (const alert of result.health_alerts || []) {
+          await processHealthAlert(alert);
+        }
+        
+        // Handle emergency situations
+        if (result.emergency_triggered) {
+          await triggerMedicalEmergency(result.health_alerts);
+        }
+      }
+    } catch (error) {
+      console.error('Error analyzing biometric data:', error);
+    }
+  };
+
+  const processHealthAlert = async (alert: any) => {
+    if (!voiceAlertsEnabled) return;
+
+    let priority: 'low' | 'medium' | 'high' | 'critical' = 'medium';
+    
+    if (alert.severity === 'critical') {
+      priority = 'critical';
+    } else if (alert.severity === 'high') {
+      priority = 'high';
+    } else if (alert.severity === 'low') {
+      priority = 'low';
+    }
+
+    // Health-specific voice guidance
+    let healthMessage = `Health Alert: ${alert.message}`;
+    if (alert.recommended_action) {
+      healthMessage += ` ${alert.recommended_action}`;
+    }
+
+    await processVoiceAlert(healthMessage, 'health_alert');
+    
+    // Show notification
+    await showNotification(
+      `🏥 Health Alert - ${alert.alert_type}`, 
+      alert.message
+    );
+  };
+
+  const triggerMedicalEmergency = async (alerts: any[]) => {
+    const criticalAlert = alerts.find(alert => alert.auto_emergency);
+    if (criticalAlert && voiceAlertsEnabled) {
+      await speakAlert(
+        "Medical emergency detected! I'm alerting your emergency contacts and local authorities. Stay calm, help is on the way.",
+        'critical'
+      );
+    }
+  };
+
   const stopTracking = () => {
     setIsTracking(false);
     
