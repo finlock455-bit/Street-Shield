@@ -2016,4 +2016,29 @@ const styles = StyleSheet.create({
     marginTop: 4,
     letterSpacing: 0.5,
   },
+  // Biometric Styles
+  biometricGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+    marginTop: 10,
+  },
+  biometricItem: {
+    alignItems: 'center',
+    width: '48%',
+    backgroundColor: 'rgba(103, 126, 234, 0.1)',
+    padding: 10,
+    borderRadius: 8,
+    marginBottom: 8,
+  },
+  biometricValue: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#667eea',
+  },
+  biometricLabel: {
+    fontSize: 12,
+    color: '#666',
+    marginTop: 4,
+  },
 });
