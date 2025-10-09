@@ -280,11 +280,17 @@ export default function SafeWalkApp() {
 
       showNotification('🛡️ Street Shield Activated', 'Advanced AI protection system engaged');
       
-      // Initial safety check after 3 seconds
-      setTimeout(() => {
+      // Initialize advanced features
+      setTimeout(async () => {
         if (location) {
           performSafetyAnalysis(location);
         }
+        
+        // Initialize AI noise cancellation
+        await initializeNoiseCancellation();
+        
+        // Initialize biometric monitoring
+        await initializeBiometricMonitoring();
       }, 3000);
 
     } catch (error) {
