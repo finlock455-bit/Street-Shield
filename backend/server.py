@@ -307,6 +307,196 @@ async def detect_proximity_threats(location: LocationData, movement_history: Lis
             overall_threat_level="safe"
         )
 
+async def analyze_environmental_noise(location: LocationData, weather: WeatherData, user_context: Dict) -> EnvironmentalNoiseProfile:
+    """AI-driven environmental noise analysis for adaptive noise cancellation"""
+    try:
+        current_hour = datetime.now().hour
+        
+        # Determine location type based on context and coordinates
+        location_type = "urban"  # Default
+        if "activity_type" in user_context:
+            if user_context["activity_type"] == "hiking":
+                location_type = "park"
+            elif user_context["activity_type"] == "running":
+                location_type = "suburban"
+        
+        # Predict noise level based on multiple factors
+        base_noise = 45  # dB baseline
+        
+        # Time-based noise prediction
+        if 7 <= current_hour <= 9 or 17 <= current_hour <= 19:  # Rush hours
+            base_noise += 15
+            location_type = "urban"
+        elif 22 <= current_hour or current_hour <= 6:  # Night hours
+            base_noise -= 10
+        
+        # Weather impact on noise
+        if weather.weather_condition == "rain":
+            base_noise += 8
+        elif weather.wind_speed > 20:
+            base_noise += 6
+        
+        # Location type adjustments
+        location_noise_map = {
+            "urban": 65,
+            "suburban": 50, 
+            "rural": 40,
+            "highway": 75,
+            "construction": 85,
+            "park": 35
+        }
+        
+        predicted_noise = min(120, max(30, location_noise_map.get(location_type, 50) + (base_noise - 45)))
+        
+        # AI-predicted noise sources based on environment
+        noise_sources = []
+        critical_sounds = []
+        dominant_frequencies = []
+        
+        if location_type == "urban":
+            noise_sources = ["traffic", "crowd", "construction", "sirens"]
+            critical_sounds = ["sirens", "horns", "shouting", "brakes"]
+            dominant_frequencies = [250, 500, 1000, 2000]  # Urban frequency spectrum
+        elif location_type == "highway":
+            noise_sources = ["heavy_traffic", "trucks", "motorcycles"]
+            critical_sounds = ["sirens", "horns", "emergency_vehicles"]
+            dominant_frequencies = [125, 250, 500, 1000]
+        elif location_type == "park":
+            noise_sources = ["wind", "birds", "people"]
+            critical_sounds = ["shouting", "alarms", "approaching_vehicles"]
+            dominant_frequencies = [1000, 2000, 4000, 8000]
+        else:
+            noise_sources = ["ambient", "wind"]
+            critical_sounds = ["emergency_vehicles", "shouting"]
+            dominant_frequencies = [500, 1000, 2000]
+        
+        # Determine optimal noise cancellation profile
+        if predicted_noise > 80:
+            cancellation_profile = "aggressive"
+        elif predicted_noise > 60:
+            cancellation_profile = "balanced"
+        else:
+            cancellation_profile = "minimal"
+        
+        # Always prioritize safety sounds
+        ambient_sound_priority = ["sirens", "emergency_vehicles", "horns", "alarms", "shouting", "approaching_footsteps"]
+        
+        return EnvironmentalNoiseProfile(
+            location_type=location_type,
+            predicted_noise_level=predicted_noise,
+            dominant_frequencies=dominant_frequencies,
+            noise_sources=noise_sources,
+            critical_sounds=critical_sounds,
+            noise_cancellation_profile=cancellation_profile,
+            ambient_sound_priority=ambient_sound_priority
+        )
+        
+    except Exception as e:
+        logging.error(f"Error in noise analysis: {e}")
+        return EnvironmentalNoiseProfile(
+            location_type="urban",
+            predicted_noise_level=60.0,
+            noise_cancellation_profile="safety_first",
+            ambient_sound_priority=["sirens", "emergency_vehicles", "alarms"]
+        )
+
+async def analyze_biometric_data(biometric_data: BiometricData, location: LocationData, safety_context: Dict) -> List[HealthAlert]:
+    """Analyze biometric data for health monitoring and emergency detection"""
+    try:
+        alerts = []
+        
+        # Heart rate analysis
+        if biometric_data.heart_rate:
+            hr = biometric_data.heart_rate
+            
+            # Critical heart rate thresholds
+            if hr > 180:  # Dangerously high
+                alerts.append(HealthAlert(
+                    alert_type="heart_rate_critical",
+                    severity="critical",
+                    message=f"Critical heart rate detected: {hr} BPM. Seek immediate medical attention.",
+                    biometric_data=biometric_data,
+                    recommended_action="Stop activity immediately, call emergency services",
+                    auto_emergency=True
+                ))
+            elif hr > 160:  # Very high
+                alerts.append(HealthAlert(
+                    alert_type="heart_rate_spike",
+                    severity="high",
+                    message=f"High heart rate detected: {hr} BPM. Consider slowing down.",
+                    biometric_data=biometric_data,
+                    recommended_action="Reduce activity intensity, find safe resting place"
+                ))
+            elif hr < 50:  # Unusually low during activity
+                activity_level = safety_context.get("activity_level", "moderate")
+                if activity_level in ["moderate", "vigorous"]:
+                    alerts.append(HealthAlert(
+                        alert_type="heart_rate_low",
+                        severity="medium",
+                        message=f"Unusually low heart rate during activity: {hr} BPM.",
+                        biometric_data=biometric_data,
+                        recommended_action="Check if you're feeling well, consider medical consultation"
+                    ))
+        
+        # Stress level analysis
+        if biometric_data.stress_level > 0.8:
+            alerts.append(HealthAlert(
+                alert_type="stress_overload",
+                severity="high",
+                message=f"High stress detected. Your body is showing signs of significant stress.",
+                biometric_data=biometric_data,
+                recommended_action="Find a safe, quiet place to rest and practice deep breathing"
+            ))
+        elif biometric_data.stress_level > 0.6:
+            alerts.append(HealthAlert(
+                alert_type="stress_warning",
+                severity="medium",
+                message="Elevated stress levels detected. Consider taking a break.",
+                biometric_data=biometric_data,
+                recommended_action="Practice relaxation techniques, consider reducing pace"
+            ))
+        
+        # Fatigue analysis
+        if biometric_data.fatigue_level > 0.8:
+            alerts.append(HealthAlert(
+                alert_type="fatigue_warning",
+                severity="medium",
+                message="High fatigue detected. Your body needs rest.",
+                biometric_data=biometric_data,
+                recommended_action="Find a safe place to rest, consider ending activity"
+            ))
+        
+        # Blood oxygen analysis (if available)
+        if biometric_data.blood_oxygen and biometric_data.blood_oxygen < 95:
+            severity = "critical" if biometric_data.blood_oxygen < 90 else "high"
+            auto_emergency = biometric_data.blood_oxygen < 90
+            
+            alerts.append(HealthAlert(
+                alert_type="oxygen_low",
+                severity=severity,
+                message=f"Low blood oxygen: {biometric_data.blood_oxygen}%. Seek immediate help.",
+                biometric_data=biometric_data,
+                recommended_action="Stop activity, get fresh air, call for help if symptoms persist",
+                auto_emergency=auto_emergency
+            ))
+        
+        # Contextual health analysis
+        weather_temp = safety_context.get("temperature", 20)
+        if weather_temp > 35 and biometric_data.heart_rate and biometric_data.heart_rate > 140:
+            alerts.append(HealthAlert(
+                alert_type="heat_exhaustion_risk",
+                severity="high",
+                message=f"Heat exhaustion risk: High temperature ({weather_temp}°C) + elevated heart rate.",
+                biometric_data=biometric_data,
+                recommended_action="Find shade, drink water, cool down immediately"
+            ))
+        
+        return alerts
+        
+    except Exception as e:
+        logging.error(f"Error in biometric analysis: {e}")
+        return []
+
 async def get_real_weather_data(lat: float, lon: float) -> Optional[WeatherData]:
     """Get real weather data from OpenWeatherMap API"""
     if not OPENWEATHER_API_KEY:
