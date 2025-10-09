@@ -1181,6 +1181,97 @@ async def get_proximity_history(user_id: str, limit: int = 50):
         logging.error(f"Error getting proximity history: {e}")
         raise HTTPException(status_code=500, detail="Error retrieving proximity history")
 
+@api_router.post("/audio/noise-profile")
+async def analyze_audio_environment(
+    location: LocationData,
+    weather_data: Optional[Dict] = None,
+    user_context: Dict = {}
+):
+    """AI-driven environmental noise analysis for adaptive noise cancellation"""
+    try:
+        # Convert weather dict to WeatherData if provided
+        weather = None
+        if weather_data:
+            weather = WeatherData(**weather_data)
+        else:
+            weather = await get_weather_data(location.latitude, location.longitude)
+        
+        noise_profile = await analyze_environmental_noise(location, weather, user_context)
+        
+        # Store noise profile for learning
+        noise_doc = noise_profile.dict()
+        noise_doc['user_id'] = user_context.get('user_id', 'anonymous')
+        await db.noise_profiles.insert_one(noise_doc)
+        
+        return noise_profile
+    except Exception as e:
+        logging.error(f"Error analyzing audio environment: {e}")
+        raise HTTPException(status_code=500, detail="Error analyzing audio environment")
+
+@api_router.post("/health/biometric-analysis")
+async def analyze_biometrics(
+    biometric_data: BiometricData,
+    location: LocationData,
+    safety_context: Optional[Dict] = {}
+):
+    """Analyze biometric data for health monitoring and emergency detection"""
+    try:
+        health_alerts = await analyze_biometric_data(biometric_data, location, safety_context)
+        
+        # Store biometric data
+        biometric_doc = biometric_data.dict()
+        biometric_doc['location'] = location.dict()
+        await db.biometric_data.insert_one(biometric_doc)
+        
+        # Store health alerts
+        for alert in health_alerts:
+            alert_doc = alert.dict()
+            await db.health_alerts.insert_one(alert_doc)
+            
+            # Trigger emergency protocols if needed
+            if alert.auto_emergency:
+                emergency_alert = EmergencyAlert(
+                    alert_type="medical_emergency",
+                    location=location,
+                    radius=500,
+                    severity="critical",
+                    message=f"Medical emergency detected: {alert.message}",
+                    expires_at=datetime.utcnow() + timedelta(hours=1)
+                )
+                await db.emergency_alerts.insert_one(emergency_alert.dict())
+        
+        return {"health_alerts": health_alerts, "emergency_triggered": any(alert.auto_emergency for alert in health_alerts)}
+    except Exception as e:
+        logging.error(f"Error analyzing biometric data: {e}")
+        raise HTTPException(status_code=500, detail="Error analyzing biometric data")
+
+@api_router.get("/health/history/{user_id}")
+async def get_health_history(user_id: str, limit: int = 100):
+    """Get biometric and health alert history for a user"""
+    try:
+        # Get recent biometric data
+        biometric_history = await db.biometric_data.find({
+            "user_id": user_id
+        }).sort("timestamp", -1).limit(limit).to_list(limit)
+        
+        # Get health alerts
+        health_alerts = await db.health_alerts.find({
+            "biometric_data.user_id": user_id
+        }).sort("timestamp", -1).limit(50).to_list(50)
+        
+        # Convert ObjectIds to strings
+        for item in biometric_history + health_alerts:
+            if "_id" in item:
+                item["_id"] = str(item["_id"])
+        
+        return {
+            "biometric_history": biometric_history,
+            "health_alerts": health_alerts
+        }
+    except Exception as e:
+        logging.error(f"Error getting health history: {e}")
+        raise HTTPException(status_code=500, detail="Error retrieving health history")
+
 @api_router.get("/")
 async def root():
     return {"message": "Street Shield API - Advanced AI protection for pedestrians and runners"}
