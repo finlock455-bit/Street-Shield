@@ -1239,6 +1239,59 @@ export default function SafeWalkApp() {
             ))}
           </View>
         )}
+
+        {/* AI Noise Profile */}
+        {noiseProfile && (
+          <View style={styles.infoCard}>
+            <Text style={styles.cardTitle}>🎧 AI Audio Environment</Text>
+            <Text style={styles.infoText}>
+              Environment: {noiseProfile.location_type.replace('_', ' ').toUpperCase()}
+            </Text>
+            <Text style={styles.infoText}>
+              Predicted Noise: {Math.round(noiseProfile.predicted_noise_level)}dB
+            </Text>
+            <Text style={styles.infoText}>
+              Cancellation: {noiseProfile.noise_cancellation_profile.replace('_', ' ').toUpperCase()}
+            </Text>
+            {noiseProfile.critical_sounds?.length > 0 && (
+              <Text style={styles.infoText}>
+                Monitoring: {noiseProfile.critical_sounds.slice(0, 3).join(', ')}
+              </Text>
+            )}
+          </View>
+        )}
+
+        {/* Biometric Monitoring */}
+        {biometricData && (
+          <View style={styles.infoCard}>
+            <Text style={styles.cardTitle}>💗 Health Monitoring</Text>
+            <View style={styles.biometricGrid}>
+              <View style={styles.biometricItem}>
+                <Text style={styles.biometricValue}>{heartRate}</Text>
+                <Text style={styles.biometricLabel}>BPM</Text>
+              </View>
+              <View style={styles.biometricItem}>
+                <Text style={styles.biometricValue}>{stepCount}</Text>
+                <Text style={styles.biometricLabel}>Steps</Text>
+              </View>
+              <View style={styles.biometricItem}>
+                <Text style={styles.biometricValue}>{Math.round(stressLevel * 100)}%</Text>
+                <Text style={styles.biometricLabel}>Stress</Text>
+              </View>
+              {biometricData.blood_oxygen && (
+                <View style={styles.biometricItem}>
+                  <Text style={styles.biometricValue}>{biometricData.blood_oxygen}%</Text>
+                  <Text style={styles.biometricLabel}>O₂</Text>
+                </View>
+              )}
+            </View>
+            {healthAlerts.length > 0 && (
+              <Text style={styles.warningText}>
+                ⚠️ {healthAlerts.length} health alert{healthAlerts.length > 1 ? 's' : ''} active
+              </Text>
+            )}
+          </View>
+        )}
       </ScrollView>
 
       {/* Emergency Setup Modal */}
