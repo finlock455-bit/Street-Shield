@@ -1111,6 +1111,34 @@ export default function SafeWalkApp() {
               </Text>
             </TouchableOpacity>
 
+            <TouchableOpacity
+              style={[styles.featureButton, noiseCancellationEnabled && styles.featureButtonActive]}
+              onPress={() => setNoiseCancellationEnabled(!noiseCancellationEnabled)}
+            >
+              <View style={styles.featureIcon}>
+                <Ionicons name="headset" size={20} color={noiseCancellationEnabled ? "#9C27B0" : "#666"} />
+              </View>
+              <Text style={[styles.featureButtonText, noiseCancellationEnabled && styles.featureButtonTextActive]}>
+                AI Audio
+              </Text>
+              <Text style={styles.featureStatus}>
+                {noiseProfile ? `${Math.round(currentNoiseLevel)}dB` : 'SETUP'}
+              </Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles.featureButton}
+              onPress={() => {}}
+            >
+              <View style={styles.featureIcon}>
+                <Ionicons name="heart" size={20} color={heartRate > 0 ? "#E91E63" : "#666"} />
+              </View>
+              <Text style={styles.featureButtonText}>Health</Text>
+              <Text style={styles.featureStatus}>
+                {heartRate > 0 ? `${heartRate} BPM` : 'MONITORING'}
+              </Text>
+            </TouchableOpacity>
+
             {/* Emergency Test Button */}
             {emergencyTriggerWord && (
               <TouchableOpacity
