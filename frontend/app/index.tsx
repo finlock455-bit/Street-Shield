@@ -88,6 +88,18 @@ export default function SafeWalkApp() {
   const [proximityThreats, setProximityThreats] = useState<any[]>([]);
   const [proximityAlertsEnabled, setProximityAlertsEnabled] = useState(true);
   
+  // AI Noise Cancellation state
+  const [noiseProfile, setNoiseProfile] = useState<any>(null);
+  const [noiseCancellationEnabled, setNoiseCancellationEnabled] = useState(true);
+  const [currentNoiseLevel, setCurrentNoiseLevel] = useState<number>(0);
+  
+  // Biometric monitoring state
+  const [biometricData, setBiometricData] = useState<any>(null);
+  const [healthAlerts, setHealthAlerts] = useState<any[]>([]);
+  const [heartRate, setHeartRate] = useState<number>(0);
+  const [stressLevel, setStressLevel] = useState<number>(0);
+  const [stepCount, setStepCount] = useState<number>(0);
+  
   // Emergency system state
   const [emergencyTriggerWord, setEmergencyTriggerWord] = useState<string>('');
   const [isEmergencySetupOpen, setIsEmergencySetupOpen] = useState(false);
