@@ -118,6 +118,40 @@ class ProximityAnalysis(BaseModel):
     nearby_safe_locations: List[str] = Field(default_factory=list)
     overall_threat_level: str = "safe"
 
+class BiometricData(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    heart_rate: Optional[int] = None  # BPM
+    heart_rate_variability: Optional[float] = None  # HRV
+    step_count: Optional[int] = None
+    calories_burned: Optional[float] = None
+    stress_level: float = Field(ge=0.0, le=1.0, default=0.0)  # 0.0 = relaxed, 1.0 = high stress
+    fatigue_level: float = Field(ge=0.0, le=1.0, default=0.0)  # 0.0 = energetic, 1.0 = exhausted
+    activity_level: str = "moderate"  # "sedentary", "light", "moderate", "vigorous"
+    blood_oxygen: Optional[int] = None  # SpO2 percentage
+    skin_temperature: Optional[float] = None  # Celsius
+    timestamp: datetime = Field(default_factory=datetime.utcnow)
+
+class EnvironmentalNoiseProfile(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    location_type: str  # "urban", "suburban", "rural", "highway", "construction", "park"
+    predicted_noise_level: float = Field(ge=0.0, le=120.0)  # dB
+    dominant_frequencies: List[float] = Field(default_factory=list)  # Hz
+    noise_sources: List[str] = Field(default_factory=list)  # ["traffic", "construction", "crowd", "wind"]
+    critical_sounds: List[str] = Field(default_factory=list)  # ["sirens", "horns", "shouting", "alarms"]
+    noise_cancellation_profile: str = "balanced"  # "aggressive", "balanced", "minimal", "safety_first"
+    ambient_sound_priority: List[str] = Field(default_factory=list)  # sounds to preserve
+    timestamp: datetime = Field(default_factory=datetime.utcnow)
+
+class HealthAlert(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    alert_type: str  # "heart_rate_spike", "stress_overload", "fatigue_warning", "medical_emergency"
+    severity: str  # "low", "medium", "high", "critical"
+    message: str
+    biometric_data: BiometricData
+    recommended_action: str
+    auto_emergency: bool = False  # trigger emergency protocols
+    timestamp: datetime = Field(default_factory=datetime.utcnow)
+
 # Utility Functions
 def calculate_distance(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
     """Calculate distance between two points in meters using Haversine formula"""
