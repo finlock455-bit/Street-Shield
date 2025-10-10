@@ -32,314 +32,611 @@ MUSIC_USER_CONTEXT = {
     "speed": 2.5
 }
 
-class SafeWalkAPITester:
+class StreetShieldTester:
     def __init__(self):
         self.session = requests.Session()
-        self.session.timeout = TIMEOUT
+        self.session.timeout = 30
         self.test_results = []
         
-    def log_test(self, test_name: str, success: bool, details: str = "", response_data: Any = None):
+    def log_test(self, test_name: str, success: bool, details: str = ""):
         """Log test results"""
         result = {
             "test": test_name,
             "success": success,
             "details": details,
-            "timestamp": datetime.utcnow().isoformat(),
-            "response_data": response_data
+            "timestamp": datetime.now().isoformat()
         }
         self.test_results.append(result)
         status = "✅ PASS" if success else "❌ FAIL"
-        print(f"{status} {test_name}: {details}")
-        
-    def test_root_endpoint(self):
-        """Test basic root endpoint"""
-        try:
-            response = self.session.get(f"{BASE_URL}/")
-            if response.status_code == 200:
-                data = response.json()
-                if "SafeWalk API" in data.get("message", ""):
-                    self.log_test("Root Endpoint", True, "API root accessible", data)
-                else:
-                    self.log_test("Root Endpoint", False, f"Unexpected message: {data}")
-            else:
-                self.log_test("Root Endpoint", False, f"HTTP {response.status_code}: {response.text}")
-        except Exception as e:
-            self.log_test("Root Endpoint", False, f"Connection error: {str(e)}")
-    
+        print(f"{status}: {test_name}")
+        if details:
+            print(f"   Details: {details}")
+        print()
+
     def test_health_check(self):
-        """Test health check endpoint"""
+        """Test basic API health"""
         try:
-            response = self.session.get(f"{BASE_URL}/health")
+            response = self.session.get(f"{BACKEND_URL}/health", timeout=10)
             if response.status_code == 200:
                 data = response.json()
-                status = data.get("status")
                 services = data.get("services", {})
+                ai_status = services.get("ai", "unknown")
+                db_status = services.get("database", "unknown")
                 
-                if status == "healthy":
-                    ai_status = services.get("ai", "unknown")
-                    db_status = services.get("database", "unknown")
+                details = f"AI: {ai_status}, Database: {db_status}"
+                self.log_test("Health Check", True, details)
+                return True
+            else:
+                self.log_test("Health Check", False, f"Status: {response.status_code}")
+                return False
+        except Exception as e:
+            self.log_test("Health Check", False, f"Error: {str(e)}")
+            return False
+
+    def test_noise_cancellation_system(self):
+        """Test AI-Driven Noise Cancellation System"""
+        print("🎵 Testing AI-Driven Noise Cancellation System...")
+        
+        # Test data for different environments
+        test_scenarios = [
+            {
+                "name": "Urban Rush Hour Environment",
+                "location": {"latitude": 40.7128, "longitude": -74.0060, "timestamp": datetime.now().isoformat()},
+                "user_context": {"activity_type": "walking", "music_listening": True, "headphone_type": "noise_cancelling"}
+            },
+            {
+                "name": "Suburban Jogging Environment", 
+                "location": {"latitude": 40.7589, "longitude": -73.9851, "timestamp": datetime.now().isoformat()},
+                "user_context": {"activity_type": "running", "music_listening": True, "headphone_type": "earbuds"}
+            },
+            {
+                "name": "Park/Quiet Environment",
+                "location": {"latitude": 40.7829, "longitude": -73.9654, "timestamp": datetime.now().isoformat()},
+                "user_context": {"activity_type": "walking", "music_listening": True, "headphone_type": "open_back"}
+            }
+        ]
+        
+        all_passed = True
+        
+        for scenario in test_scenarios:
+            try:
+                response = self.session.post(
+                    f"{BACKEND_URL}/audio/noise-profile",
+                    json=scenario,
+                    timeout=15
+                )
+                
+                if response.status_code == 200:
+                    data = response.json()
                     
-                    details = f"Status: {status}, AI: {ai_status}, DB: {db_status}"
+                    # Validate response structure
+                    required_fields = [
+                        "location_type", "predicted_noise_level", "noise_sources", 
+                        "critical_sounds", "noise_cancellation_profile", "ambient_sound_priority"
+                    ]
                     
-                    # Check if AI service is properly configured
-                    if ai_status == "available":
-                        self.log_test("Health Check - AI Service", True, "AI service available", data)
-                    else:
-                        self.log_test("Health Check - AI Service", False, f"AI service not available: {ai_status}")
+                    missing_fields = [field for field in required_fields if field not in data]
+                    if missing_fields:
+                        self.log_test(f"Noise Analysis - {scenario['name']}", False, 
+                                    f"Missing fields: {missing_fields}")
+                        all_passed = False
+                        continue
                     
-                    # Check database connection
-                    if db_status == "connected":
-                        self.log_test("Health Check - Database", True, "Database connected", data)
-                    else:
-                        self.log_test("Health Check - Database", False, f"Database not connected: {db_status}")
+                    # Validate noise cancellation profiles
+                    valid_profiles = ["aggressive", "balanced", "minimal", "safety_first"]
+                    if data["noise_cancellation_profile"] not in valid_profiles:
+                        self.log_test(f"Noise Analysis - {scenario['name']}", False, 
+                                    f"Invalid cancellation profile: {data['noise_cancellation_profile']}")
+                        all_passed = False
+                        continue
+                    
+                    # Validate critical sound preservation
+                    critical_sounds = data.get("critical_sounds", [])
+                    safety_sounds = ["sirens", "horns", "emergency_vehicles", "alarms"]
+                    has_safety_sounds = any(sound in critical_sounds for sound in safety_sounds)
+                    
+                    if not has_safety_sounds:
+                        self.log_test(f"Noise Analysis - {scenario['name']}", False, 
+                                    "No critical safety sounds detected for preservation")
+                        all_passed = False
+                        continue
+                    
+                    # Validate noise level is realistic
+                    noise_level = data.get("predicted_noise_level", 0)
+                    if not (30 <= noise_level <= 120):
+                        self.log_test(f"Noise Analysis - {scenario['name']}", False, 
+                                    f"Unrealistic noise level: {noise_level} dB")
+                        all_passed = False
+                        continue
+                    
+                    details = f"Profile: {data['noise_cancellation_profile']}, Noise: {noise_level}dB, Location: {data['location_type']}"
+                    self.log_test(f"Noise Analysis - {scenario['name']}", True, details)
+                    
+                else:
+                    self.log_test(f"Noise Analysis - {scenario['name']}", False, 
+                                f"HTTP {response.status_code}: {response.text}")
+                    all_passed = False
+                    
+            except Exception as e:
+                self.log_test(f"Noise Analysis - {scenario['name']}", False, f"Error: {str(e)}")
+                all_passed = False
+        
+        return all_passed
+
+    def test_biometric_monitoring_system(self):
+        """Test Biometric Health Monitoring System"""
+        print("💓 Testing Biometric Health Monitoring System...")
+        
+        # Test scenarios with different health conditions
+        test_scenarios = [
+            {
+                "name": "Normal Exercise Heart Rate",
+                "biometric_data": {
+                    "heart_rate": 145,
+                    "stress_level": 0.3,
+                    "fatigue_level": 0.2,
+                    "activity_level": "moderate",
+                    "blood_oxygen": 98,
+                    "timestamp": datetime.now().isoformat()
+                },
+                "location": {"latitude": 40.7128, "longitude": -74.0060, "timestamp": datetime.now().isoformat()},
+                "safety_context": {"activity_level": "moderate", "temperature": 22}
+            },
+            {
+                "name": "High Stress Detection",
+                "biometric_data": {
+                    "heart_rate": 165,
+                    "stress_level": 0.85,
+                    "fatigue_level": 0.4,
+                    "activity_level": "vigorous",
+                    "blood_oxygen": 96,
+                    "timestamp": datetime.now().isoformat()
+                },
+                "location": {"latitude": 40.7589, "longitude": -73.9851, "timestamp": datetime.now().isoformat()},
+                "safety_context": {"activity_level": "vigorous", "temperature": 28}
+            },
+            {
+                "name": "Critical Heart Rate Alert",
+                "biometric_data": {
+                    "heart_rate": 185,
+                    "stress_level": 0.9,
+                    "fatigue_level": 0.8,
+                    "activity_level": "vigorous",
+                    "blood_oxygen": 94,
+                    "timestamp": datetime.now().isoformat()
+                },
+                "location": {"latitude": 40.7829, "longitude": -73.9654, "timestamp": datetime.now().isoformat()},
+                "safety_context": {"activity_level": "vigorous", "temperature": 35}
+            },
+            {
+                "name": "Low Blood Oxygen Emergency",
+                "biometric_data": {
+                    "heart_rate": 120,
+                    "stress_level": 0.6,
+                    "fatigue_level": 0.7,
+                    "activity_level": "light",
+                    "blood_oxygen": 88,
+                    "timestamp": datetime.now().isoformat()
+                },
+                "location": {"latitude": 40.7505, "longitude": -73.9934, "timestamp": datetime.now().isoformat()},
+                "safety_context": {"activity_level": "light", "temperature": 20}
+            }
+        ]
+        
+        all_passed = True
+        
+        for scenario in test_scenarios:
+            try:
+                response = self.session.post(
+                    f"{BACKEND_URL}/health/biometric-analysis",
+                    json=scenario,
+                    timeout=15
+                )
+                
+                if response.status_code == 200:
+                    data = response.json()
+                    
+                    # Validate response structure
+                    if "health_alerts" not in data:
+                        self.log_test(f"Biometric Analysis - {scenario['name']}", False, 
+                                    "Missing health_alerts in response")
+                        all_passed = False
+                        continue
+                    
+                    health_alerts = data["health_alerts"]
+                    emergency_triggered = data.get("emergency_triggered", False)
+                    
+                    # Validate alert generation based on scenario
+                    if scenario["name"] == "Normal Exercise Heart Rate":
+                        # Should have minimal or no alerts
+                        critical_alerts = [alert for alert in health_alerts if alert.get("severity") == "critical"]
+                        if critical_alerts:
+                            self.log_test(f"Biometric Analysis - {scenario['name']}", False, 
+                                        "Unexpected critical alerts for normal exercise")
+                            all_passed = False
+                            continue
+                    
+                    elif scenario["name"] == "Critical Heart Rate Alert":
+                        # Should trigger high severity alerts
+                        high_severity_alerts = [alert for alert in health_alerts 
+                                              if alert.get("severity") in ["high", "critical"]]
+                        if not high_severity_alerts:
+                            self.log_test(f"Biometric Analysis - {scenario['name']}", False, 
+                                        "No high severity alerts for critical heart rate")
+                            all_passed = False
+                            continue
+                    
+                    elif scenario["name"] == "Low Blood Oxygen Emergency":
+                        # Should trigger emergency protocols
+                        if not emergency_triggered:
+                            self.log_test(f"Biometric Analysis - {scenario['name']}", False, 
+                                        "Emergency not triggered for low blood oxygen")
+                            all_passed = False
+                            continue
+                    
+                    # Validate alert structure
+                    for alert in health_alerts:
+                        required_alert_fields = ["alert_type", "severity", "message", "recommended_action"]
+                        missing_alert_fields = [field for field in required_alert_fields if field not in alert]
+                        if missing_alert_fields:
+                            self.log_test(f"Biometric Analysis - {scenario['name']}", False, 
+                                        f"Alert missing fields: {missing_alert_fields}")
+                            all_passed = False
+                            continue
+                    
+                    alert_count = len(health_alerts)
+                    details = f"Alerts: {alert_count}, Emergency: {emergency_triggered}"
+                    if health_alerts:
+                        severities = [alert.get("severity", "unknown") for alert in health_alerts]
+                        details += f", Severities: {severities}"
+                    
+                    self.log_test(f"Biometric Analysis - {scenario['name']}", True, details)
+                    
+                else:
+                    self.log_test(f"Biometric Analysis - {scenario['name']}", False, 
+                                f"HTTP {response.status_code}: {response.text}")
+                    all_passed = False
+                    
+            except Exception as e:
+                self.log_test(f"Biometric Analysis - {scenario['name']}", False, f"Error: {str(e)}")
+                all_passed = False
+        
+        return all_passed
+
+    def test_proximity_threat_detection(self):
+        """Test Proximity Threat Detection System"""
+        print("🚨 Testing Proximity Threat Detection System...")
+        
+        # Create realistic movement history for following detection
+        base_location = {"latitude": 40.7128, "longitude": -74.0060}
+        movement_history = []
+        
+        # Simulate 5 minutes of movement history
+        for i in range(5):
+            timestamp = (datetime.now() - timedelta(minutes=5-i)).isoformat()
+            location = {
+                "latitude": base_location["latitude"] + (i * 0.0001),
+                "longitude": base_location["longitude"] + (i * 0.0001),
+                "timestamp": timestamp
+            }
+            movement_history.append(location)
+        
+        test_scenarios = [
+            {
+                "name": "Daytime Safe Walking",
+                "location": {"latitude": 40.7128, "longitude": -74.0060, "timestamp": datetime.now().isoformat()},
+                "movement_history": movement_history[:3],  # Short history
+                "user_context": {"activity_type": "walking", "time_of_day": "afternoon"}
+            },
+            {
+                "name": "Night Running - High Risk",
+                "location": {"latitude": 40.7589, "longitude": -73.9851, "timestamp": datetime.now().isoformat()},
+                "movement_history": movement_history,
+                "user_context": {"activity_type": "running", "time_of_day": "night"}
+            },
+            {
+                "name": "Extended Movement Pattern",
+                "location": {"latitude": 40.7829, "longitude": -73.9654, "timestamp": datetime.now().isoformat()},
+                "movement_history": movement_history,
+                "user_context": {"activity_type": "walking", "time_of_day": "evening"}
+            }
+        ]
+        
+        all_passed = True
+        
+        for scenario in test_scenarios:
+            try:
+                response = self.session.post(
+                    f"{BACKEND_URL}/proximity/analyze",
+                    json=scenario,
+                    timeout=15
+                )
+                
+                if response.status_code == 200:
+                    data = response.json()
+                    
+                    # Validate response structure
+                    required_fields = [
+                        "user_location", "detected_threats", "safe_radius", 
+                        "awareness_radius", "crowd_density", "overall_threat_level"
+                    ]
+                    
+                    missing_fields = [field for field in required_fields if field not in data]
+                    if missing_fields:
+                        self.log_test(f"Proximity Analysis - {scenario['name']}", False, 
+                                    f"Missing fields: {missing_fields}")
+                        all_passed = False
+                        continue
+                    
+                    # Validate threat detection logic
+                    detected_threats = data.get("detected_threats", [])
+                    overall_threat_level = data.get("overall_threat_level", "safe")
+                    crowd_density = data.get("crowd_density", "unknown")
+                    
+                    # Validate threat structure if threats detected
+                    for threat in detected_threats:
+                        threat_fields = ["threat_type", "distance", "confidence", "threat_level", "recommended_action"]
+                        missing_threat_fields = [field for field in threat_fields if field not in threat]
+                        if missing_threat_fields:
+                            self.log_test(f"Proximity Analysis - {scenario['name']}", False, 
+                                        f"Threat missing fields: {missing_threat_fields}")
+                            all_passed = False
+                            continue
                         
-                    self.log_test("Health Check", True, details, data)
-                else:
-                    self.log_test("Health Check", False, f"Unhealthy status: {status}")
-            else:
-                self.log_test("Health Check", False, f"HTTP {response.status_code}: {response.text}")
-        except Exception as e:
-            self.log_test("Health Check", False, f"Connection error: {str(e)}")
-    
-    def test_safety_analysis(self):
-        """Test AI-powered safety analysis endpoint - MOST CRITICAL"""
-        try:
-            payload = {
-                "location": TEST_LOCATION,
-                "user_context": TEST_USER_CONTEXT
-            }
-            
-            response = self.session.post(
-                f"{BASE_URL}/safety/analyze",
-                json=payload,
-                headers={"Content-Type": "application/json"}
-            )
-            
-            if response.status_code == 200:
-                data = response.json()
-                
-                # Verify response structure
-                required_fields = ["id", "location", "weather", "safety_score", "timestamp", "ai_analysis"]
-                missing_fields = [field for field in required_fields if field not in data]
-                
-                if missing_fields:
-                    self.log_test("Safety Analysis - Structure", False, f"Missing fields: {missing_fields}")
-                    return
-                
-                # Test weather data
-                weather = data.get("weather", {})
-                weather_fields = ["temperature", "humidity", "weather_condition", "hazard_level"]
-                weather_missing = [field for field in weather_fields if field not in weather]
-                
-                if weather_missing:
-                    self.log_test("Safety Analysis - Weather", False, f"Missing weather fields: {weather_missing}")
-                else:
-                    ice_risk = weather.get("ice_risk", False)
-                    hazard_level = weather.get("hazard_level", "unknown")
-                    self.log_test("Safety Analysis - Weather", True, 
-                                f"Weather data complete. Ice risk: {ice_risk}, Hazard: {hazard_level}", weather)
-                
-                # Test safety score
-                safety_score = data.get("safety_score", {})
-                score_fields = ["overall_score", "risk_factors", "recommendations", "weather_risk", "traffic_risk", "location_risk"]
-                score_missing = [field for field in score_fields if field not in safety_score]
-                
-                if score_missing:
-                    self.log_test("Safety Analysis - Score", False, f"Missing score fields: {score_missing}")
-                else:
-                    overall_score = safety_score.get("overall_score", 0)
-                    risk_factors = safety_score.get("risk_factors", [])
-                    recommendations = safety_score.get("recommendations", [])
+                        # Validate confidence is between 0 and 1
+                        confidence = threat.get("confidence", 0)
+                        if not (0 <= confidence <= 1):
+                            self.log_test(f"Proximity Analysis - {scenario['name']}", False, 
+                                        f"Invalid confidence value: {confidence}")
+                            all_passed = False
+                            continue
                     
-                    if 0 <= overall_score <= 100:
-                        self.log_test("Safety Analysis - AI Scoring", True, 
-                                    f"Score: {overall_score}, Risks: {len(risk_factors)}, Recommendations: {len(recommendations)}", 
-                                    safety_score)
-                    else:
-                        self.log_test("Safety Analysis - AI Scoring", False, f"Invalid score: {overall_score}")
-                
-                # Test AI analysis
-                ai_analysis = data.get("ai_analysis", "")
-                if ai_analysis:
-                    self.log_test("Safety Analysis - AI Integration", True, "AI analysis generated", {"ai_analysis": ai_analysis})
-                else:
-                    self.log_test("Safety Analysis - AI Integration", False, "No AI analysis generated")
-                
-                self.log_test("Safety Analysis", True, "Complete safety analysis successful", data)
-                
-            else:
-                self.log_test("Safety Analysis", False, f"HTTP {response.status_code}: {response.text}")
-                
-        except Exception as e:
-            self.log_test("Safety Analysis", False, f"Error: {str(e)}")
-    
-    def test_nearby_alerts(self):
-        """Test nearby alerts retrieval"""
-        try:
-            lat, lon, radius = TEST_LOCATION["latitude"], TEST_LOCATION["longitude"], 1000
-            response = self.session.get(f"{BASE_URL}/safety/alerts/{lat}/{lon}/{radius}")
-            
-            if response.status_code == 200:
-                data = response.json()
-                alerts = data.get("alerts", [])
-                self.log_test("Nearby Alerts", True, f"Retrieved {len(alerts)} alerts", data)
-            else:
-                self.log_test("Nearby Alerts", False, f"HTTP {response.status_code}: {response.text}")
-                
-        except Exception as e:
-            self.log_test("Nearby Alerts", False, f"Error: {str(e)}")
-    
-    def test_community_report(self):
-        """Test community safety reporting"""
-        try:
-            report_payload = {
-                "location": TEST_LOCATION,
-                "report_type": "hazard",
-                "description": "Icy sidewalk conditions near intersection",
-                "severity": "high",
-                "user_id": TEST_USER_CONTEXT["user_id"]
-            }
-            
-            response = self.session.post(
-                f"{BASE_URL}/community/report",
-                json=report_payload,
-                headers={"Content-Type": "application/json"}
-            )
-            
-            if response.status_code == 200:
-                data = response.json()
-                if data.get("status") == "success":
-                    self.log_test("Community Report", True, "High-severity report submitted successfully", data)
+                    # Validate crowd density values
+                    valid_densities = ["empty", "low", "moderate", "crowded"]
+                    if crowd_density not in valid_densities:
+                        self.log_test(f"Proximity Analysis - {scenario['name']}", False, 
+                                    f"Invalid crowd density: {crowd_density}")
+                        all_passed = False
+                        continue
                     
-                    # Test if high-severity report creates alert
-                    time.sleep(1)  # Brief delay for alert creation
-                    lat, lon = TEST_LOCATION["latitude"], TEST_LOCATION["longitude"]
-                    alerts_response = self.session.get(f"{BASE_URL}/safety/alerts/{lat}/{lon}/1000")
+                    # Validate threat levels
+                    valid_threat_levels = ["safe", "low", "medium", "high", "critical"]
+                    if overall_threat_level not in valid_threat_levels:
+                        self.log_test(f"Proximity Analysis - {scenario['name']}", False, 
+                                    f"Invalid threat level: {overall_threat_level}")
+                        all_passed = False
+                        continue
                     
-                    if alerts_response.status_code == 200:
-                        alerts_data = alerts_response.json()
-                        alerts = alerts_data.get("alerts", [])
-                        self.log_test("Community Report - Alert Creation", True, 
-                                    f"Alert system working, {len(alerts)} alerts found")
-                    else:
-                        self.log_test("Community Report - Alert Creation", False, "Could not verify alert creation")
+                    threat_count = len(detected_threats)
+                    details = f"Threats: {threat_count}, Level: {overall_threat_level}, Crowd: {crowd_density}"
+                    
+                    if detected_threats:
+                        threat_types = [threat.get("threat_type", "unknown") for threat in detected_threats]
+                        details += f", Types: {threat_types}"
+                    
+                    self.log_test(f"Proximity Analysis - {scenario['name']}", True, details)
+                    
                 else:
-                    self.log_test("Community Report", False, f"Unexpected response: {data}")
-            else:
-                self.log_test("Community Report", False, f"HTTP {response.status_code}: {response.text}")
-                
-        except Exception as e:
-            self.log_test("Community Report", False, f"Error: {str(e)}")
-    
-    def test_emergency_vehicle_detection(self):
-        """Test emergency vehicle detection reporting"""
-        try:
-            payload = {
-                "latitude": TEST_LOCATION["latitude"],
-                "longitude": TEST_LOCATION["longitude"],
-                "altitude": TEST_LOCATION.get("altitude"),
-                "accuracy": TEST_LOCATION.get("accuracy"),
-                "timestamp": TEST_LOCATION["timestamp"]
+                    self.log_test(f"Proximity Analysis - {scenario['name']}", False, 
+                                f"HTTP {response.status_code}: {response.text}")
+                    all_passed = False
+                    
+            except Exception as e:
+                self.log_test(f"Proximity Analysis - {scenario['name']}", False, f"Error: {str(e)}")
+                all_passed = False
+        
+        return all_passed
+
+    def test_integrated_music_security_balance(self):
+        """Test how all systems work together for music/security balance"""
+        print("🎵🛡️ Testing Integrated Music/Security Balance...")
+        
+        # Simulate a user listening to music while jogging
+        location = {"latitude": 40.7128, "longitude": -74.0060, "timestamp": datetime.now().isoformat()}
+        user_context = {
+            "activity_type": "running",
+            "music_listening": True,
+            "headphone_type": "noise_cancelling",
+            "music_volume": 0.7,
+            "user_id": "test_runner_001"
+        }
+        
+        # Create movement history
+        movement_history = []
+        for i in range(5):
+            timestamp = (datetime.now() - timedelta(minutes=5-i)).isoformat()
+            hist_location = {
+                "latitude": location["latitude"] + (i * 0.0001),
+                "longitude": location["longitude"] + (i * 0.0001),
+                "timestamp": timestamp
             }
-            
-            response = self.session.post(
-                f"{BASE_URL}/emergency/vehicle-detected?detection_method=audio",
-                json=payload,
-                headers={"Content-Type": "application/json"}
+            movement_history.append(hist_location)
+        
+        biometric_data = {
+            "heart_rate": 155,
+            "stress_level": 0.4,
+            "fatigue_level": 0.3,
+            "activity_level": "vigorous",
+            "blood_oxygen": 97,
+            "timestamp": datetime.now().isoformat()
+        }
+        
+        all_passed = True
+        integration_results = {}
+        
+        # Test 1: Noise Cancellation for Music Listening
+        try:
+            noise_response = self.session.post(
+                f"{BACKEND_URL}/audio/noise-profile",
+                json={"location": location, "user_context": user_context},
+                timeout=15
             )
             
-            if response.status_code == 200:
-                data = response.json()
-                if data.get("status") == "success":
-                    self.log_test("Emergency Vehicle Detection", True, "Emergency vehicle alert created", data)
+            if noise_response.status_code == 200:
+                noise_data = noise_response.json()
+                integration_results["noise_cancellation"] = noise_data
+                
+                # Verify music-friendly noise cancellation
+                cancellation_profile = noise_data.get("noise_cancellation_profile", "")
+                critical_sounds = noise_data.get("critical_sounds", [])
+                
+                if not critical_sounds:
+                    self.log_test("Integration - Noise Cancellation", False, 
+                                "No critical sounds preserved for safety")
+                    all_passed = False
                 else:
-                    self.log_test("Emergency Vehicle Detection", False, f"Unexpected response: {data}")
+                    self.log_test("Integration - Noise Cancellation", True, 
+                                f"Profile: {cancellation_profile}, Critical sounds preserved")
             else:
-                self.log_test("Emergency Vehicle Detection", False, f"HTTP {response.status_code}: {response.text}")
+                self.log_test("Integration - Noise Cancellation", False, 
+                            f"HTTP {noise_response.status_code}")
+                all_passed = False
                 
         except Exception as e:
-            self.log_test("Emergency Vehicle Detection", False, f"Error: {str(e)}")
-    
-    def test_safety_history(self):
-        """Test safety analysis history retrieval"""
+            self.log_test("Integration - Noise Cancellation", False, f"Error: {str(e)}")
+            all_passed = False
+        
+        # Test 2: Biometric Monitoring During Exercise
         try:
-            user_id = TEST_USER_CONTEXT["user_id"]
-            response = self.session.get(f"{BASE_URL}/safety/history/{user_id}")
-            
-            if response.status_code == 200:
-                data = response.json()
-                analyses = data.get("analyses", [])
-                self.log_test("Safety History", True, f"Retrieved {len(analyses)} historical analyses", data)
-            else:
-                self.log_test("Safety History", False, f"HTTP {response.status_code}: {response.text}")
-                
-        except Exception as e:
-            self.log_test("Safety History", False, f"Error: {str(e)}")
-    
-    def test_error_handling(self):
-        """Test API error handling"""
-        try:
-            # Test invalid safety analysis request
-            invalid_payload = {"invalid": "data"}
-            response = self.session.post(
-                f"{BASE_URL}/safety/analyze",
-                json=invalid_payload,
-                headers={"Content-Type": "application/json"}
+            biometric_response = self.session.post(
+                f"{BACKEND_URL}/health/biometric-analysis",
+                json={
+                    "biometric_data": biometric_data,
+                    "location": location,
+                    "safety_context": {"activity_level": "vigorous", "temperature": 25}
+                },
+                timeout=15
             )
             
-            if response.status_code in [400, 422]:  # Expected validation error
-                self.log_test("Error Handling - Invalid Request", True, f"Properly handled invalid request with HTTP {response.status_code}")
-            else:
-                self.log_test("Error Handling - Invalid Request", False, f"Unexpected response to invalid request: HTTP {response.status_code}")
+            if biometric_response.status_code == 200:
+                biometric_result = biometric_response.json()
+                integration_results["biometric_monitoring"] = biometric_result
                 
-            # Test non-existent endpoint
-            response = self.session.get(f"{BASE_URL}/nonexistent")
-            if response.status_code == 404:
-                self.log_test("Error Handling - 404", True, "Properly returns 404 for non-existent endpoints")
+                health_alerts = biometric_result.get("health_alerts", [])
+                emergency_triggered = biometric_result.get("emergency_triggered", False)
+                
+                # For normal exercise, should not trigger emergency
+                if emergency_triggered:
+                    self.log_test("Integration - Biometric Monitoring", False, 
+                                "Unexpected emergency for normal exercise")
+                    all_passed = False
+                else:
+                    self.log_test("Integration - Biometric Monitoring", True, 
+                                f"Health alerts: {len(health_alerts)}, No false emergency")
             else:
-                self.log_test("Error Handling - 404", False, f"Unexpected response for non-existent endpoint: HTTP {response.status_code}")
+                self.log_test("Integration - Biometric Monitoring", False, 
+                            f"HTTP {biometric_response.status_code}")
+                all_passed = False
                 
         except Exception as e:
-            self.log_test("Error Handling", False, f"Error: {str(e)}")
-    
+            self.log_test("Integration - Biometric Monitoring", False, f"Error: {str(e)}")
+            all_passed = False
+        
+        # Test 3: Proximity Threat Detection
+        try:
+            proximity_response = self.session.post(
+                f"{BACKEND_URL}/proximity/analyze",
+                json={
+                    "location": location,
+                    "movement_history": movement_history,
+                    "user_context": user_context
+                },
+                timeout=15
+            )
+            
+            if proximity_response.status_code == 200:
+                proximity_result = proximity_response.json()
+                integration_results["proximity_detection"] = proximity_result
+                
+                detected_threats = proximity_result.get("detected_threats", [])
+                overall_threat_level = proximity_result.get("overall_threat_level", "safe")
+                
+                self.log_test("Integration - Proximity Detection", True, 
+                            f"Threats: {len(detected_threats)}, Level: {overall_threat_level}")
+            else:
+                self.log_test("Integration - Proximity Detection", False, 
+                            f"HTTP {proximity_response.status_code}")
+                all_passed = False
+                
+        except Exception as e:
+            self.log_test("Integration - Proximity Detection", False, f"Error: {str(e)}")
+            all_passed = False
+        
+        # Test 4: Comprehensive Safety Analysis Integration
+        try:
+            safety_response = self.session.post(
+                f"{BACKEND_URL}/safety/analyze",
+                json={
+                    "location": location,
+                    "user_context": user_context,
+                    "movement_history": movement_history
+                },
+                timeout=15
+            )
+            
+            if safety_response.status_code == 200:
+                safety_result = safety_response.json()
+                integration_results["safety_analysis"] = safety_result
+                
+                safety_score = safety_result.get("safety_score", {})
+                overall_score = safety_score.get("overall_score", 0)
+                
+                if overall_score > 0:
+                    self.log_test("Integration - Comprehensive Safety", True, 
+                                f"Overall safety score: {overall_score}")
+                else:
+                    self.log_test("Integration - Comprehensive Safety", False, 
+                                "Invalid safety score")
+                    all_passed = False
+            else:
+                self.log_test("Integration - Comprehensive Safety", False, 
+                            f"HTTP {safety_response.status_code}")
+                all_passed = False
+                
+        except Exception as e:
+            self.log_test("Integration - Comprehensive Safety", False, f"Error: {str(e)}")
+            all_passed = False
+        
+        return all_passed
+
     def run_all_tests(self):
         """Run all backend tests"""
-        print("🚀 Starting SafeWalk Backend API Tests...")
-        print(f"Testing against: {BASE_URL}")
+        print("🚀 Starting Street Shield Backend Testing Suite")
         print("=" * 60)
         
-        # Run tests in order of priority
-        self.test_root_endpoint()
-        self.test_health_check()
-        self.test_safety_analysis()  # Most critical
-        self.test_nearby_alerts()
-        self.test_community_report()
-        self.test_emergency_vehicle_detection()
-        self.test_safety_history()
-        self.test_error_handling()
+        # Test basic connectivity first
+        if not self.test_health_check():
+            print("❌ Health check failed - aborting tests")
+            return False
         
+        # Test the three new high-priority features
+        noise_test = self.test_noise_cancellation_system()
+        biometric_test = self.test_biometric_monitoring_system()
+        proximity_test = self.test_proximity_threat_detection()
+        integration_test = self.test_integrated_music_security_balance()
+        
+        # Summary
         print("=" * 60)
-        self.print_summary()
+        print("📊 TEST SUMMARY")
+        print("=" * 60)
         
-    def print_summary(self):
-        """Print test summary"""
-        total_tests = len(self.test_results)
-        passed_tests = sum(1 for result in self.test_results if result["success"])
-        failed_tests = total_tests - passed_tests
+        passed_tests = sum([noise_test, biometric_test, proximity_test, integration_test])
+        total_tests = 4
         
-        print(f"📊 TEST SUMMARY:")
-        print(f"Total Tests: {total_tests}")
-        print(f"✅ Passed: {passed_tests}")
-        print(f"❌ Failed: {failed_tests}")
-        print(f"Success Rate: {(passed_tests/total_tests)*100:.1f}%")
+        print(f"✅ Passed: {passed_tests}/{total_tests} major test suites")
         
-        if failed_tests > 0:
-            print("\n🔍 FAILED TESTS:")
-            for result in self.test_results:
-                if not result["success"]:
-                    print(f"  • {result['test']}: {result['details']}")
+        individual_results = [result for result in self.test_results if result["success"]]
+        individual_failures = [result for result in self.test_results if not result["success"]]
         
-        return passed_tests, failed_tests
+        print(f"✅ Individual tests passed: {len(individual_results)}")
+        print(f"❌ Individual tests failed: {len(individual_failures)}")
+        
+        if individual_failures:
+            print("\n❌ FAILED TESTS:")
+            for failure in individual_failures:
+                print(f"   - {failure['test']}: {failure['details']}")
+        
+        return passed_tests == total_tests
 
 if __name__ == "__main__":
     tester = SafeWalkAPITester()
