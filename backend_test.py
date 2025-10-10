@@ -12,7 +12,7 @@ from typing import Dict, Any
 import uuid
 
 # Configuration
-BASE_URL = "https://street-safety.preview.emergentagent.com/api"
+BASE_URL = "https://shield-alert-1.preview.emergentagent.com/api"
 TIMEOUT = 30
 
 # Test data - realistic NYC coordinates
