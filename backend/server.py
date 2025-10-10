@@ -460,20 +460,20 @@ async def analyze_environmental_noise(location: LocationData, weather: WeatherDa
         dominant_frequencies = []
         
         if location_type == "urban":
-            noise_sources = ["traffic", "crowd", "construction", "sirens"]
-            critical_sounds = ["sirens", "horns", "shouting", "brakes"]
+            noise_sources = ["traffic", "crowd", "construction", "sirens", "e_scooters", "electric_vehicles"]
+            critical_sounds = ["sirens", "horns", "shouting", "brakes", "electric_scooter_approach", "tire_noise"]
             dominant_frequencies = [250, 500, 1000, 2000]  # Urban frequency spectrum
         elif location_type == "highway":
-            noise_sources = ["heavy_traffic", "trucks", "motorcycles"]
-            critical_sounds = ["sirens", "horns", "emergency_vehicles"]
+            noise_sources = ["heavy_traffic", "trucks", "motorcycles", "electric_vehicles"]
+            critical_sounds = ["sirens", "horns", "emergency_vehicles", "tire_noise"]
             dominant_frequencies = [125, 250, 500, 1000]
         elif location_type == "park":
-            noise_sources = ["wind", "birds", "people"]
-            critical_sounds = ["shouting", "alarms", "approaching_vehicles"]
+            noise_sources = ["wind", "birds", "people", "cyclists", "e_scooters"]
+            critical_sounds = ["shouting", "alarms", "approaching_vehicles", "electric_scooter_approach", "bike_bells"]
             dominant_frequencies = [1000, 2000, 4000, 8000]
         else:
-            noise_sources = ["ambient", "wind"]
-            critical_sounds = ["emergency_vehicles", "shouting"]
+            noise_sources = ["ambient", "wind", "occasional_vehicles"]
+            critical_sounds = ["emergency_vehicles", "shouting", "electric_vehicle_approach"]
             dominant_frequencies = [500, 1000, 2000]
         
         # Determine optimal noise cancellation profile
