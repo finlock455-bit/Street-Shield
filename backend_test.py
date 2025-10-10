@@ -599,6 +599,62 @@ class StreetShieldTester:
         
         return all_passed
 
+    def test_additional_endpoints(self):
+        """Test additional endpoints for completeness"""
+        print("🔧 Testing Additional Endpoints...")
+        
+        all_passed = True
+        
+        # Test proximity history endpoint
+        try:
+            response = self.session.get(f"{BACKEND_URL}/proximity/history/test_runner_001", timeout=10)
+            if response.status_code == 200:
+                data = response.json()
+                analyses = data.get("proximity_analyses", [])
+                self.log_test("Proximity History Endpoint", True, f"Retrieved {len(analyses)} proximity analyses")
+            else:
+                self.log_test("Proximity History Endpoint", False, f"HTTP {response.status_code}")
+                all_passed = False
+        except Exception as e:
+            self.log_test("Proximity History Endpoint", False, f"Error: {str(e)}")
+            all_passed = False
+        
+        # Test health history endpoint
+        try:
+            response = self.session.get(f"{BACKEND_URL}/health/history/test_runner_001", timeout=10)
+            if response.status_code == 200:
+                data = response.json()
+                biometric_history = data.get("biometric_history", [])
+                health_alerts = data.get("health_alerts", [])
+                self.log_test("Health History Endpoint", True, 
+                            f"Biometric records: {len(biometric_history)}, Health alerts: {len(health_alerts)}")
+            else:
+                self.log_test("Health History Endpoint", False, f"HTTP {response.status_code}")
+                all_passed = False
+        except Exception as e:
+            self.log_test("Health History Endpoint", False, f"Error: {str(e)}")
+            all_passed = False
+        
+        # Test root endpoint
+        try:
+            response = self.session.get(f"{BACKEND_URL}/", timeout=10)
+            if response.status_code == 200:
+                data = response.json()
+                message = data.get("message", "")
+                if "Street Shield API" in message:
+                    self.log_test("Root Endpoint", True, "API root accessible")
+                else:
+                    self.log_test("Root Endpoint", False, f"Unexpected message: {message}")
+                    all_passed = False
+            else:
+                self.log_test("Root Endpoint", False, f"HTTP {response.status_code}")
+                all_passed = False
+        except Exception as e:
+            self.log_test("Root Endpoint", False, f"Error: {str(e)}")
+            all_passed = False
+        
+        return all_passed
+
     def run_all_tests(self):
         """Run all backend tests"""
         print("🚀 Starting Street Shield Backend Testing Suite")
@@ -615,13 +671,16 @@ class StreetShieldTester:
         proximity_test = self.test_proximity_threat_detection()
         integration_test = self.test_integrated_music_security_balance()
         
+        # Test additional endpoints for completeness
+        additional_test = self.test_additional_endpoints()
+        
         # Summary
         print("=" * 60)
         print("📊 TEST SUMMARY")
         print("=" * 60)
         
-        passed_tests = sum([noise_test, biometric_test, proximity_test, integration_test])
-        total_tests = 4
+        passed_tests = sum([noise_test, biometric_test, proximity_test, integration_test, additional_test])
+        total_tests = 5
         
         print(f"✅ Passed: {passed_tests}/{total_tests} major test suites")
         
