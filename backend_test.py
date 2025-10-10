@@ -922,6 +922,9 @@ class StreetShieldTester:
         proximity_test = self.test_proximity_threat_detection()
         integration_test = self.test_integrated_music_security_balance()
         
+        # 🛴 PRIORITY TEST: Electric Scooter Detection System
+        escooter_test = self.test_electric_scooter_detection_system()
+        
         # Test additional endpoints for completeness
         additional_test = self.test_additional_endpoints()
         
@@ -930,8 +933,8 @@ class StreetShieldTester:
         print("📊 TEST SUMMARY")
         print("=" * 60)
         
-        passed_tests = sum([noise_test, biometric_test, proximity_test, integration_test, additional_test])
-        total_tests = 5
+        passed_tests = sum([noise_test, biometric_test, proximity_test, integration_test, escooter_test, additional_test])
+        total_tests = 6
         
         print(f"✅ Passed: {passed_tests}/{total_tests} major test suites")
         
