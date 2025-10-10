@@ -599,6 +599,257 @@ class StreetShieldTester:
         
         return all_passed
 
+    def test_electric_scooter_detection_system(self):
+        """🛴 PRIORITY TEST: Electric Scooter Detection System for Music Listeners"""
+        print("🛴 Testing ELECTRIC SCOOTER DETECTION SYSTEM - Critical for Music Listeners...")
+        
+        all_passed = True
+        escooter_tests_passed = 0
+        total_escooter_tests = 0
+        
+        # Test 1: Basic E-Scooter Detection via Proximity Analysis
+        total_escooter_tests += 1
+        try:
+            location = {"latitude": 40.7128, "longitude": -74.0060, "timestamp": datetime.now().isoformat()}
+            
+            # Rush hour urban context - highest e-scooter probability
+            rush_hour_context = {
+                "user_id": "music_listener_escooter_test",
+                "activity_type": "walking",
+                "location_context": "urban",
+                "weather": "clear",
+                "time_of_day": "rush_hour",
+                "wearing_headphones": True,
+                "music_playing": True
+            }
+            
+            movement_history = []
+            for i in range(5):
+                hist_location = {
+                    "latitude": location["latitude"] + (i * 0.0001),
+                    "longitude": location["longitude"] + (i * 0.0001),
+                    "timestamp": (datetime.now() - timedelta(minutes=5-i)).isoformat()
+                }
+                movement_history.append(hist_location)
+            
+            escooter_detected = False
+            test_attempts = 15  # Multiple attempts due to probabilistic nature
+            
+            for attempt in range(test_attempts):
+                response = self.session.post(
+                    f"{BACKEND_URL}/proximity/analyze",
+                    json={
+                        "location": location,
+                        "movement_history": movement_history,
+                        "user_context": rush_hour_context
+                    },
+                    timeout=15
+                )
+                
+                if response.status_code == 200:
+                    data = response.json()
+                    detected_threats = data.get("detected_threats", [])
+                    
+                    for threat in detected_threats:
+                        if threat.get("threat_type") in ["electric_scooter", "silent_vehicle"]:
+                            escooter_detected = True
+                            
+                            # Validate e-scooter threat properties
+                            vehicle_type = threat.get("vehicle_type")
+                            speed_estimate = threat.get("speed_estimate")
+                            sound_signature = threat.get("sound_signature")
+                            confidence = threat.get("confidence")
+                            threat_level = threat.get("threat_level")
+                            
+                            # Validation checks
+                            if vehicle_type in ["e_scooter", "e_bike"] and \
+                               15 <= speed_estimate <= 50 and \
+                               sound_signature in ["silent", "low_hum"] and \
+                               confidence >= 0.7 and \
+                               threat_level in ["medium", "high", "critical"]:
+                                
+                                self.log_test("E-Scooter Detection - Basic", True, 
+                                            f"Detected {vehicle_type} at {speed_estimate:.1f}km/h, confidence: {confidence:.2f}")
+                                escooter_tests_passed += 1
+                                break
+                            else:
+                                self.log_test("E-Scooter Detection - Basic", False, 
+                                            f"Invalid e-scooter properties: type={vehicle_type}, speed={speed_estimate}, confidence={confidence}")
+                                all_passed = False
+                                break
+                    
+                    if escooter_detected:
+                        break
+                    
+                    time.sleep(0.3)
+                else:
+                    self.log_test("E-Scooter Detection - Basic", False, f"HTTP {response.status_code}")
+                    all_passed = False
+                    break
+            
+            if not escooter_detected:
+                self.log_test("E-Scooter Detection - Basic", False, 
+                            f"No e-scooter detected in {test_attempts} attempts")
+                all_passed = False
+                
+        except Exception as e:
+            self.log_test("E-Scooter Detection - Basic", False, f"Error: {str(e)}")
+            all_passed = False
+        
+        # Test 2: E-Scooter Sound Preservation in Noise Cancellation
+        total_escooter_tests += 1
+        try:
+            response = self.session.post(
+                f"{BACKEND_URL}/audio/noise-profile",
+                json={
+                    "location": location,
+                    "user_context": {
+                        "activity_type": "walking",
+                        "location_context": "urban",
+                        "wearing_headphones": True,
+                        "music_playing": True
+                    }
+                },
+                timeout=15
+            )
+            
+            if response.status_code == 200:
+                data = response.json()
+                critical_sounds = data.get("critical_sounds", [])
+                ambient_sound_priority = data.get("ambient_sound_priority", [])
+                noise_sources = data.get("noise_sources", [])
+                
+                # Check for e-scooter related sounds
+                escooter_sounds_preserved = []
+                escooter_keywords = ["electric_scooter_approach", "tire_noise", "electric_vehicle_approach", "e_scooters"]
+                
+                for keyword in escooter_keywords:
+                    if keyword in critical_sounds or keyword in ambient_sound_priority or keyword in noise_sources:
+                        escooter_sounds_preserved.append(keyword)
+                
+                if escooter_sounds_preserved:
+                    self.log_test("E-Scooter Noise Cancellation Integration", True, 
+                                f"E-scooter sounds preserved: {escooter_sounds_preserved}")
+                    escooter_tests_passed += 1
+                else:
+                    self.log_test("E-Scooter Noise Cancellation Integration", False, 
+                                "No e-scooter sounds found in preservation lists")
+                    all_passed = False
+            else:
+                self.log_test("E-Scooter Noise Cancellation Integration", False, f"HTTP {response.status_code}")
+                all_passed = False
+                
+        except Exception as e:
+            self.log_test("E-Scooter Noise Cancellation Integration", False, f"Error: {str(e)}")
+            all_passed = False
+        
+        # Test 3: E-Scooter Integration with Safety Scoring
+        total_escooter_tests += 1
+        try:
+            escooter_safety_impact = False
+            test_attempts = 10
+            
+            for attempt in range(test_attempts):
+                response = self.session.post(
+                    f"{BACKEND_URL}/safety/analyze",
+                    json={
+                        "location": location,
+                        "user_context": rush_hour_context,
+                        "movement_history": movement_history
+                    },
+                    timeout=15
+                )
+                
+                if response.status_code == 200:
+                    data = response.json()
+                    safety_score = data.get("safety_score", {})
+                    overall_score = safety_score.get("overall_score", 100)
+                    risk_factors = safety_score.get("risk_factors", [])
+                    alerts = safety_score.get("alerts", [])
+                    
+                    # Check for e-scooter related content
+                    escooter_content_found = False
+                    for risk in risk_factors:
+                        if "scooter" in risk.lower() or "electric" in risk.lower():
+                            escooter_content_found = True
+                            break
+                    
+                    for alert in alerts:
+                        alert_msg = alert.get("message", "").lower()
+                        if "scooter" in alert_msg or "electric" in alert_msg:
+                            escooter_content_found = True
+                            break
+                    
+                    if escooter_content_found and overall_score < 85:
+                        escooter_safety_impact = True
+                        self.log_test("E-Scooter Safety Integration", True, 
+                                    f"E-scooter threat integrated, safety score: {overall_score}")
+                        escooter_tests_passed += 1
+                        break
+                
+                time.sleep(0.3)
+            
+            if not escooter_safety_impact:
+                self.log_test("E-Scooter Safety Integration", False, 
+                            "No e-scooter safety integration detected")
+                all_passed = False
+                
+        except Exception as e:
+            self.log_test("E-Scooter Safety Integration", False, f"Error: {str(e)}")
+            all_passed = False
+        
+        # Test 4: Critical Distance Thresholds for E-Scooters
+        total_escooter_tests += 1
+        try:
+            critical_scenarios_found = False
+            test_attempts = 20
+            
+            for attempt in range(test_attempts):
+                response = self.session.post(
+                    f"{BACKEND_URL}/proximity/analyze",
+                    json={
+                        "location": location,
+                        "movement_history": movement_history,
+                        "user_context": rush_hour_context
+                    },
+                    timeout=15
+                )
+                
+                if response.status_code == 200:
+                    data = response.json()
+                    detected_threats = data.get("detected_threats", [])
+                    
+                    for threat in detected_threats:
+                        if threat.get("threat_type") == "electric_scooter":
+                            distance = threat.get("distance", 999)
+                            speed = threat.get("speed_estimate", 0)
+                            threat_level = threat.get("threat_level")
+                            
+                            # Check for critical scenarios (close + fast)
+                            if distance < 15 and speed > 20 and threat_level in ["high", "critical"]:
+                                critical_scenarios_found = True
+                                self.log_test("E-Scooter Critical Distance Thresholds", True, 
+                                            f"Critical scenario: {distance:.1f}m, {speed:.1f}km/h, level: {threat_level}")
+                                escooter_tests_passed += 1
+                                break
+                    
+                    if critical_scenarios_found:
+                        break
+                
+                time.sleep(0.2)
+            
+            if not critical_scenarios_found:
+                self.log_test("E-Scooter Critical Distance Thresholds", False, 
+                            "No critical e-scooter scenarios detected")
+                all_passed = False
+                
+        except Exception as e:
+            self.log_test("E-Scooter Critical Distance Thresholds", False, f"Error: {str(e)}")
+            all_passed = False
+        
+        print(f"🛴 E-SCOOTER TESTS SUMMARY: {escooter_tests_passed}/{total_escooter_tests} passed")
+        return all_passed and escooter_tests_passed >= 2  # At least 2 core tests must pass
+
     def test_additional_endpoints(self):
         """Test additional endpoints for completeness"""
         print("🔧 Testing Additional Endpoints...")
