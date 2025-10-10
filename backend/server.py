@@ -98,14 +98,17 @@ class CommunityReport(BaseModel):
 
 class ProximityThreat(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
-    threat_type: str  # "following", "approaching", "loitering", "aggressive_approach"
+    threat_type: str  # "following", "approaching", "loitering", "aggressive_approach", "electric_scooter", "silent_vehicle"
     distance: float  # meters
     duration: float  # seconds being followed/tracked
     confidence: float = Field(ge=0.0, le=1.0)  # 0.0 to 1.0 confidence score
     direction: str = "behind"  # "behind", "ahead", "left", "right"
-    movement_pattern: str = "matching_pace"  # "matching_pace", "closing_in", "erratic"
+    movement_pattern: str = "matching_pace"  # "matching_pace", "closing_in", "erratic", "high_speed_approach"
     threat_level: str = "low"  # "low", "medium", "high", "critical"
     recommended_action: str = "stay_alert"
+    vehicle_type: Optional[str] = None  # "e_scooter", "e_bike", "e_skateboard", "silent_car"
+    speed_estimate: Optional[float] = None  # km/h estimated speed
+    sound_signature: Optional[str] = None  # "silent", "low_hum", "tire_noise"
     timestamp: datetime = Field(default_factory=datetime.utcnow)
 
 class ProximityAnalysis(BaseModel):
