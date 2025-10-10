@@ -1,21 +1,20 @@
 #!/usr/bin/env python3
 """
-SafeWalk Backend API Test Suite
-Tests all backend endpoints comprehensively
+Street Shield Backend Testing Suite
+Testing the NEW advanced features that support seamless music listening while maintaining security
+Focus: AI-Driven Noise Cancellation, Biometric Health Monitoring, Proximity Threat Detection
 """
 
 import requests
 import json
 import time
 from datetime import datetime, timedelta
-from typing import Dict, Any
-import uuid
+from typing import Dict, List
 
-# Configuration
-BASE_URL = "https://shield-alert-1.preview.emergentagent.com/api"
-TIMEOUT = 30
+# Backend URL from frontend environment
+BACKEND_URL = "https://shield-alert-1.preview.emergentagent.com/api"
 
-# Test data - realistic NYC coordinates
+# Test data for music/security balance scenarios
 TEST_LOCATION = {
     "latitude": 40.7128,
     "longitude": -74.0060,
@@ -24,11 +23,13 @@ TEST_LOCATION = {
     "timestamp": datetime.utcnow().isoformat()
 }
 
-TEST_USER_CONTEXT = {
-    "user_id": "test_user_123",
-    "activity": "walking",
-    "speed": 1.2,
-    "heading": 45.0
+MUSIC_USER_CONTEXT = {
+    "user_id": "music_runner_001",
+    "activity_type": "running",
+    "music_listening": True,
+    "headphone_type": "noise_cancelling",
+    "music_volume": 0.7,
+    "speed": 2.5
 }
 
 class SafeWalkAPITester:
