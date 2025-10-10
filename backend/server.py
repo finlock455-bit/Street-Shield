@@ -484,8 +484,12 @@ async def analyze_environmental_noise(location: LocationData, weather: WeatherDa
         else:
             cancellation_profile = "minimal"
         
-        # Always prioritize safety sounds
-        ambient_sound_priority = ["sirens", "emergency_vehicles", "horns", "alarms", "shouting", "approaching_footsteps"]
+        # Always prioritize safety sounds - CRITICAL for music listeners
+        ambient_sound_priority = [
+            "sirens", "emergency_vehicles", "horns", "alarms", "shouting", 
+            "approaching_footsteps", "electric_scooter_approach", "tire_noise", 
+            "bike_bells", "electric_vehicle_approach", "brakes", "skidding"
+        ]
         
         return EnvironmentalNoiseProfile(
             location_type=location_type,
