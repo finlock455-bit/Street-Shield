@@ -1284,6 +1284,26 @@ export default function SafeWalkApp() {
           </View>
         )}
 
+        {/* Electric Scooter Warning - Special indicator for music listeners */}
+        {safetyAnalysis?.safety_score.alerts.some(alert => 
+          alert.type === 'proximity_threat' && 
+          (alert.message.toLowerCase().includes('electric scooter') || 
+           alert.message.toLowerCase().includes('silent vehicle'))
+        ) && proximityAlertsEnabled && (
+          <View style={[styles.infoCard, styles.scooterWarningCard]}>
+            <Text style={styles.scooterWarningTitle}>🛴 SILENT VEHICLE DETECTED</Text>
+            <Text style={styles.scooterWarningText}>
+              Electric scooters/bikes are approaching! These vehicles are SILENT and FAST (up to 45 km/h).
+            </Text>
+            <Text style={styles.scooterWarningTip}>
+              🎧 Music Listener Tip: Stay extra vigilant - you won't hear them coming!
+            </Text>
+            <Text style={styles.scooterWarningAction}>
+              👀 Look around frequently and be ready to move aside
+            </Text>
+          </View>
+        )}
+
         {/* AI Noise Profile */}
         {noiseProfile && (
           <View style={styles.infoCard}>
