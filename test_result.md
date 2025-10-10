@@ -351,13 +351,15 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Real-time Location Tracking"
-    - "Push Notifications System"
+    - "AI-Driven Noise Cancellation System"
+    - "Biometric Health Monitoring"
+    - "Proximity Threat Detection"
+    - "Music/Security Balance Voice System"
   stuck_tasks:
     - "Real-time Location Tracking"
     - "Push Notifications System"
   test_all: false
-  test_priority: "stuck_first"
+  test_priority: "high_first"
 
 agent_communication:
   - agent: "main"
