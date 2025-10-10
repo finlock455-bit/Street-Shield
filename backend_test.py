@@ -639,5 +639,10 @@ class StreetShieldTester:
         return passed_tests == total_tests
 
 if __name__ == "__main__":
-    tester = SafeWalkAPITester()
-    tester.run_all_tests()
+    tester = StreetShieldTester()
+    success = tester.run_all_tests()
+    
+    if success:
+        print("\n🎉 All backend tests passed! Street Shield is ready for music/security balance.")
+    else:
+        print("\n⚠️ Some tests failed. Check the details above.")
