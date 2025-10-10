@@ -262,6 +262,109 @@ async def detect_proximity_threats(location: LocationData, movement_history: Lis
                 )
                 detected_threats.append(follower_threat)
         
+        # ELECTRIC SCOOTER DETECTION - Critical for music listeners
+        # E-scooters are silent, fast (25-45 km/h), and unpredictable
+        escooter_detection_probability = 0.0
+        
+        # Higher probability during rush hours and popular areas
+        if current_hour in [7, 8, 9, 17, 18, 19, 20]:  # Commute times
+            escooter_detection_probability += 0.4
+        elif current_hour in [12, 13, 21, 22]:  # Lunch and evening leisure
+            escooter_detection_probability += 0.3
+        
+        # Higher probability in urban areas (simulated by activity context)
+        activity = user_context.get("activity_type", "walking")
+        location_context = user_context.get("location_context", "urban")
+        
+        if location_context in ["urban", "city_center", "bike_lane_area"]:
+            escooter_detection_probability += 0.3
+        
+        # Weather affects e-scooter usage (they avoid rain/snow)
+        weather_context = user_context.get("weather", "clear")
+        if weather_context in ["clear", "sunny", "partly_cloudy"]:
+            escooter_detection_probability += 0.2
+        
+        # Simulate e-scooter detection
+        if random.random() < escooter_detection_probability:
+            # Random e-scooter approach scenarios
+            scooter_scenarios = [
+                {
+                    "direction": "behind", 
+                    "speed": random.uniform(20, 35), 
+                    "distance": random.uniform(8, 25),
+                    "pattern": "high_speed_approach",
+                    "threat": "medium"
+                },
+                {
+                    "direction": "left", 
+                    "speed": random.uniform(15, 30), 
+                    "distance": random.uniform(5, 15),
+                    "pattern": "crossing_path",
+                    "threat": "high"
+                },
+                {
+                    "direction": "ahead", 
+                    "speed": random.uniform(25, 40), 
+                    "distance": random.uniform(20, 50),
+                    "pattern": "approaching_fast",
+                    "threat": "medium"
+                },
+                {
+                    "direction": "right", 
+                    "speed": random.uniform(18, 28), 
+                    "distance": random.uniform(3, 12),
+                    "pattern": "parallel_overtake",
+                    "threat": "high"
+                }
+            ]
+            
+            scenario = random.choice(scooter_scenarios)
+            
+            # Determine threat level based on distance and speed
+            if scenario["distance"] < 10 and scenario["speed"] > 25:
+                threat_level = "critical"
+                action = "immediate_evasion"
+            elif scenario["distance"] < 15 and scenario["speed"] > 20:
+                threat_level = "high"
+                action = "step_aside_quickly"
+            else:
+                threat_level = scenario["threat"]
+                action = "stay_alert_scooter"
+            
+            escooter_threat = ProximityThreat(
+                threat_type="electric_scooter",
+                distance=scenario["distance"],
+                duration=random.uniform(2, 8),  # E-scooters approach quickly
+                confidence=random.uniform(0.85, 0.98),  # High confidence - they're very detectable once spotted
+                direction=scenario["direction"],
+                movement_pattern=scenario["pattern"],
+                threat_level=threat_level,
+                recommended_action=action,
+                vehicle_type="e_scooter",
+                speed_estimate=scenario["speed"],
+                sound_signature="silent"
+            )
+            detected_threats.append(escooter_threat)
+        
+        # SILENT E-BIKE DETECTION (similar but slightly different characteristics)
+        ebike_detection_probability = escooter_detection_probability * 0.6  # Less common but similar
+        
+        if random.random() < ebike_detection_probability:
+            ebike_threat = ProximityThreat(
+                threat_type="silent_vehicle",
+                distance=random.uniform(10, 30),
+                duration=random.uniform(3, 10),
+                confidence=random.uniform(0.75, 0.92),
+                direction=random.choice(["behind", "left", "right"]),
+                movement_pattern="high_speed_approach",
+                threat_level="medium",
+                recommended_action="check_surroundings",
+                vehicle_type="e_bike",
+                speed_estimate=random.uniform(25, 45),
+                sound_signature="low_hum"
+            )
+            detected_threats.append(ebike_threat)
+        
         # Determine crowd density (simulated)
         crowd_density = "low"
         if current_hour in [8, 9, 17, 18, 19]:  # Rush hours
