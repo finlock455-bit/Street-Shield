@@ -570,8 +570,52 @@ export default function SafeWalkApp() {
       return;
     }
 
+    // ELECTRIC SCOOTER DETECTION - Critical for music listeners
+    const scooterAlerts = alerts.filter(alert => 
+      alert.type === 'proximity_threat' && 
+      (alert.message.toLowerCase().includes('electric scooter') || 
+       alert.message.toLowerCase().includes('silent vehicle'))
+    );
+
+    for (const scooterAlert of scooterAlerts) {
+      if (proximityAlertsEnabled) {
+        // High-priority notification for e-scooters due to silence
+        await showNotification('🛴 E-Scooter Alert!', scooterAlert.message);
+        
+        if (voiceAlertsEnabled) {
+          // Music-friendly voice alerts for e-scooters
+          let scooterVoiceMessage = "";
+          
+          if (scooterAlert.message.toLowerCase().includes('critical') || 
+              scooterAlert.message.toLowerCase().includes('immediate')) {
+            scooterVoiceMessage = "Immediate evasion! Electric scooter approaching fast. Move aside now!";
+          } else if (scooterAlert.message.toLowerCase().includes('high') ||
+                     scooterAlert.message.toLowerCase().includes('step aside')) {
+            scooterVoiceMessage = "Electric scooter approaching. Step aside quickly to avoid collision.";
+          } else if (scooterAlert.message.toLowerCase().includes('behind')) {
+            scooterVoiceMessage = "Silent electric scooter detected behind you. Stay alert and be ready to move.";
+          } else if (scooterAlert.message.toLowerCase().includes('crossing')) {
+            scooterVoiceMessage = "Electric scooter crossing your path. Watch for silent vehicles.";
+          } else {
+            scooterVoiceMessage = "Electric scooter nearby. These vehicles are silent and fast - stay aware of your surroundings.";
+          }
+          
+          await processVoiceAlert(scooterVoiceMessage, 'escooter_alert', { priority: 'urgent' });
+        }
+        
+        setLastAlertTime(now);
+      }
+    }
+
     // Process high-priority alerts first
     for (const alert of alerts) {
+      // Skip e-scooter alerts as they're already handled above
+      if (alert.type === 'proximity_threat' && 
+          (alert.message.toLowerCase().includes('electric scooter') || 
+           alert.message.toLowerCase().includes('silent vehicle'))) {
+        continue;
+      }
+      
       if (alert.priority === 'high' || alert.priority === 'critical') {
         await showNotification(`⚠️ Safety Alert - ${alert.type}`, alert.message);
         
