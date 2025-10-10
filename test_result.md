@@ -360,9 +360,6 @@ metadata:
 
 test_plan:
   current_focus:
-    - "AI-Driven Noise Cancellation System"
-    - "Biometric Health Monitoring"
-    - "Proximity Threat Detection"
     - "Music/Security Balance Voice System"
   stuck_tasks:
     - "Real-time Location Tracking"
