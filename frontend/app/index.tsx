@@ -1445,7 +1445,17 @@ export default function SafeWalkApp() {
         <SafeAreaView style={styles.modalContainer}>
           <View style={styles.modalHeader}>
             <Text style={styles.modalTitle}>Emergency Setup</Text>
-            <TouchableOpacity onPress={() => setIsEmergencySetupOpen(false)}>
+            <TouchableOpacity onPress={() => {
+              setIsEmergencySetupOpen(false);
+              // Reset voice interaction state when closing
+              setVoiceInteractionState({
+                setupIntroPlayed: false,
+                triggerWordExplained: false,
+                contactsExplained: false,
+                lastContactIndex: -1,
+                lastTriggerWord: ''
+              });
+            }}>
               <Ionicons name="close" size={24} color="#333" />
             </TouchableOpacity>
           </View>
