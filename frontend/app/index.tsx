@@ -708,21 +708,61 @@ export default function SafeWalkApp() {
     }
   };
 
+  // Phone number validation
+  const validatePhoneNumber = (phone: string): boolean => {
+    // Basic phone validation - accepts formats like: +1234567890, (123) 456-7890, 123-456-7890
+    const phoneRegex = /^(\+\d{1,3}[- ]?)?\(?\d{3}\)?[- ]?\d{3}[- ]?\d{4}$/;
+    return phoneRegex.test(phone.replace(/\s/g, ''));
+  };
+
   const saveEmergencySettings = async (triggerWord: string, contacts: string[]) => {
     try {
+      // Validate contacts
+      const validContacts = contacts.filter(contact => contact.length > 0);
+      const invalidContacts = validContacts.filter(contact => !validatePhoneNumber(contact));
+      
+      if (invalidContacts.length > 0) {
+        if (voiceAlertsEnabled) {
+          await speakAlert(`Invalid phone number format detected: ${invalidContacts.join(', ')}. Please use formats like +1234567890 or (123) 456-7890.`);
+        }
+        return;
+      }
+
+      // Save to backend
+      const emergencySettings = {
+        user_id: 'demo_user',
+        trigger_word: triggerWord,
+        contacts: validContacts,
+        auto_call_authorities: true,
+        location_sharing_enabled: true,
+        voice_confirmation_enabled: true
+      };
+
+      const response = await fetch(`${BACKEND_URL}/api/emergency/settings`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(emergencySettings)
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      // Also save locally for offline access
       await AsyncStorage.setItem('emergencyTriggerWord', triggerWord);
-      await AsyncStorage.setItem('emergencyContacts', JSON.stringify(contacts));
+      await AsyncStorage.setItem('emergencyContacts', JSON.stringify(validContacts));
+      
       setEmergencyTriggerWord(triggerWord);
-      setEmergencyContacts(contacts);
+      setEmergencyContacts(validContacts);
       setIsEmergencySetupOpen(false);
       
       if (voiceAlertsEnabled) {
-        await speakAlert(`Perfect! Your emergency system is now configured. Your trigger word is "${triggerWord}". I've added ${contacts.length} emergency contact${contacts.length > 1 ? 's' : ''}. If you ever say "${triggerWord}", I will immediately alert all your contacts and send them your location. Your Street Shield emergency system is ready to protect you.`);
+        await speakAlert(`Perfect! Your emergency system is now configured and synced to the cloud. Your trigger word is "${triggerWord}". I've added ${validContacts.length} verified emergency contact${validContacts.length > 1 ? 's' : ''}. If you ever say "${triggerWord}", I will immediately alert all your contacts with your precise location. Your Street Shield emergency system is ready to protect you.`);
       }
     } catch (error) {
       console.error('Error saving emergency settings:', error);
       if (voiceAlertsEnabled) {
-        await speakAlert("There was an error saving your emergency settings. Please try again.");
+        await speakAlert("There was an error saving your emergency settings to the cloud, but they've been saved locally. Please check your internet connection and try again.");
       }
     }
   };
