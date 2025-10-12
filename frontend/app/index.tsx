@@ -855,23 +855,7 @@ export default function SafeWalkApp() {
     }
   };
 
-  const reportEmergencyToAuthorities = async () => {
-    try {
-      if (!location) return;
-      
-      await fetch(`${BACKEND_URL}/api/emergency/vehicle-detected`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          ...location,
-          detection_method: 'emergency_voice_trigger'
-        })
-      });
-      
-    } catch (error) {
-      console.error('Error reporting to authorities:', error);
-    }
-  };
+  // Removed reportEmergencyToAuthorities - now handled by backend API
 
   const deactivateEmergencyMode = async () => {
     setIsEmergencyModeActive(false);
