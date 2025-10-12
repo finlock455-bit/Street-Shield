@@ -1459,16 +1459,21 @@ export default function SafeWalkApp() {
                 style={styles.textInput}
                 value={emergencyTriggerWord}
                 onFocus={async () => {
-                  if (voiceAlertsEnabled) {
-                    await speakAlert("Now enter your emergency trigger word. Make it memorable but unique.");
+                  if (voiceAlertsEnabled && !voiceInteractionState.triggerWordExplained) {
+                    await speakAlert("Enter your emergency trigger word. Make it memorable but unique.");
+                    setVoiceInteractionState(prev => ({ ...prev, triggerWordExplained: true }));
                   }
                 }}
                 onChangeText={(text) => {
                   setEmergencyTriggerWord(text);
-                  if (text.length >= 3 && voiceAlertsEnabled) {
-                    setTimeout(async () => {
-                      await speakAlert(`Your trigger word is: ${text}. Make sure you can say this clearly even under stress.`);
-                    }, 1500);
+                  // Only provide feedback when word is complete (no setTimeout spam)
+                  if (text.length >= 4 && voiceAlertsEnabled && text !== voiceInteractionState.lastTriggerWord) {
+                    // Debounce voice feedback
+                    clearTimeout(triggerWordTimeout.current);
+                    triggerWordTimeout.current = setTimeout(async () => {
+                      await speakAlert(`Trigger word set to ${text}.`);
+                      setVoiceInteractionState(prev => ({ ...prev, lastTriggerWord: text }));
+                    }, 2000);
                   }
                 }}
                 placeholder="Enter your secret trigger word"
