@@ -939,8 +939,8 @@ export default function SafeWalkApp() {
           break;
       }
       
-      // Speak the alert with appropriate settings
-      Speech.speak(message, speechSettings);
+      // Speak the alert with appropriate settings using cleaned message
+      Speech.speak(cleanedMessage, speechSettings);
       
     } catch (error) {
       console.error('Error with music-friendly text-to-speech:', error);
