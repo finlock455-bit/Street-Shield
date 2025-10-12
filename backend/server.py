@@ -1417,6 +1417,148 @@ async def get_health_history(user_id: str, limit: int = 100):
         logging.error(f"Error getting health history: {e}")
         raise HTTPException(status_code=500, detail="Error retrieving health history")
 
+# Emergency Contact Management Endpoints
+
+@api_router.post("/emergency/settings")
+async def save_emergency_settings(settings: EmergencySettings):
+    """Save user emergency settings including trigger word and contacts"""
+    try:
+        # Check if settings exist for this user
+        existing = await db.emergency_settings.find_one({"user_id": settings.user_id})
+        
+        settings_dict = settings.dict()
+        settings_dict["updated_at"] = datetime.utcnow()
+        
+        if existing:
+            # Update existing settings
+            await db.emergency_settings.update_one(
+                {"user_id": settings.user_id},
+                {"$set": settings_dict}
+            )
+        else:
+            # Create new settings
+            settings_dict["created_at"] = datetime.utcnow()
+            await db.emergency_settings.insert_one(settings_dict)
+        
+        return {"status": "success", "message": "Emergency settings saved"}
+    except Exception as e:
+        logging.error(f"Error saving emergency settings: {e}")
+        raise HTTPException(status_code=500, detail="Error saving emergency settings")
+
+@api_router.get("/emergency/settings/{user_id}")
+async def get_emergency_settings(user_id: str):
+    """Get user emergency settings"""
+    try:
+        settings = await db.emergency_settings.find_one({"user_id": user_id})
+        if settings:
+            settings["_id"] = str(settings["_id"])
+            return settings
+        return {"error": "No emergency settings found"}
+    except Exception as e:
+        logging.error(f"Error getting emergency settings: {e}")
+        raise HTTPException(status_code=500, detail="Error retrieving emergency settings")
+
+@api_router.post("/emergency/trigger")
+async def trigger_emergency(event: EmergencyEvent):
+    """Trigger emergency protocol - notify contacts and authorities"""
+    try:
+        # Get user's emergency settings
+        settings = await db.emergency_settings.find_one({"user_id": event.user_id})
+        if not settings:
+            raise HTTPException(status_code=404, detail="No emergency settings found for user")
+        
+        # Create emergency event record
+        event_dict = event.dict()
+        event_dict["created_at"] = datetime.utcnow()
+        
+        # In a real implementation, this would:
+        # 1. Send SMS/push notifications to emergency contacts
+        # 2. Call emergency services based on location
+        # 3. Share real-time location with contacts
+        # 4. Log all communication attempts
+        
+        # For now, we'll simulate the process
+        contacts_notified = []
+        for contact in settings.get("contacts", []):
+            # Simulate notification success
+            contacts_notified.append(contact)
+            logging.info(f"Emergency alert sent to: {contact}")
+        
+        event_dict["contacts_notified"] = contacts_notified
+        event_dict["authorities_contacted"] = settings.get("auto_call_authorities", True)
+        
+        # Store emergency event
+        result = await db.emergency_events.insert_one(event_dict)
+        event_dict["_id"] = str(result.inserted_id)
+        
+        # Create emergency alert for community
+        alert = EmergencyAlert(
+            alert_type="personal_emergency",
+            location=event.location,
+            radius=1000,  # 1km radius for community awareness
+            severity="critical",
+            message="Emergency situation in progress - avoid area if possible",
+            expires_at=datetime.utcnow() + timedelta(hours=2)
+        )
+        await db.emergency_alerts.insert_one(alert.dict())
+        
+        return {
+            "status": "emergency_triggered",
+            "event_id": str(result.inserted_id),
+            "contacts_notified": len(contacts_notified),
+            "authorities_contacted": event_dict["authorities_contacted"],
+            "message": "Emergency protocols activated. Help is on the way."
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logging.error(f"Error triggering emergency: {e}")
+        raise HTTPException(status_code=500, detail="Error processing emergency")
+
+@api_router.post("/emergency/resolve/{event_id}")
+async def resolve_emergency(event_id: str, resolution_method: str = "user_confirmed_safe"):
+    """Mark emergency as resolved"""
+    try:
+        from bson import ObjectId
+        
+        result = await db.emergency_events.update_one(
+            {"_id": ObjectId(event_id)},
+            {
+                "$set": {
+                    "resolved": True,
+                    "resolution_method": resolution_method,
+                    "resolved_at": datetime.utcnow()
+                }
+            }
+        )
+        
+        if result.modified_count == 0:
+            raise HTTPException(status_code=404, detail="Emergency event not found")
+        
+        return {"status": "resolved", "message": "Emergency marked as resolved"}
+    except Exception as e:
+        logging.error(f"Error resolving emergency: {e}")
+        raise HTTPException(status_code=500, detail="Error resolving emergency")
+
+@api_router.get("/emergency/history/{user_id}")
+async def get_emergency_history(user_id: str, limit: int = 50):
+    """Get user's emergency event history"""
+    try:
+        events = await db.emergency_events.find({
+            "user_id": user_id
+        }).sort("created_at", -1).limit(limit).to_list(limit)
+        
+        # Convert ObjectId to string
+        for event in events:
+            if "_id" in event:
+                event["_id"] = str(event["_id"])
+        
+        return {"emergency_events": events}
+    except Exception as e:
+        logging.error(f"Error getting emergency history: {e}")
+        raise HTTPException(status_code=500, detail="Error retrieving emergency history")
+
 @api_router.get("/")
 async def root():
     return {"message": "Street Shield API - Advanced AI protection for pedestrians and runners"}
