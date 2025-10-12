@@ -1458,7 +1458,7 @@ export default function SafeWalkApp() {
                   setEmergencyTriggerWord(text);
                   if (text.length >= 3 && voiceAlertsEnabled) {
                     setTimeout(async () => {
-                      await speakAlert(`Your trigger word is ${text}. Make sure you can say this clearly even under stress.`);
+                      await speakAlert(`Your trigger word is: ${text}. Make sure you can say this clearly even under stress.`);
                     }, 1500);
                   }
                 }}
