@@ -89,8 +89,12 @@ export default function SafeWalkApp() {
     setupIntroPlayed: false,
     triggerWordExplained: false,
     contactsExplained: false,
-    lastContactIndex: -1
+    lastContactIndex: -1,
+    lastTriggerWord: ''
   });
+  
+  // Refs for debouncing voice feedback
+  const triggerWordTimeout = useRef<NodeJS.Timeout | null>(null);
   
   // Proximity threat detection state
   const [movementHistory, setMovementHistory] = useState<LocationData[]>([]);
