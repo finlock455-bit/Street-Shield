@@ -762,7 +762,7 @@ export default function SafeWalkApp() {
     } catch (error) {
       console.error('Error saving emergency settings:', error);
       if (voiceAlertsEnabled) {
-        await speakAlert("There was an error saving your emergency settings to the cloud, but they've been saved locally. Please check your internet connection and try again.");
+        await speakAlert("There was an error saving your emergency settings to the cloud, but they are saved locally. Please check your internet connection and try again.");
       }
     }
   };
