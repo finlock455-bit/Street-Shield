@@ -904,11 +904,22 @@ export default function SafeWalkApp() {
       
       // Clean message for better TTS pronunciation
       let cleanedMessage = message
+        // Add natural pauses
+        .replace(/([.!?])\s*/g, '$1... ')  // Add pauses after sentences
+        .replace(/,\s*/g, ', ')  // Normalize comma spacing
+        // Remove problematic punctuation
         .replace(/[()]/g, ' ')  // Remove parentheses
         .replace(/[-_]/g, ' ')  // Replace dashes/underscores with spaces
-        .replace(/\d{3,}/g, (match) => {  // Break up long numbers
+        // Handle numbers and technical terms
+        .replace(/\b(\d{3,})\b/g, (match) => {  // Break up long numbers
           return match.split('').join(' ');
         })
+        // Improve word pronunciation
+        .replace(/\be-scooter\b/gi, 'e scooter')
+        .replace(/\be-bike\b/gi, 'e bike')
+        .replace(/\bAPI\b/g, 'A P I')
+        .replace(/\bID\b/g, 'I D')
+        // Clean up spaces
         .replace(/\s+/g, ' ')  // Remove extra spaces
         .trim();
       
