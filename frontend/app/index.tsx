@@ -1930,6 +1930,10 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     fontSize: 16,
   },
+  inputError: {
+    borderColor: '#F44336',
+    backgroundColor: '#FFEBEE',
+  },
   contactRow: {
     flexDirection: 'row',
     alignItems: 'center',
