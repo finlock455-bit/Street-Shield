@@ -1509,10 +1509,11 @@ export default function SafeWalkApp() {
                     ]}
                     value={contact}
                     onFocus={async () => {
-                      if (voiceAlertsEnabled && index === 0) {
-                        await speakAlert(`Enter emergency contact ${index + 1}. Use the full phone number including area code.`);
-                      } else if (voiceAlertsEnabled && index > 0) {
-                        await speakAlert(`Adding contact ${index + 1}. The more emergency contacts you have, the safer you'll be.`);
+                      if (voiceAlertsEnabled && !voiceInteractionState.contactsExplained) {
+                        if (index === 0) {
+                          await speakAlert("Add emergency contacts. Use full phone numbers including area code.");
+                        }
+                        setVoiceInteractionState(prev => ({ ...prev, contactsExplained: true }));
                       }
                     }}
                     onChangeText={(text) => {
