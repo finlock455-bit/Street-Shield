@@ -1475,11 +1475,14 @@ export default function SafeWalkApp() {
               {emergencyContacts.map((contact, index) => (
                 <View key={index} style={styles.contactRow}>
                   <TextInput
-                    style={styles.contactInput}
+                    style={[
+                      styles.contactInput,
+                      contact.length > 0 && !validatePhoneNumber(contact) ? styles.inputError : null
+                    ]}
                     value={contact}
                     onFocus={async () => {
                       if (voiceAlertsEnabled && index === 0) {
-                        await speakAlert(`Enter emergency contact ${index + 1}. Use the full phone number including area code.`);
+                        await speakAlert(`Enter emergency contact ${index + 1}. Use the full phone number including area code like plus 1 555 123 4567.`);
                       } else if (voiceAlertsEnabled && index > 0) {
                         await speakAlert(`Adding contact ${index + 1}. The more emergency contacts you have, the safer you'll be.`);
                       }
@@ -1490,13 +1493,17 @@ export default function SafeWalkApp() {
                       setEmergencyContacts(newContacts);
                       
                       // Voice feedback for completed phone number
-                      if (text.length >= 10 && voiceAlertsEnabled) {
+                      if (text.length >= 10 && validatePhoneNumber(text) && voiceAlertsEnabled) {
                         setTimeout(async () => {
-                          await speakAlert(`Contact ${index + 1} added. This person will be notified immediately if you trigger an emergency.`);
+                          await speakAlert(`Valid contact ${index + 1} added. This person will be notified immediately if you trigger an emergency.`);
+                        }, 1000);
+                      } else if (text.length >= 10 && !validatePhoneNumber(text) && voiceAlertsEnabled) {
+                        setTimeout(async () => {
+                          await speakAlert(`Invalid phone format for contact ${index + 1}. Use formats like plus 1 555 123 4567 or parentheses 555 close parentheses 123 dash 4567.`);
                         }, 1000);
                       }
                     }}
-                    placeholder="Phone number"
+                    placeholder="Phone number (+1234567890 or (123) 456-7890)"
                     keyboardType="phone-pad"
                   />
                   <TouchableOpacity
