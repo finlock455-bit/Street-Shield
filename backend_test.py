@@ -850,6 +850,296 @@ class StreetShieldTester:
         print(f"🛴 E-SCOOTER TESTS SUMMARY: {escooter_tests_passed}/{total_escooter_tests} passed")
         return all_passed and escooter_tests_passed >= 2  # At least 2 core tests must pass
 
+    def test_emergency_contact_management_system(self):
+        """🚨 NEW FEATURE TEST: Emergency Contact Management System"""
+        print("🚨 Testing EMERGENCY CONTACT MANAGEMENT SYSTEM - Critical Safety Feature...")
+        
+        all_passed = True
+        emergency_tests_passed = 0
+        total_emergency_tests = 0
+        test_user_id = f"emergency_test_user_{datetime.now().strftime('%H%M%S')}"
+        
+        # Test 1: Save Emergency Settings
+        total_emergency_tests += 1
+        try:
+            settings_data = {
+                "user_id": test_user_id,
+                "trigger_word": "help me now",
+                "contacts": ["+1234567890", "+0987654321", "+1122334455"],
+                "auto_call_authorities": True,
+                "location_sharing_enabled": True,
+                "voice_confirmation_enabled": True
+            }
+            
+            response = self.session.post(
+                f"{BACKEND_URL}/emergency/settings",
+                json=settings_data,
+                timeout=15
+            )
+            
+            if response.status_code == 200:
+                data = response.json()
+                if data.get("status") == "success":
+                    self.log_test("Emergency Settings Save", True, 
+                                f"Settings saved for user {test_user_id} with 3 contacts")
+                    emergency_tests_passed += 1
+                else:
+                    self.log_test("Emergency Settings Save", False, f"Unexpected response: {data}")
+                    all_passed = False
+            else:
+                self.log_test("Emergency Settings Save", False, f"HTTP {response.status_code}: {response.text}")
+                all_passed = False
+                
+        except Exception as e:
+            self.log_test("Emergency Settings Save", False, f"Error: {str(e)}")
+            all_passed = False
+        
+        # Test 2: Retrieve Emergency Settings
+        total_emergency_tests += 1
+        try:
+            response = self.session.get(
+                f"{BACKEND_URL}/emergency/settings/{test_user_id}",
+                timeout=15
+            )
+            
+            if response.status_code == 200:
+                data = response.json()
+                if (data.get("user_id") == test_user_id and 
+                    data.get("trigger_word") == "help me now" and
+                    len(data.get("contacts", [])) == 3):
+                    self.log_test("Emergency Settings Retrieve", True, 
+                                "Settings retrieved correctly with all data intact")
+                    emergency_tests_passed += 1
+                else:
+                    self.log_test("Emergency Settings Retrieve", False, 
+                                f"Data mismatch: {data}")
+                    all_passed = False
+            else:
+                self.log_test("Emergency Settings Retrieve", False, f"HTTP {response.status_code}")
+                all_passed = False
+                
+        except Exception as e:
+            self.log_test("Emergency Settings Retrieve", False, f"Error: {str(e)}")
+            all_passed = False
+        
+        # Test 3: Trigger Emergency Protocol
+        total_emergency_tests += 1
+        event_id = None
+        try:
+            emergency_data = {
+                "user_id": test_user_id,
+                "location": {
+                    "latitude": 40.7128,
+                    "longitude": -74.0060,
+                    "accuracy": 10.0,
+                    "timestamp": datetime.utcnow().isoformat()
+                },
+                "trigger_method": "voice_trigger",
+                "trigger_word_used": "help me now"
+            }
+            
+            response = self.session.post(
+                f"{BACKEND_URL}/emergency/trigger",
+                json=emergency_data,
+                timeout=15
+            )
+            
+            if response.status_code == 200:
+                data = response.json()
+                if (data.get("status") == "emergency_triggered" and
+                    data.get("contacts_notified") == 3 and
+                    data.get("authorities_contacted") == True):
+                    event_id = data.get("event_id")
+                    self.log_test("Emergency Trigger", True, 
+                                f"Emergency triggered successfully. Event ID: {event_id}")
+                    emergency_tests_passed += 1
+                else:
+                    self.log_test("Emergency Trigger", False, f"Unexpected response: {data}")
+                    all_passed = False
+            else:
+                self.log_test("Emergency Trigger", False, f"HTTP {response.status_code}")
+                all_passed = False
+                
+        except Exception as e:
+            self.log_test("Emergency Trigger", False, f"Error: {str(e)}")
+            all_passed = False
+        
+        # Test 4: Emergency Resolution
+        total_emergency_tests += 1
+        if event_id:
+            try:
+                response = self.session.post(
+                    f"{BACKEND_URL}/emergency/resolve/{event_id}",
+                    params={"resolution_method": "user_confirmed_safe"},
+                    timeout=15
+                )
+                
+                if response.status_code == 200:
+                    data = response.json()
+                    if data.get("status") == "resolved":
+                        self.log_test("Emergency Resolution", True, 
+                                    f"Emergency {event_id} resolved successfully")
+                        emergency_tests_passed += 1
+                    else:
+                        self.log_test("Emergency Resolution", False, f"Unexpected response: {data}")
+                        all_passed = False
+                else:
+                    self.log_test("Emergency Resolution", False, f"HTTP {response.status_code}")
+                    all_passed = False
+                    
+            except Exception as e:
+                self.log_test("Emergency Resolution", False, f"Error: {str(e)}")
+                all_passed = False
+        else:
+            self.log_test("Emergency Resolution", False, "No event ID available for resolution test")
+            all_passed = False
+        
+        # Test 5: Emergency History
+        total_emergency_tests += 1
+        try:
+            response = self.session.get(
+                f"{BACKEND_URL}/emergency/history/{test_user_id}",
+                timeout=15
+            )
+            
+            if response.status_code == 200:
+                data = response.json()
+                events = data.get("emergency_events", [])
+                if len(events) > 0:
+                    event = events[0]  # Most recent
+                    if (event.get("user_id") == test_user_id and
+                        event.get("trigger_method") == "voice_trigger"):
+                        self.log_test("Emergency History", True, 
+                                    f"History retrieved with {len(events)} events")
+                        emergency_tests_passed += 1
+                    else:
+                        self.log_test("Emergency History", False, f"Event data mismatch: {event}")
+                        all_passed = False
+                else:
+                    self.log_test("Emergency History", False, "No events found in history")
+                    all_passed = False
+            else:
+                self.log_test("Emergency History", False, f"HTTP {response.status_code}")
+                all_passed = False
+                
+        except Exception as e:
+            self.log_test("Emergency History", False, f"Error: {str(e)}")
+            all_passed = False
+        
+        # Test 6: Community Alert Creation During Emergency
+        total_emergency_tests += 1
+        try:
+            # Create another emergency to test alert creation
+            test_user_2 = f"emergency_test_user_2_{datetime.now().strftime('%H%M%S')}"
+            
+            # Save settings for second user
+            settings_data_2 = {
+                "user_id": test_user_2,
+                "trigger_word": "emergency",
+                "contacts": ["+5555555555"],
+                "auto_call_authorities": True,
+                "location_sharing_enabled": True,
+                "voice_confirmation_enabled": True
+            }
+            
+            settings_response = self.session.post(f"{BACKEND_URL}/emergency/settings", json=settings_data_2)
+            
+            if settings_response.status_code == 200:
+                # Trigger emergency
+                emergency_data_2 = {
+                    "user_id": test_user_2,
+                    "location": {
+                        "latitude": 40.7589,
+                        "longitude": -73.9851,
+                        "accuracy": 5.0,
+                        "timestamp": datetime.utcnow().isoformat()
+                    },
+                    "trigger_method": "panic_button"
+                }
+                
+                trigger_response = self.session.post(f"{BACKEND_URL}/emergency/trigger", json=emergency_data_2)
+                
+                if trigger_response.status_code == 200:
+                    # Check for community alerts
+                    time.sleep(1)  # Allow time for alert creation
+                    alerts_response = self.session.get(
+                        f"{BACKEND_URL}/safety/alerts/{emergency_data_2['location']['latitude']}/{emergency_data_2['location']['longitude']}/2000"
+                    )
+                    
+                    if alerts_response.status_code == 200:
+                        alerts_data = alerts_response.json()
+                        alerts = alerts_data.get("alerts", [])
+                        emergency_alerts = [alert for alert in alerts if alert.get("alert_type") == "personal_emergency"]
+                        
+                        if emergency_alerts:
+                            self.log_test("Community Alert Creation", True, 
+                                        f"Community alert created successfully. Found {len(emergency_alerts)} emergency alerts")
+                            emergency_tests_passed += 1
+                        else:
+                            self.log_test("Community Alert Creation", False, 
+                                        f"No emergency alerts found. Available: {[alert.get('alert_type') for alert in alerts]}")
+                            all_passed = False
+                    else:
+                        self.log_test("Community Alert Creation", False, f"Could not retrieve alerts: HTTP {alerts_response.status_code}")
+                        all_passed = False
+                else:
+                    self.log_test("Community Alert Creation", False, f"Emergency trigger failed: HTTP {trigger_response.status_code}")
+                    all_passed = False
+            else:
+                self.log_test("Community Alert Creation", False, "Could not create settings for alert test")
+                all_passed = False
+                
+        except Exception as e:
+            self.log_test("Community Alert Creation", False, f"Error: {str(e)}")
+            all_passed = False
+        
+        # Test 7: Settings Update
+        total_emergency_tests += 1
+        try:
+            updated_settings = {
+                "user_id": test_user_id,
+                "trigger_word": "emergency help",
+                "contacts": ["+1111111111", "+2222222222"],  # Different contacts
+                "auto_call_authorities": False,  # Changed setting
+                "location_sharing_enabled": True,
+                "voice_confirmation_enabled": False  # Changed setting
+            }
+            
+            response = self.session.post(
+                f"{BACKEND_URL}/emergency/settings",
+                json=updated_settings,
+                timeout=15
+            )
+            
+            if response.status_code == 200:
+                # Verify the update
+                get_response = self.session.get(f"{BACKEND_URL}/emergency/settings/{test_user_id}")
+                if get_response.status_code == 200:
+                    retrieved_data = get_response.json()
+                    if (retrieved_data["trigger_word"] == "emergency help" and
+                        len(retrieved_data["contacts"]) == 2 and
+                        retrieved_data["auto_call_authorities"] == False):
+                        self.log_test("Emergency Settings Update", True, 
+                                    "Settings updated successfully with new values")
+                        emergency_tests_passed += 1
+                    else:
+                        self.log_test("Emergency Settings Update", False, 
+                                    f"Settings not updated correctly: {retrieved_data}")
+                        all_passed = False
+                else:
+                    self.log_test("Emergency Settings Update", False, "Could not retrieve updated settings")
+                    all_passed = False
+            else:
+                self.log_test("Emergency Settings Update", False, f"HTTP {response.status_code}")
+                all_passed = False
+                
+        except Exception as e:
+            self.log_test("Emergency Settings Update", False, f"Error: {str(e)}")
+            all_passed = False
+        
+        print(f"🚨 EMERGENCY CONTACT TESTS SUMMARY: {emergency_tests_passed}/{total_emergency_tests} passed")
+        return all_passed and emergency_tests_passed >= 5  # At least 5 core tests must pass
+
     def test_additional_endpoints(self):
         """Test additional endpoints for completeness"""
         print("🔧 Testing Additional Endpoints...")
