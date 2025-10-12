@@ -889,6 +889,16 @@ export default function SafeWalkApp() {
     try {
       if (!voiceAlertsEnabled) return;
       
+      // Clean message for better TTS pronunciation
+      let cleanedMessage = message
+        .replace(/[()]/g, ' ')  // Remove parentheses
+        .replace(/[-_]/g, ' ')  // Replace dashes/underscores with spaces
+        .replace(/\d{3,}/g, (match) => {  // Break up long numbers
+          return match.split('').join(' ');
+        })
+        .replace(/\s+/g, ' ')  // Remove extra spaces
+        .trim();
+      
       // Smart audio ducking - lower music instead of stopping
       if (duckAudio && priority !== 'critical') {
         // Brief audio duck notification (subtle chime sound)
@@ -900,7 +910,7 @@ export default function SafeWalkApp() {
       let speechSettings = {
         language: 'en-US',
         pitch: 1.0,
-        rate: 0.75, // Slower for better clarity
+        rate: 0.7, // Slower for better clarity, especially for emergency instructions
         quality: Speech.VoiceQuality.Enhanced,
       };
       
@@ -909,13 +919,13 @@ export default function SafeWalkApp() {
         case 'critical':
           // Emergency: Override music, urgent tone
           Speech.stop(); // Stop any current speech
-          speechSettings.pitch = 1.2;
-          speechSettings.rate = 0.8;
+          speechSettings.pitch = 1.1;
+          speechSettings.rate = 0.75;  // Slightly faster but still clear for emergencies
           break;
         case 'high':
           // Important: Brief interruption, clear delivery
-          speechSettings.pitch = 1.1;
-          speechSettings.rate = 0.75;
+          speechSettings.pitch = 1.0;
+          speechSettings.rate = 0.7;
           break;
         case 'medium':
           // Normal: Gentle tone, doesn't interrupt music flow
