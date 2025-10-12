@@ -1513,7 +1513,7 @@ export default function SafeWalkApp() {
                         }, 1000);
                       }
                     }}
-                    placeholder="Phone number (+1234567890 or (123) 456-7890)"
+                    placeholder="Phone number"
                     keyboardType="phone-pad"
                   />
                   <TouchableOpacity
