@@ -1427,7 +1427,7 @@ export default function SafeWalkApp() {
                 <TouchableOpacity 
                   style={styles.voiceHelpButton}
                   onPress={async () => {
-                    await speakAlert("Choose a unique trigger word that you can say clearly in an emergency. Good examples are RedAlert, SafeWord911, or HelpNow. Avoid common words you might say accidentally like Help or Emergency.");
+                    await speakAlert("Choose a unique trigger word that you can say clearly in an emergency. Good examples are Red Alert, Safe Word 9 1 1, or Help Now. Avoid common words you might say accidentally.");
                   }}
                 >
                   <Ionicons name="volume-high" size={16} color="#2196F3" />
