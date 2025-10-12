@@ -1499,7 +1499,7 @@ export default function SafeWalkApp() {
                         }, 1000);
                       } else if (text.length >= 10 && !validatePhoneNumber(text) && voiceAlertsEnabled) {
                         setTimeout(async () => {
-                          await speakAlert(`Invalid phone format for contact ${index + 1}. Use formats like plus 1 555 123 4567 or parentheses 555 close parentheses 123 dash 4567.`);
+                          await speakAlert(`Invalid phone number format for contact ${index + 1}. Please use a valid phone number format.`);
                         }, 1000);
                       }
                     }}
