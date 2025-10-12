@@ -821,7 +821,7 @@ export default function SafeWalkApp() {
         console.log('Emergency triggered successfully:', result);
         
         if (voiceAlertsEnabled) {
-          await speakAlert(`Emergency alert sent to ${result.contacts_notified} contacts. ${result.authorities_contacted ? 'Local authorities have been notified.' : ''} Event ID: ${result.event_id.slice(-6)}. Help is on the way.`);
+          await speakAlert(`Emergency alert sent to ${result.contacts_notified} contacts. ${result.authorities_contacted ? 'Local authorities have been notified. ' : ''}Help is on the way.`);
         }
         
         // Show success notification
