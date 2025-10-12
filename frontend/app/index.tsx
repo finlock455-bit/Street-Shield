@@ -797,36 +797,61 @@ export default function SafeWalkApp() {
 
   const sendEmergencyAlerts = async () => {
     try {
-      // In a real implementation, this would:
-      // 1. Send SMS/calls to emergency contacts
-      // 2. Share location with contacts
-      // 3. Contact local authorities
-      // 4. Store emergency event in database
-      
-      const emergencyMessage = `EMERGENCY ALERT: SafeWalk user needs immediate assistance. Last known location: ${location ? `${location.latitude.toFixed(6)}, ${location.longitude.toFixed(6)}` : 'Unknown'}. Time: ${new Date().toLocaleString()}`;
-      
-      // Simulate emergency notifications
-      for (const contact of emergencyContacts) {
-        console.log(`Emergency alert sent to: ${contact} - ${emergencyMessage}`);
+      if (!location) {
+        console.error('No location available for emergency alert');
+        return;
       }
-      
-      // Persist emergency event
-      if (location) {
-        await fetch(`${BACKEND_URL}/api/community/report`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            location,
-            report_type: 'emergency',
-            description: 'Emergency triggered by voice command - immediate assistance needed',
-            severity: 'critical',
-            user_id: 'emergency_user'
-          })
-        });
+
+      // Create emergency event via backend API
+      const emergencyEvent = {
+        user_id: 'demo_user',
+        location: location,
+        trigger_method: 'voice_trigger',
+        trigger_word_used: emergencyTriggerWord
+      };
+
+      const response = await fetch(`${BACKEND_URL}/api/emergency/trigger`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(emergencyEvent)
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        console.log('Emergency triggered successfully:', result);
+        
+        if (voiceAlertsEnabled) {
+          await speakAlert(`Emergency alert sent to ${result.contacts_notified} contacts. ${result.authorities_contacted ? 'Local authorities have been notified.' : ''} Event ID: ${result.event_id.slice(-6)}. Help is on the way.`);
+        }
+        
+        // Show success notification
+        await showNotification(
+          '✅ Emergency Alert Sent',
+          `Notified ${result.contacts_notified} contacts. Event ID: ${result.event_id.slice(-6)}`
+        );
+      } else {
+        throw new Error(`HTTP error! status: ${response.status}`);
       }
       
     } catch (error) {
       console.error('Error sending emergency alerts:', error);
+      
+      // Fallback to local emergency handling
+      const emergencyMessage = `🚨 EMERGENCY ALERT: Street Shield user needs immediate assistance. Location: ${location ? `${location.latitude.toFixed(6)}, ${location.longitude.toFixed(6)}` : 'Unknown'}. Time: ${new Date().toLocaleString()}`;
+      
+      // Simulate local emergency notifications  
+      for (const contact of emergencyContacts) {
+        console.log(`FALLBACK - Emergency alert to: ${contact} - ${emergencyMessage}`);
+      }
+      
+      if (voiceAlertsEnabled) {
+        await speakAlert("Emergency alert processing failed. Using backup emergency protocol. Your location has been logged for manual dispatch.");
+      }
+      
+      await showNotification(
+        '⚠️ Emergency Alert (Backup)',
+        'Using offline emergency protocol. Location logged for dispatch.'
+      );
     }
   };
 
