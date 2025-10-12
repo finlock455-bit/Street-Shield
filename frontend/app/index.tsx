@@ -1521,15 +1521,12 @@ export default function SafeWalkApp() {
                       newContacts[index] = text;
                       setEmergencyContacts(newContacts);
                       
-                      // Voice feedback for completed phone number
-                      if (text.length >= 10 && validatePhoneNumber(text) && voiceAlertsEnabled) {
+                      // Simplified voice feedback - only for first valid contact
+                      if (text.length >= 10 && validatePhoneNumber(text) && voiceAlertsEnabled && voiceInteractionState.lastContactIndex < index) {
                         setTimeout(async () => {
-                          await speakAlert(`Valid contact ${index + 1} added. This person will be notified immediately if you trigger an emergency.`);
-                        }, 1000);
-                      } else if (text.length >= 10 && !validatePhoneNumber(text) && voiceAlertsEnabled) {
-                        setTimeout(async () => {
-                          await speakAlert(`Invalid phone number format for contact ${index + 1}. Please use a valid phone number format.`);
-                        }, 1000);
+                          await speakAlert("Contact added.");
+                          setVoiceInteractionState(prev => ({ ...prev, lastContactIndex: index }));
+                        }, 1500);
                       }
                     }}
                     placeholder="Phone number"
