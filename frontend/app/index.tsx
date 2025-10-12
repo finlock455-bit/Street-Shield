@@ -781,13 +781,8 @@ export default function SafeWalkApp() {
       await speakAlert("Emergency mode activated. I'm sending your location to emergency contacts and alerting local authorities. Stay calm, help is on the way.");
     }
 
-    // Send emergency alerts
+    // Send emergency alerts via backend
     await sendEmergencyAlerts();
-    
-    // Report to community/authorities
-    if (location) {
-      await reportEmergencyToAuthorities();
-    }
     
     // Start emergency monitoring (increase frequency)
     if (analysisInterval.current) {
