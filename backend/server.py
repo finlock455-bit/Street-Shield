@@ -96,6 +96,41 @@ class CommunityReport(BaseModel):
     timestamp: datetime = Field(default_factory=datetime.utcnow)
     user_id: Optional[str] = None
 
+class EmergencyContact(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    user_id: str
+    name: Optional[str] = None
+    phone_number: str
+    relationship: Optional[str] = None  # "family", "friend", "colleague", "other"
+    priority: int = 1  # 1 = highest priority
+    active: bool = True
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+    updated_at: datetime = Field(default_factory=datetime.utcnow)
+
+class EmergencySettings(BaseModel):
+    user_id: str
+    trigger_word: str
+    contacts: List[str] = Field(default_factory=list)  # phone numbers
+    auto_call_authorities: bool = True
+    location_sharing_enabled: bool = True
+    voice_confirmation_enabled: bool = True
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+    updated_at: datetime = Field(default_factory=datetime.utcnow)
+
+class EmergencyEvent(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    user_id: str
+    location: LocationData
+    trigger_method: str  # "voice_trigger", "panic_button", "biometric_alert", "manual"
+    trigger_word_used: Optional[str] = None
+    contacts_notified: List[str] = Field(default_factory=list)
+    authorities_contacted: bool = False
+    response_time: Optional[float] = None  # seconds
+    resolved: bool = False
+    resolution_method: Optional[str] = None  # "user_confirmed_safe", "help_arrived", "false_alarm"
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+    resolved_at: Optional[datetime] = None
+
 class ProximityThreat(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     threat_type: str  # "following", "approaching", "loitering", "aggressive_approach", "electric_scooter", "silent_vehicle"
