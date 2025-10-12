@@ -83,6 +83,15 @@ export default function SafeWalkApp() {
   const [voiceAlertsEnabled, setVoiceAlertsEnabled] = useState(true);
   const [lastAlertTime, setLastAlertTime] = useState<number>(0);
   
+  // State to track voice interactions to reduce repetition
+  const [hasSeenSetupVoice, setHasSeenSetupVoice] = useState(false);
+  const [voiceInteractionState, setVoiceInteractionState] = useState({
+    setupIntroPlayed: false,
+    triggerWordExplained: false,
+    contactsExplained: false,
+    lastContactIndex: -1
+  });
+  
   // Proximity threat detection state
   const [movementHistory, setMovementHistory] = useState<LocationData[]>([]);
   const [proximityThreats, setProximityThreats] = useState<any[]>([]);
