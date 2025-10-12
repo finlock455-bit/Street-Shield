@@ -1533,12 +1533,10 @@ export default function SafeWalkApp() {
                     keyboardType="phone-pad"
                   />
                   <TouchableOpacity
-                    onPress={async () => {
-                      if (voiceAlertsEnabled) {
-                        await speakAlert(`Removing contact ${index + 1}.`);
-                      }
+                    onPress={() => {
                       const newContacts = emergencyContacts.filter((_, i) => i !== index);
                       setEmergencyContacts(newContacts);
+                      // No voice feedback for removal - too noisy
                     }}
                   >
                     <Ionicons name="remove-circle" size={24} color="#F44336" />
