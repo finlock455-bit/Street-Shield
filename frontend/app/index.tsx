@@ -1482,7 +1482,7 @@ export default function SafeWalkApp() {
                     value={contact}
                     onFocus={async () => {
                       if (voiceAlertsEnabled && index === 0) {
-                        await speakAlert(`Enter emergency contact ${index + 1}. Use the full phone number including area code like plus 1 555 123 4567.`);
+                        await speakAlert(`Enter emergency contact ${index + 1}. Use the full phone number including area code.`);
                       } else if (voiceAlertsEnabled && index > 0) {
                         await speakAlert(`Adding contact ${index + 1}. The more emergency contacts you have, the safer you'll be.`);
                       }
