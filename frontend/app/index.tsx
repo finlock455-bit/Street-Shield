@@ -1380,6 +1380,192 @@ export default function SafeWalkApp() {
     }
   };
 
+  // CYCLING-SPECIFIC FUNCTIONALITY
+  const toggleCyclingMode = async () => {
+    const newCyclingMode = !isCyclingMode;
+    setIsCyclingMode(newCyclingMode);
+    
+    if (newCyclingMode) {
+      if (voiceAlertsEnabled) {
+        await speakAlert("Cycling mode activated. Street Shield will now provide bike-specific safety alerts including vehicle approach warnings, door zone hazards, intersection analysis, and road surface alerts. Stay safe on your ride!");
+      }
+      
+      // Start cycling-specific monitoring
+      startCyclingMonitoring();
+    } else {
+      if (voiceAlertsEnabled) {
+        await speakAlert("Cycling mode deactivated. Returning to pedestrian safety mode.");
+      }
+      
+      // Clear cycling data
+      setCyclingThreats([]);
+      setCyclingSafetyScore(75);
+      speedHistory.current = [];
+    }
+  };
+
+  const startCyclingMonitoring = () => {
+    // Enhanced location tracking for speed calculation
+    const updateCyclingData = () => {
+      if (!isCyclingMode || !location) return;
+      
+      // Calculate speed from GPS if available
+      const currentSpeed = location.speed ? location.speed * 3.6 : 0; // Convert m/s to km/h
+      
+      // Update speed history
+      speedHistory.current.push(currentSpeed);
+      if (speedHistory.current.length > 10) {
+        speedHistory.current.shift(); // Keep last 10 readings
+      }
+      
+      // Calculate average speed
+      const avgSpeed = speedHistory.current.length > 0 
+        ? speedHistory.current.reduce((a, b) => a + b, 0) / speedHistory.current.length 
+        : 0;
+      
+      setCyclingData(prev => ({
+        ...prev,
+        speed_kmh: currentSpeed,
+        avg_speed_kmh: avgSpeed
+      }));
+      
+      // Update cycling threat analysis
+      fetchCyclingThreats();
+      fetchCyclingSafetyScore();
+    };
+    
+    // Update every 5 seconds for cycling
+    const interval = setInterval(updateCyclingData, 5000);
+    return () => clearInterval(interval);
+  };
+
+  const fetchCyclingThreats = async () => {
+    if (!location || !isCyclingMode) return;
+    
+    try {
+      const response = await fetch(`${BACKEND_URL}/api/cycling/threats`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          location: location,
+          cycling_context: {
+            ...cyclingData,
+            time_of_ride: getCurrentTimeOfRide(),
+            weather_conditions: safetyAnalysis?.weather?.weather_condition || 'clear'
+          },
+          movement_history: [] // Could add movement history if needed
+        })
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        setCyclingThreats(data.cycling_threats || []);
+        
+        // Voice alerts for critical threats
+        const criticalThreats = data.cycling_threats?.filter((t: any) => t.severity === 'critical') || [];
+        if (criticalThreats.length > 0 && voiceAlertsEnabled) {
+          for (const threat of criticalThreats) {
+            await speakAlert(`Critical cycling alert: ${threat.threat_description}. ${threat.recommended_action}`);
+          }
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching cycling threats:', error);
+    }
+  };
+
+  const fetchCyclingSafetyScore = async () => {
+    if (!location || !isCyclingMode) return;
+    
+    try {
+      const response = await fetch(`${BACKEND_URL}/api/cycling/safety-score`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          location: location,
+          cycling_context: {
+            ...cyclingData,
+            time_of_ride: getCurrentTimeOfRide(),
+            weather_conditions: safetyAnalysis?.weather?.weather_condition || 'clear'
+          }
+        })
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        setCyclingSafetyScore(data.cycling_safety_score);
+      }
+    } catch (error) {
+      console.error('Error fetching cycling safety score:', error);
+    }
+  };
+
+  const getCurrentTimeOfRide = (): string => {
+    const hour = new Date().getHours();
+    if (hour >= 5 && hour < 8) return 'dawn';
+    if (hour >= 8 && hour < 18) return 'day';
+    if (hour >= 18 && hour < 21) return 'dusk';
+    return 'night';
+  };
+
+  // Enhanced voice info processing for cycling
+  const processCyclingVoiceCommand = async (spokenText: string): Promise<boolean> => {
+    if (!isCyclingMode) return false;
+    
+    const text = spokenText.toLowerCase().trim();
+    
+    // Cycling-specific voice commands
+    const cyclingCommands = {
+      speed: ['what is my speed', 'how fast am i going', 'current speed', 'speed check'],
+      threats: ['cycling threats', 'bike hazards', 'vehicle behind', 'road hazards'],
+      safety: ['cycling safety', 'bike safety score', 'how safe is cycling'],
+      route: ['route suggestion', 'bike lanes nearby', 'safer route']
+    };
+    
+    for (const [category, patterns] of Object.entries(cyclingCommands)) {
+      if (patterns.some(pattern => text.includes(pattern))) {
+        await handleCyclingVoiceCommand(category);
+        return true;
+      }
+    }
+    
+    return false;
+  };
+
+  const handleCyclingVoiceCommand = async (category: string) => {
+    let response = "";
+    
+    switch (category) {
+      case 'speed':
+        response = `Current cycling speed: ${cyclingData.speed_kmh.toFixed(1)} kilometers per hour. Average speed: ${cyclingData.avg_speed_kmh.toFixed(1)} kilometers per hour.`;
+        break;
+        
+      case 'threats':
+        const highThreats = cyclingThreats.filter(t => t.severity === 'high' || t.severity === 'critical');
+        if (highThreats.length > 0) {
+          const threatList = highThreats.map(t => t.threat_description).join(', ');
+          response = `${highThreats.length} cycling threats detected: ${threatList}. Stay alert.`;
+        } else {
+          response = "No immediate cycling threats detected. Continue with normal caution.";
+        }
+        break;
+        
+      case 'safety':
+        const riskLevel = cyclingSafetyScore > 70 ? "good" : cyclingSafetyScore > 50 ? "moderate" : "high risk";
+        response = `Cycling safety score: ${cyclingSafetyScore} out of 100. Current risk level: ${riskLevel}. Road type: ${cyclingData.road_type}, traffic density: ${cyclingData.traffic_density}.`;
+        break;
+        
+      case 'route':
+        response = "Route analysis available. Consider bike lanes when possible. Avoid heavy traffic areas during peak hours.";
+        break;
+        
+      default:
+        response = "Cycling command not recognized.";
+    }
+    
+    await processVoiceAlert(response, 'cycling_info', { priority: 'low' });
+  };
+
   // MUSIC-FRIENDLY VOICE SYSTEM
   const speakAlert = async (message: string, priority: 'low' | 'medium' | 'high' | 'critical' = 'medium', duckAudio: boolean = true) => {
     try {
