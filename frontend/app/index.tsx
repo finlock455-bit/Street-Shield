@@ -1999,6 +1999,9 @@ const styles = StyleSheet.create({
   listeningButton: {
     backgroundColor: '#4CAF50',
   },
+  listeningButton: {
+    backgroundColor: '#4CAF50',
+  },
   testEmergencyButton: {
     backgroundColor: '#FF5722',
   },
