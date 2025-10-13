@@ -1985,6 +1985,9 @@ const styles = StyleSheet.create({
   emergencyButton: {
     backgroundColor: '#D32F2F',
   },
+  listeningButton: {
+    backgroundColor: '#4CAF50',
+  },
   testEmergencyButton: {
     backgroundColor: '#FF5722',
   },
