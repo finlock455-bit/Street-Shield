@@ -2656,4 +2656,41 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
   },
+  // Hands-Free Mode Styles
+  handsFreeCard: {
+    backgroundColor: 'rgba(33, 150, 243, 0.1)',
+    borderColor: '#2196F3',
+    borderWidth: 2,
+  },
+  handsFreeIndicator: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 10,
+  },
+  handsFreeTitle: {
+    color: '#fff',
+    fontSize: 18,
+    fontWeight: 'bold',
+    textAlign: 'center',
+    marginBottom: 8,
+  },
+  handsFreeDescription: {
+    color: '#B0BEC5',
+    fontSize: 14,
+    textAlign: 'center',
+    marginBottom: 15,
+    lineHeight: 20,
+  },
+  stopHandsFreeButton: {
+    backgroundColor: '#F44336',
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderRadius: 20,
+    alignSelf: 'center',
+  },
+  stopHandsFreeText: {
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: '600',
+  },
 });
