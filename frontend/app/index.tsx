@@ -926,6 +926,22 @@ export default function SafeWalkApp() {
   const [lastInfoRequest, setLastInfoRequest] = useState<number>(0);
   const voiceInfoTimeout = useRef<NodeJS.Timeout | null>(null);
 
+  // Cycling Mode System
+  const [isCyclingMode, setIsCyclingMode] = useState(false);
+  const [cyclingData, setCyclingData] = useState({
+    speed_kmh: 0,
+    avg_speed_kmh: 0,
+    road_type: 'mixed' as 'bike_lane' | 'road' | 'mixed' | 'trail' | 'highway_shoulder',
+    traffic_density: 'medium' as 'light' | 'medium' | 'heavy',
+    bike_type: 'road' as 'road' | 'mountain' | 'electric' | 'cargo',
+    rider_experience: 'intermediate' as 'beginner' | 'intermediate' | 'advanced' | 'professional',
+    group_riding: false
+  });
+  const [cyclingThreats, setCyclingThreats] = useState<any[]>([]);
+  const [cyclingSafetyScore, setCyclingSafetyScore] = useState(75);
+  const [lastSpeedUpdate, setLastSpeedUpdate] = useState<number>(0);
+  const speedHistory = useRef<number[]>([]);
+
   // Smart hands-free voice trigger system
   const startHandsFreeMode = async () => {
     if (!emergencyTriggerWord || emergencyTriggerWord.length < 3) {
