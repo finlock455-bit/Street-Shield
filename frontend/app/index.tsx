@@ -1353,6 +1353,25 @@ export default function SafeWalkApp() {
           </View>
         </View>
 
+        {/* Voice Trigger Status */}
+        {isListeningForTrigger && (
+          <View style={[styles.statusCard, styles.listeningCard]}>
+            <View style={styles.listeningIndicator}>
+              <Ionicons name="mic" size={20} color="#4CAF50" />
+              <View style={styles.pulsingDot} />
+            </View>
+            <Text style={styles.listeningText}>
+              🎤 Voice Trigger Active - Say "{emergencyTriggerWord}" for emergency
+            </Text>
+            <TouchableOpacity 
+              style={styles.stopListeningButton}
+              onPress={stopVoiceTriggerListening}
+            >
+              <Text style={styles.stopListeningText}>Stop Listening</Text>
+            </TouchableOpacity>
+          </View>
+        )}
+
         {/* Loading Indicator */}
         {isLoading && (
           <View style={styles.loadingContainer}>
