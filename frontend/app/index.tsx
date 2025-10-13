@@ -1292,21 +1292,62 @@ export default function SafeWalkApp() {
     }
   };
 
-  // Voice activation for info requests
+  // Voice activation for info requests - PERSISTENT MODE
   const activateVoiceInfoRequest = async () => {
-    if (!isHandsFreeMode && !isListeningForTrigger) {
-      await speakAlert("Voice info system activated. Ask me about your safety, location, weather, health, or any nearby threats.");
-    }
-    
     setIsVoiceInfoActive(true);
     
-    // Auto-deactivate after 10 seconds to save battery
-    voiceInfoTimeout.current = setTimeout(() => {
-      setIsVoiceInfoActive(false);
-      if (voiceAlertsEnabled) {
-        speakAlert("Voice info listening stopped.");
-      }
-    }, 10000);
+    if (voiceAlertsEnabled) {
+      await speakAlert("Voice info system activated. You can now ask me about your safety, location, weather, health, or nearby threats at any time. I'll listen continuously while preserving battery with smart cycling.");
+    }
+    
+    // Start persistent voice info listening (no timeout - always available)
+    startPersistentVoiceInfoListening();
+  };
+
+  const deactivateVoiceInfoRequest = () => {
+    setIsVoiceInfoActive(false);
+    
+    // Clear any active timeouts
+    if (voiceInfoTimeout.current) {
+      clearTimeout(voiceInfoTimeout.current);
+      voiceInfoTimeout.current = null;
+    }
+    
+    if (voiceAlertsEnabled) {
+      speakAlert("Voice info system deactivated.");
+    }
+  };
+
+  const startPersistentVoiceInfoListening = () => {
+    if (!isVoiceInfoActive) return;
+    
+    // Integrate with existing hands-free smart listening if active
+    if (isHandsFreeMode) {
+      // Voice info rides along with emergency hands-free system
+      console.log('[Voice Info] Integrated with hands-free emergency system');
+      return;
+    }
+    
+    // Independent voice info listening cycle (less frequent than emergency)
+    const scheduleNextInfoListening = () => {
+      if (!isVoiceInfoActive) return;
+      
+      // Listen for 3 seconds every 20 seconds for battery optimization
+      voiceInfoTimeout.current = setTimeout(() => {
+        if (isVoiceInfoActive) {
+          console.log('[Voice Info] Starting listening window for information requests');
+          
+          // Brief listening window for info requests
+          setTimeout(() => {
+            scheduleNextInfoListening(); // Continue cycle
+          }, 3000); // 3 seconds of active listening
+        }
+      }, 20000); // 20 seconds between listening windows
+    };
+    
+    // Start first listening window immediately
+    console.log('[Voice Info] Starting persistent voice info listening');
+    scheduleNextInfoListening();
   };
 
   const simulateVoiceInfoRequest = async (query: string) => {
