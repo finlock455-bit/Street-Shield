@@ -912,6 +912,120 @@ export default function SafeWalkApp() {
   const triggerActivationRef = useRef<boolean>(false);
   const lastAmbientCheck = useRef<number>(0);
 
+  // Smart hands-free voice trigger system
+  const startHandsFreeMode = async () => {
+    if (!emergencyTriggerWord || emergencyTriggerWord.length < 3) {
+      await speakAlert("No trigger word set. Please set up your emergency system first.");
+      return;
+    }
+
+    try {
+      setIsHandsFreeMode(true);
+      setAmbientListeningActive(true);
+      
+      if (voiceAlertsEnabled) {
+        await speakAlert(`Hands-free emergency mode activated. Street Shield will continuously monitor for your trigger word ${emergencyTriggerWord}. This uses smart listening to preserve battery life.`);
+      }
+
+      // Start intelligent listening cycles
+      startSmartListeningCycle();
+
+    } catch (error) {
+      console.error('Error starting hands-free mode:', error);
+      setIsHandsFreeMode(false);
+    }
+  };
+
+  const stopHandsFreeMode = () => {
+    setIsHandsFreeMode(false);
+    setAmbientListeningActive(false);
+    setIsListeningForTrigger(false);
+    
+    if (handsFreeInterval.current) {
+      clearInterval(handsFreeInterval.current);
+      handsFreeInterval.current = null;
+    }
+    
+    if (listeningTimeout.current) {
+      clearTimeout(listeningTimeout.current);
+      listeningTimeout.current = null;
+    }
+    
+    if (voiceAlertsEnabled) {
+      speakAlert("Hands-free emergency mode deactivated.");
+    }
+  };
+
+  const startSmartListeningCycle = () => {
+    // Intelligent listening strategy: 
+    // - Listen for 5 seconds every 30 seconds (16% active time)
+    // - Increase frequency in high-risk scenarios
+    // - Activate continuous listening when danger detected
+    
+    const standardInterval = 30000; // 30 seconds between listening windows
+    const highRiskInterval = 15000;  // 15 seconds in high-risk situations
+    const listeningDuration = 5000;   // 5 seconds of active listening
+    
+    const scheduleNextListening = () => {
+      if (!isHandsFreeMode) return;
+      
+      // Determine listening frequency based on safety context
+      const currentSafetyScore = safetyAnalysis?.safety_score?.overall_score || 70;
+      const isHighRisk = currentSafetyScore < 50;
+      const isDarkHours = new Date().getHours() < 6 || new Date().getHours() > 22;
+      const hasProximityThreats = proximityThreats.length > 0;
+      
+      // Calculate next listening window
+      let nextInterval = standardInterval;
+      if (isHighRisk || hasProximityThreats) {
+        nextInterval = highRiskInterval; // More frequent in danger
+      }
+      if (isDarkHours) {
+        nextInterval = Math.max(nextInterval * 0.7, 10000); // 30% more frequent at night
+      }
+      
+      handsFreeInterval.current = setTimeout(() => {
+        startActiveListeningWindow(listeningDuration);
+      }, nextInterval);
+    };
+    
+    // Start first listening window immediately
+    startActiveListeningWindow(listeningDuration);
+    scheduleNextListening();
+  };
+
+  const startActiveListeningWindow = (duration: number) => {
+    if (!isHandsFreeMode) return;
+    
+    setIsListeningForTrigger(true);
+    triggerActivationRef.current = false;
+    lastAmbientCheck.current = Date.now();
+    
+    // Silent activation - no voice announcement to preserve stealth
+    console.log(`[Hands-Free] Starting ${duration}ms listening window`);
+    
+    listeningTimeout.current = setTimeout(() => {
+      setIsListeningForTrigger(false);
+      
+      // Schedule next listening window
+      const scheduleNext = () => {
+        const standardInterval = 30000;
+        const currentSafetyScore = safetyAnalysis?.safety_score?.overall_score || 70;
+        const isHighRisk = currentSafetyScore < 50;
+        const nextInterval = isHighRisk ? 15000 : standardInterval;
+        
+        handsFreeInterval.current = setTimeout(() => {
+          if (isHandsFreeMode) {
+            startActiveListeningWindow(5000);
+          }
+        }, nextInterval);
+      };
+      
+      scheduleNext();
+    }, duration);
+  };
+
+  // Manual voice trigger (for testing/immediate use)
   const startVoiceTriggerListening = async () => {
     if (!emergencyTriggerWord || emergencyTriggerWord.length < 3) {
       await speakAlert("No trigger word set. Please set up your emergency system first.");
@@ -919,6 +1033,21 @@ export default function SafeWalkApp() {
     }
 
     try {
+      // If in hands-free mode, switch to immediate listening
+      if (isHandsFreeMode) {
+        setIsListeningForTrigger(true);
+        if (voiceAlertsEnabled) {
+          await speakAlert(`Manual activation. Say ${emergencyTriggerWord} now to trigger emergency.`);
+        }
+        // Extend listening window for manual activation
+        if (listeningTimeout.current) clearTimeout(listeningTimeout.current);
+        listeningTimeout.current = setTimeout(() => {
+          setIsListeningForTrigger(false);
+        }, 10000); // 10 seconds for manual activation
+        return;
+      }
+
+      // Standard manual activation
       setIsListeningForTrigger(true);
       triggerActivationRef.current = false;
       
@@ -926,7 +1055,6 @@ export default function SafeWalkApp() {
         await speakAlert(`Voice trigger activated. Say ${emergencyTriggerWord} to trigger emergency mode. Listening for 30 seconds.`);
       }
 
-      // Auto-deactivate after 30 seconds for battery conservation
       listeningTimeout.current = setTimeout(() => {
         stopVoiceTriggerListening();
       }, 30000);
