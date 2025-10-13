@@ -1715,7 +1715,7 @@ export default function SafeWalkApp() {
               </TouchableOpacity>
             )}
 
-            {/* Voice Information Request Button */}
+                {/* Voice Information Request Button */}
             <TouchableOpacity
               style={[
                 styles.featureButton, 
@@ -1734,10 +1734,10 @@ export default function SafeWalkApp() {
                 />
               </View>
               <Text style={styles.featureButtonText}>
-                {isVoiceInfoActive ? "Ask Question" : "Voice Info"}
+                {isVoiceInfoActive ? "Try: Safety Status" : "Voice Info"}
               </Text>
               <Text style={styles.featureStatus}>
-                {isVoiceInfoActive ? "LISTENING" : "TAP TO START"}
+                {isVoiceInfoActive ? "LISTENING" : "HANDS-FREE"}
               </Text>
             </TouchableOpacity>
 
