@@ -1145,7 +1145,7 @@ export default function SafeWalkApp() {
     return words.some(word => word === normalizedTrigger);
   };
 
-  // VOICE-ACTIVATED INFORMATION REQUEST SYSTEM
+  // VOICE-ACTIVATED INFORMATION REQUEST SYSTEM WITH "STREET SHIELD" TRIGGER
   const processVoiceInfoRequest = async (spokenText: string): Promise<boolean> => {
     if (!spokenText) return false;
     
@@ -1155,45 +1155,62 @@ export default function SafeWalkApp() {
     // Prevent spam requests
     if (now - lastInfoRequest < 3000) return false;
     
-    // Voice command patterns
+    // Check for "Street Shield" trigger word first
+    const triggerPhrases = ['street shield', 'streetshield', 'shield'];
+    const hasTrigger = triggerPhrases.some(trigger => text.includes(trigger));
+    
+    if (!hasTrigger) {
+      return false; // Must say "Street Shield" first
+    }
+    
+    // Remove trigger word to get the actual command
+    let command = text;
+    for (const trigger of triggerPhrases) {
+      command = command.replace(trigger, '').trim();
+    }
+    
+    // Remove common connecting words
+    command = command.replace(/^(what|how|where|when|is|are|my|the|current|can|you|do)\s+/g, '').trim();
+    
+    // Voice command patterns (now without trigger word)
     const commands = {
       safety: [
-        'what is my safety score', 'how safe am i', 'safety status', 
-        'current safety', 'shield status', 'safety check'
+        'safety score', 'safe am i', 'safety status', 'safety check', 
+        'shield status', 'how safe', 'safety rating'
       ],
       location: [
-        'where am i', 'current location', 'my location', 'where are we',
-        'what street', 'current address'
+        'location', 'where am i', 'my location', 'where are we',
+        'street', 'address', 'current position'
       ],
       weather: [
-        'weather', 'temperature', 'how hot', 'how cold', 'weather conditions',
-        'is it raining', 'weather update'
+        'weather', 'temperature', 'hot', 'cold', 'weather conditions',
+        'raining', 'weather update', 'climate'
       ],
       health: [
-        'health status', 'heart rate', 'how am i feeling', 'vital signs',
-        'biometrics', 'health check', 'my health'
+        'health status', 'heart rate', 'feeling', 'vital signs',
+        'biometrics', 'health check', 'my health', 'pulse'
       ],
       threats: [
-        'any threats', 'dangers nearby', 'whats around me', 'proximity check',
-        'any danger', 'threats detected', 'safety scan'
+        'threats', 'dangers nearby', 'around me', 'proximity check',
+        'danger', 'threats detected', 'safety scan', 'hazards'
       ],
       time: [
-        'what time', 'current time', 'time check', 'whats the time'
+        'time', 'current time', 'time check', 'clock', 'what time'
       ],
       battery: [
-        'battery level', 'battery status', 'how much battery', 'power level'
+        'battery level', 'battery status', 'battery', 'power level', 'power'
       ],
       contacts: [
-        'emergency contacts', 'who will be called', 'my contacts', 'contact list'
+        'emergency contacts', 'contacts', 'who will be called', 'contact list'
       ],
       help: [
-        'help', 'what can you do', 'commands', 'voice commands', 'options'
+        'help', 'what can you do', 'commands', 'voice commands', 'options', 'assist'
       ]
     };
     
     // First try cycling-specific commands if in cycling mode
     if (isCyclingMode) {
-      const cyclingProcessed = await processCyclingVoiceCommand(text);
+      const cyclingProcessed = await processCyclingVoiceCommand(command);
       if (cyclingProcessed) {
         setLastInfoRequest(now);
         return true;
@@ -1203,13 +1220,17 @@ export default function SafeWalkApp() {
     // Match command to category
     let matchedCategory = null;
     for (const [category, patterns] of Object.entries(commands)) {
-      if (patterns.some(pattern => text.includes(pattern))) {
+      if (patterns.some(pattern => command.includes(pattern))) {
         matchedCategory = category;
         break;
       }
     }
     
-    if (!matchedCategory) return false;
+    if (!matchedCategory) {
+      // Provide helpful guidance if Street Shield was said but command not recognized
+      await speakAlert("I heard Street Shield, but didn't recognize the command. Try saying: Street Shield, what is my safety score? Or Street Shield, where am I?");
+      return false;
+    }
     
     setLastInfoRequest(now);
     await handleVoiceInfoRequest(matchedCategory);
