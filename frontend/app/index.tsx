@@ -1769,24 +1769,46 @@ export default function SafeWalkApp() {
                 isVoiceInfoActive ? styles.listeningButton : styles.infoButton
               ]}
               onPress={isVoiceInfoActive ? 
-                () => simulateVoiceInfoRequest("what is my safety score") : 
+                deactivateVoiceInfoRequest : 
                 activateVoiceInfoRequest
               }
             >
               <View style={styles.featureIcon}>
                 <Ionicons 
-                  name={isVoiceInfoActive ? "chatbubble" : "information-circle"} 
+                  name={isVoiceInfoActive ? "chatbubble-ellipses" : "information-circle"} 
                   size={20} 
                   color="#FFF" 
                 />
               </View>
               <Text style={styles.featureButtonText}>
-                {isVoiceInfoActive ? "Try: Safety Status" : "Voice Info"}
+                {isVoiceInfoActive ? "Voice Info ON" : "Voice Info"}
               </Text>
               <Text style={styles.featureStatus}>
-                {isVoiceInfoActive ? "LISTENING" : "HANDS-FREE"}
+                {isVoiceInfoActive ? "ALWAYS READY" : "TAP TO START"}
               </Text>
             </TouchableOpacity>
+
+            {/* Voice Info Demo Button (when active) */}
+            {isVoiceInfoActive && (
+              <TouchableOpacity
+                style={[styles.featureButton, styles.demoButton]}
+                onPress={() => simulateVoiceInfoRequest("what is my safety score")}
+              >
+                <View style={styles.featureIcon}>
+                  <Ionicons 
+                    name="mic" 
+                    size={20} 
+                    color="#FFF" 
+                  />
+                </View>
+                <Text style={styles.featureButtonText}>
+                  Demo: Safety Check
+                </Text>
+                <Text style={styles.featureStatus}>
+                  TRY NOW
+                </Text>
+              </TouchableOpacity>
+            )}
 
             {/* Manual Voice Trigger (when hands-free is active) */}
             {isHandsFreeMode && (
