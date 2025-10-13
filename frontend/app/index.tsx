@@ -1844,18 +1844,41 @@ export default function SafeWalkApp() {
               <Ionicons name="shield-checkmark" size={20} color="#2196F3" />
               <View style={[styles.pulsingDot, { backgroundColor: '#2196F3' }]} />
               {ambientListeningActive && <Ionicons name="mic" size={16} color="#4CAF50" style={{ marginLeft: 8 }} />}
+              {isVoiceInfoActive && <Ionicons name="information-circle" size={16} color="#9C27B0" style={{ marginLeft: 8 }} />}
             </View>
             <Text style={styles.handsFreeTitle}>
               🛡️ HANDS-FREE PROTECTION ACTIVE
             </Text>
             <Text style={styles.handsFreeDescription}>
-              Smart listening for "{emergencyTriggerWord}" - Battery optimized • {isListeningForTrigger ? 'Currently listening' : 'Standby mode'}
+              Emergency trigger: "{emergencyTriggerWord}" {isVoiceInfoActive && ' • Voice info requests enabled'} • {isListeningForTrigger ? 'Currently listening' : 'Standby mode'}
             </Text>
             <TouchableOpacity 
               style={styles.stopHandsFreeButton}
               onPress={stopHandsFreeMode}
             >
               <Text style={styles.stopHandsFreeText}>Deactivate</Text>
+            </TouchableOpacity>
+          </View>
+        )}
+
+        {/* Voice Info Only Status (when not in hands-free) */}
+        {!isHandsFreeMode && isVoiceInfoActive && (
+          <View style={[styles.statusCard, styles.voiceInfoCard]}>
+            <View style={styles.listeningIndicator}>
+              <Ionicons name="information-circle" size={20} color="#9C27B0" />
+              <View style={[styles.pulsingDot, { backgroundColor: '#9C27B0' }]} />
+            </View>
+            <Text style={styles.voiceInfoTitle}>
+              💬 VOICE INFO SYSTEM ACTIVE
+            </Text>
+            <Text style={styles.voiceInfoDescription}>
+              Ask about safety, location, weather, health, or threats • Always ready with smart battery optimization
+            </Text>
+            <TouchableOpacity 
+              style={styles.stopVoiceInfoButton}
+              onPress={deactivateVoiceInfoRequest}
+            >
+              <Text style={styles.stopVoiceInfoText}>Deactivate</Text>
             </TouchableOpacity>
           </View>
         )}
