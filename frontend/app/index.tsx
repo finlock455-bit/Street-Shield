@@ -1191,6 +1191,15 @@ export default function SafeWalkApp() {
       ]
     };
     
+    // First try cycling-specific commands if in cycling mode
+    if (isCyclingMode) {
+      const cyclingProcessed = await processCyclingVoiceCommand(text);
+      if (cyclingProcessed) {
+        setLastInfoRequest(now);
+        return true;
+      }
+    }
+    
     // Match command to category
     let matchedCategory = null;
     for (const [category, patterns] of Object.entries(commands)) {
