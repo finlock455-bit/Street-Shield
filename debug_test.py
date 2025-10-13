@@ -7,7 +7,7 @@ import requests
 import json
 from datetime import datetime
 
-BASE_URL = "https://shield-alert-1.preview.emergentagent.com/api"
+BASE_URL = "https://streetshield.preview.emergentagent.com/api"
 
 def test_community_report_debug():
     """Debug community report and alert creation"""

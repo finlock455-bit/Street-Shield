@@ -12,7 +12,7 @@ from datetime import datetime, timedelta
 from typing import Dict, List
 
 # Backend URL from frontend environment
-BACKEND_URL = "https://shield-alert-1.preview.emergentagent.com/api"
+BACKEND_URL = "https://streetshield.preview.emergentagent.com/api"
 
 # Test data for music/security balance scenarios
 TEST_LOCATION = {
