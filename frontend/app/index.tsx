@@ -149,6 +149,10 @@ export default function SafeWalkApp() {
       if (handsFreeInterval.current) {
         clearInterval(handsFreeInterval.current);
       }
+      // Cleanup voice info system
+      if (voiceInfoTimeout.current) {
+        clearTimeout(voiceInfoTimeout.current);
+      }
     };
   }, []);
 
