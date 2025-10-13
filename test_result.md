@@ -423,11 +423,9 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Electric Scooter Detection System"
-    - "Electric Scooter Alert UI" 
-    - "AI-Driven Noise Cancellation System"
-    - "Biometric Health Monitoring"
-    - "Music/Security Balance Voice System"
+    - "Emergency Contact Management System"
+    - "Enhanced Health Monitoring with Medical Accuracy"
+    - "Cycling Mode Safety System"
   stuck_tasks:
     - "Real-time Location Tracking"
     - "Push Notifications System"
