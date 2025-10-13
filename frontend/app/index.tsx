@@ -2262,6 +2262,63 @@ export default function SafeWalkApp() {
           </View>
         )}
 
+        {/* Cycling Data Display */}
+        {isCyclingMode && (
+          <View style={[styles.infoCard, styles.cyclingCard]}>
+            <Text style={styles.cardTitle}>🚴 Cycling Safety Monitor</Text>
+            
+            <View style={styles.cyclingGrid}>
+              <View style={styles.cyclingItem}>
+                <Text style={styles.cyclingLabel}>Current Speed</Text>
+                <Text style={styles.cyclingValue}>{cyclingData.speed_kmh.toFixed(1)} km/h</Text>
+              </View>
+              
+              <View style={styles.cyclingItem}>
+                <Text style={styles.cyclingLabel}>Average Speed</Text>
+                <Text style={styles.cyclingValue}>{cyclingData.avg_speed_kmh.toFixed(1)} km/h</Text>
+              </View>
+              
+              <View style={styles.cyclingItem}>
+                <Text style={styles.cyclingLabel}>Safety Score</Text>
+                <Text style={[
+                  styles.cyclingValue,
+                  { color: cyclingSafetyScore > 70 ? '#4CAF50' : cyclingSafetyScore > 50 ? '#FF9800' : '#F44336' }
+                ]}>
+                  {cyclingSafetyScore}/100
+                </Text>
+              </View>
+              
+              <View style={styles.cyclingItem}>
+                <Text style={styles.cyclingLabel}>Road Type</Text>
+                <Text style={styles.cyclingValue}>{cyclingData.road_type.replace('_', ' ')}</Text>
+              </View>
+            </View>
+            
+            {cyclingThreats.length > 0 && (
+              <View style={styles.cyclingThreats}>
+                <Text style={styles.cyclingThreatsTitle}>Active Threats:</Text>
+                {cyclingThreats.slice(0, 3).map((threat, index) => (
+                  <View key={index} style={styles.cyclingThreatItem}>
+                    <Text style={[
+                      styles.cyclingThreatSeverity,
+                      { color: threat.severity === 'critical' ? '#F44336' : 
+                               threat.severity === 'high' ? '#FF9800' : '#FFC107' }
+                    ]}>
+                      {threat.severity.toUpperCase()}
+                    </Text>
+                    <Text style={styles.cyclingThreatDesc}>{threat.threat_description}</Text>
+                  </View>
+                ))}
+              </View>
+            )}
+            
+            <Text style={styles.cyclingStatus}>
+              Risk Level: {cyclingSafetyScore > 70 ? 'Low' : cyclingSafetyScore > 50 ? 'Moderate' : 'High'} • 
+              Traffic: {cyclingData.traffic_density} • Experience: {cyclingData.rider_experience}
+            </Text>
+          </View>
+        )}
+
         {/* Biometric Monitoring */}
         {biometricData && (
           <View style={styles.infoCard}>
