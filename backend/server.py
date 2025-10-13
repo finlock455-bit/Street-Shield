@@ -605,7 +605,7 @@ async def analyze_biometric_data(biometric_data: BiometricData, location: Locati
             alerts.append(HealthAlert(
                 alert_type="stress_overload",
                 severity="high",
-                message=f"High stress detected. Your body is showing signs of significant stress.",
+                message="High stress detected. Your body is showing signs of significant stress.",
                 biometric_data=biometric_data,
                 recommended_action="Find a safe, quiet place to rest and practice deep breathing"
             ))
