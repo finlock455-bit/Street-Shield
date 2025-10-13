@@ -1326,17 +1326,28 @@ export default function SafeWalkApp() {
               </Text>
             </TouchableOpacity>
 
-            {/* Emergency Test Button */}
+            {/* Voice Trigger Button */}
             {emergencyTriggerWord && (
               <TouchableOpacity
-                style={[styles.featureButton, styles.emergencyTestButton]}
-                onPress={() => simulateVoiceTrigger(emergencyTriggerWord)}
+                style={[
+                  styles.featureButton, 
+                  isListeningForTrigger ? styles.listeningButton : styles.emergencyButton
+                ]}
+                onPress={isListeningForTrigger ? activateVoiceTrigger : startVoiceTriggerListening}
               >
                 <View style={styles.featureIcon}>
-                  <Ionicons name="flash" size={20} color="#FFA726" />
+                  <Ionicons 
+                    name={isListeningForTrigger ? "mic" : "warning"} 
+                    size={20} 
+                    color="#FFF" 
+                  />
                 </View>
-                <Text style={styles.featureButtonText}>Test</Text>
-                <Text style={styles.featureStatus}>DEMO</Text>
+                <Text style={styles.featureButtonText}>
+                  {isListeningForTrigger ? "Say Trigger Word" : "Voice Trigger"}
+                </Text>
+                <Text style={styles.featureStatus}>
+                  {isListeningForTrigger ? "LISTENING" : "READY"}
+                </Text>
               </TouchableOpacity>
             )}
           </View>
