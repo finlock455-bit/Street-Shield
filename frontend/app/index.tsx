@@ -144,6 +144,10 @@ export default function SafeWalkApp() {
       if (triggerWordTimeout.current) {
         clearTimeout(triggerWordTimeout.current);
       }
+      // Cleanup hands-free mode
+      if (handsFreeInterval.current) {
+        clearInterval(handsFreeInterval.current);
+      }
     };
   }, []);
 
