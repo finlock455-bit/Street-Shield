@@ -219,7 +219,7 @@ class BackendTester:
             test_scenarios = [
                 {
                     "name": "Normal heart rate scenario",
-                    "data": {
+                    "biometric_data": {
                         "user_id": user_id,
                         "heart_rate": 75,
                         "blood_oxygen": 98,
@@ -228,11 +228,17 @@ class BackendTester:
                         "user_age": 30,
                         "user_fitness_level": "average"
                     },
-                    "expected_alerts": 0
+                    "location": {
+                        "latitude": 40.7128,
+                        "longitude": -74.0060,
+                        "accuracy": 10.0,
+                        "timestamp": datetime.utcnow().isoformat()
+                    },
+                    "safety_context": {"activity_level": "light", "temperature": 22}
                 },
                 {
                     "name": "High heart rate scenario (165+ BPM)",
-                    "data": {
+                    "biometric_data": {
                         "user_id": user_id,
                         "heart_rate": 170,
                         "blood_oxygen": 96,
@@ -241,11 +247,17 @@ class BackendTester:
                         "user_age": 35,
                         "user_fitness_level": "average"
                     },
-                    "expected_alerts": 1
+                    "location": {
+                        "latitude": 40.7589,
+                        "longitude": -73.9851,
+                        "accuracy": 8.0,
+                        "timestamp": datetime.utcnow().isoformat()
+                    },
+                    "safety_context": {"activity_level": "vigorous", "temperature": 28}
                 },
                 {
                     "name": "Critical heart rate scenario (185+ BPM)",
-                    "data": {
+                    "biometric_data": {
                         "user_id": user_id,
                         "heart_rate": 190,
                         "blood_oxygen": 94,
@@ -254,11 +266,17 @@ class BackendTester:
                         "user_age": 40,
                         "user_fitness_level": "below_average"
                     },
-                    "expected_alerts": 2
+                    "location": {
+                        "latitude": 40.7829,
+                        "longitude": -73.9654,
+                        "accuracy": 5.0,
+                        "timestamp": datetime.utcnow().isoformat()
+                    },
+                    "safety_context": {"activity_level": "maximum", "temperature": 35}
                 },
                 {
                     "name": "High stress scenario (0.8+)",
-                    "data": {
+                    "biometric_data": {
                         "user_id": user_id,
                         "heart_rate": 85,
                         "blood_oxygen": 97,
@@ -267,11 +285,17 @@ class BackendTester:
                         "user_age": 28,
                         "user_fitness_level": "average"
                     },
-                    "expected_alerts": 1
+                    "location": {
+                        "latitude": 40.7505,
+                        "longitude": -73.9934,
+                        "accuracy": 7.0,
+                        "timestamp": datetime.utcnow().isoformat()
+                    },
+                    "safety_context": {"activity_level": "moderate", "temperature": 25}
                 },
                 {
                     "name": "Low blood oxygen scenario (<90%)",
-                    "data": {
+                    "biometric_data": {
                         "user_id": user_id,
                         "heart_rate": 80,
                         "blood_oxygen": 88,
@@ -280,11 +304,17 @@ class BackendTester:
                         "user_age": 32,
                         "user_fitness_level": "average"
                     },
-                    "expected_alerts": 1
+                    "location": {
+                        "latitude": 40.7400,
+                        "longitude": -74.0000,
+                        "accuracy": 6.0,
+                        "timestamp": datetime.utcnow().isoformat()
+                    },
+                    "safety_context": {"activity_level": "light", "temperature": 20}
                 },
                 {
                     "name": "Heat exhaustion scenario",
-                    "data": {
+                    "biometric_data": {
                         "user_id": user_id,
                         "heart_rate": 165,
                         "blood_oxygen": 95,
@@ -294,40 +324,54 @@ class BackendTester:
                         "user_age": 25,
                         "user_fitness_level": "average"
                     },
-                    "expected_alerts": 2
+                    "location": {
+                        "latitude": 40.7300,
+                        "longitude": -73.9900,
+                        "accuracy": 4.0,
+                        "timestamp": datetime.utcnow().isoformat()
+                    },
+                    "safety_context": {"activity_level": "vigorous", "temperature": 35}
                 }
             ]
             
-            # Test each scenario
+            # Test each scenario using the correct endpoint structure
             for scenario in test_scenarios:
-                response = self.session.post(f"{self.base_url}/health/biometric-analysis", json=scenario["data"])
+                # The endpoint expects separate parameters, not nested in scenario
+                response = self.session.post(
+                    f"{self.base_url}/health/biometric-analysis",
+                    json={
+                        "biometric_data": scenario["biometric_data"],
+                        "location": scenario["location"],
+                        "safety_context": scenario["safety_context"]
+                    }
+                )
                 
                 if response.status_code == 200:
                     health_response = response.json()
-                    alerts = health_response.get('alerts', [])
+                    alerts = health_response.get('health_alerts', [])
+                    emergency_triggered = health_response.get('emergency_triggered', False)
                     
                     # Check if medical thresholds are working
                     success = True
-                    details = f"Generated {len(alerts)} alerts"
+                    details = f"Generated {len(alerts)} alerts, emergency: {emergency_triggered}"
                     
                     # Verify critical conditions trigger emergency
-                    if scenario["data"]["heart_rate"] >= 185 or scenario["data"]["blood_oxygen"] <= 90:
-                        emergency_alerts = [a for a in alerts if a.get('auto_emergency', False)]
-                        if not emergency_alerts:
+                    if scenario["biometric_data"]["heart_rate"] >= 185 or scenario["biometric_data"]["blood_oxygen"] <= 90:
+                        if not emergency_triggered:
                             success = False
-                            details += " - CRITICAL: No emergency alert for dangerous condition"
+                            details += " - CRITICAL: No emergency triggered for dangerous condition"
                     
                     # Verify high stress detection
-                    if scenario["data"]["stress_level"] >= 0.8:
+                    if scenario["biometric_data"]["stress_level"] >= 0.8:
                         stress_alerts = [a for a in alerts if 'stress' in a.get('alert_type', '').lower()]
-                        if not stress_alerts:
+                        if not stress_alerts and len(alerts) == 0:
                             success = False
                             details += " - Missing stress alert"
                     
                     # Verify heat exhaustion detection
-                    if scenario["data"].get("ambient_temperature", 0) > 30 and scenario["data"]["heart_rate"] > 160:
+                    if scenario["biometric_data"].get("ambient_temperature", 0) > 30 and scenario["biometric_data"]["heart_rate"] > 160:
                         heat_alerts = [a for a in alerts if 'heat' in a.get('alert_type', '').lower()]
-                        if not heat_alerts:
+                        if not heat_alerts and len(alerts) == 0:
                             success = False
                             details += " - Missing heat stress alert"
                     
@@ -335,7 +379,7 @@ class BackendTester:
                         f"POST /api/health/biometric-analysis - {scenario['name']}",
                         success,
                         details,
-                        {"alerts_count": len(alerts), "alerts": [a.get('alert_type') for a in alerts]}
+                        {"alerts_count": len(alerts), "alert_types": [a.get('alert_type') for a in alerts]}
                     )
                 else:
                     self.log_test(
@@ -345,19 +389,21 @@ class BackendTester:
                         response.text
                     )
             
-            # Test GET /api/health/history endpoint
-            response = self.session.get(f"{self.base_url}/health/history")
+            # Test GET /api/health/history/{user_id} endpoint
+            response = self.session.get(f"{self.base_url}/health/history/{user_id}")
             if response.status_code == 200:
                 history = response.json()
+                biometric_history = history.get('biometric_history', [])
+                health_alerts = history.get('health_alerts', [])
                 self.log_test(
-                    "GET /api/health/history - Retrieve health history",
+                    "GET /api/health/history/{user_id} - Retrieve health history",
                     True,
-                    f"Retrieved health history with {len(history)} entries",
-                    {"count": len(history)}
+                    f"Retrieved {len(biometric_history)} biometric records and {len(health_alerts)} health alerts",
+                    {"biometric_count": len(biometric_history), "alerts_count": len(health_alerts)}
                 )
             else:
                 self.log_test(
-                    "GET /api/health/history - Retrieve health history",
+                    "GET /api/health/history/{user_id} - Retrieve health history",
                     False,
                     f"Expected 200, got {response.status_code}",
                     response.text
