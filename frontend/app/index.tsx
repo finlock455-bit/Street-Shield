@@ -19,6 +19,7 @@ import * as Notifications from 'expo-notifications';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Ionicons } from '@expo/vector-icons';
 import { Audio } from 'expo-av';
+import { Accelerometer, Pedometer, DeviceMotion } from 'expo-sensors';
 
 const { width, height } = Dimensions.get('window');
 
