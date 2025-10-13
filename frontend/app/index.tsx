@@ -1016,7 +1016,8 @@ export default function SafeWalkApp() {
     lastAmbientCheck.current = Date.now();
     
     // Silent activation - no voice announcement to preserve stealth
-    console.log(`[Hands-Free] Starting ${duration}ms listening window`);
+    const listeningType = isVoiceInfoActive ? "Emergency + Voice Info" : "Emergency Only";
+    console.log(`[Hands-Free] Starting ${duration}ms ${listeningType} listening window`);
     
     listeningTimeout.current = setTimeout(() => {
       setIsListeningForTrigger(false);
@@ -1026,7 +1027,12 @@ export default function SafeWalkApp() {
         const standardInterval = 30000;
         const currentSafetyScore = safetyAnalysis?.safety_score?.overall_score || 70;
         const isHighRisk = currentSafetyScore < 50;
-        const nextInterval = isHighRisk ? 15000 : standardInterval;
+        let nextInterval = isHighRisk ? 15000 : standardInterval;
+        
+        // More frequent listening if voice info is active (users expect responsiveness)
+        if (isVoiceInfoActive) {
+          nextInterval = Math.min(nextInterval, 20000); // At least every 20 seconds
+        }
         
         handsFreeInterval.current = setTimeout(() => {
           if (isHandsFreeMode) {
