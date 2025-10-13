@@ -1349,7 +1349,7 @@ export default function SafeWalkApp() {
     setIsVoiceInfoActive(true);
     
     if (voiceAlertsEnabled) {
-      await speakAlert("Voice info system activated. You can now ask me about your safety, location, weather, health, or nearby threats at any time. I'll listen continuously while preserving battery with smart cycling.");
+      await speakAlert("Voice info system activated. Say Street Shield followed by your question. For example: Street Shield, what is my safety score? Or Street Shield, where am I? I'll listen continuously while preserving battery with smart cycling.");
     }
     
     // Start persistent voice info listening (no timeout - always available)
