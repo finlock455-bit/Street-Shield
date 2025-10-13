@@ -1,18 +1,21 @@
 #!/usr/bin/env python3
 """
-Street Shield Backend Testing Suite
-Testing the NEW advanced features that support seamless music listening while maintaining security
-Focus: AI-Driven Noise Cancellation, Biometric Health Monitoring, Proximity Threat Detection
+Street Shield Backend API Testing Suite
+Tests the 3 newly implemented high-priority features:
+1. Emergency Contact Management System
+2. Enhanced Health Monitoring with Medical Accuracy  
+3. Cycling Mode Safety System
 """
 
 import requests
 import json
-import time
+import uuid
 from datetime import datetime, timedelta
-from typing import Dict, List
+from typing import Dict, List, Any
+import sys
 
-# Backend URL from frontend environment
-BACKEND_URL = "https://streetshield.preview.emergentagent.com/api"
+# Backend URL from frontend/.env
+BASE_URL = "https://streetshield.preview.emergentagent.com/api"
 
 # Test data for music/security balance scenarios
 TEST_LOCATION = {
