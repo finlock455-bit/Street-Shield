@@ -563,78 +563,187 @@ async def analyze_environmental_noise(location: LocationData, weather: WeatherDa
         )
 
 async def analyze_biometric_data(biometric_data: BiometricData, location: LocationData, safety_context: Dict) -> List[HealthAlert]:
-    """Analyze biometric data for health monitoring and emergency detection"""
+    """Advanced biometric analysis with medically accurate algorithms and personalized thresholds"""
     try:
         alerts = []
+        age = biometric_data.user_age or 30
+        fitness_level = biometric_data.user_fitness_level
+        activity = biometric_data.activity_level
+        medical_conditions = biometric_data.user_medical_conditions or []
         
-        # Heart rate analysis
+        # Calculate personalized heart rate zones based on age and fitness
+        max_hr = 220 - age
+        fitness_multipliers = {
+            "poor": 0.85, "below_average": 0.90, "average": 1.0, 
+            "above_average": 1.10, "excellent": 1.20
+        }
+        fitness_factor = fitness_multipliers.get(fitness_level, 1.0)
+        
+        # Personalized HR zones
+        resting_hr_max = 60 + (10 if fitness_level in ["poor", "below_average"] else 0)
+        target_hr_low = int((max_hr - resting_hr_max) * 0.5 * fitness_factor + resting_hr_max)
+        target_hr_high = int((max_hr - resting_hr_max) * 0.85 * fitness_factor + resting_hr_max)
+        danger_hr = int(max_hr * 0.95 * fitness_factor)
+        
+        # ADVANCED HEART RATE ANALYSIS
         if biometric_data.heart_rate:
             hr = biometric_data.heart_rate
             
-            # Critical heart rate thresholds
-            if hr > 180:  # Dangerously high
+            # Critical thresholds with medical accuracy
+            if hr > danger_hr or hr > 200:  # Immediate danger
                 alerts.append(HealthAlert(
                     alert_type="heart_rate_critical",
                     severity="critical",
-                    message=f"Critical heart rate detected: {hr} BPM. Seek immediate medical attention.",
+                    message=f"CRITICAL: Heart rate {hr} BPM exceeds safe limits for age {age}. Immediate medical attention required.",
                     biometric_data=biometric_data,
-                    recommended_action="Stop activity immediately, call emergency services",
+                    recommended_action="STOP ALL ACTIVITY. Call emergency services immediately. Sit down and rest.",
                     auto_emergency=True
                 ))
-            elif hr > 160:  # Very high
+            elif hr > target_hr_high + 20:  # Very high but not critical
                 alerts.append(HealthAlert(
-                    alert_type="heart_rate_spike",
+                    alert_type="heart_rate_very_high",
                     severity="high",
-                    message=f"High heart rate detected: {hr} BPM. Consider slowing down.",
+                    message=f"Very high heart rate: {hr} BPM. Target for {activity} activity: {target_hr_low}-{target_hr_high} BPM.",
                     biometric_data=biometric_data,
-                    recommended_action="Reduce activity intensity, find safe resting place"
+                    recommended_action="Reduce intensity immediately. Find safe place to rest."
                 ))
-            elif hr < 50:  # Unusually low during activity
-                activity_level = safety_context.get("activity_level", "moderate")
-                if activity_level in ["moderate", "vigorous"]:
-                    alerts.append(HealthAlert(
-                        alert_type="heart_rate_low",
-                        severity="medium",
-                        message=f"Unusually low heart rate during activity: {hr} BPM.",
-                        biometric_data=biometric_data,
-                        recommended_action="Check if you're feeling well, consider medical consultation"
-                    ))
+            elif activity == "rest" and hr > resting_hr_max + 20:
+                alerts.append(HealthAlert(
+                    alert_type="resting_hr_elevated",
+                    severity="medium",
+                    message=f"Elevated resting heart rate: {hr} BPM. This may indicate stress, illness, or overtraining.",
+                    biometric_data=biometric_data,
+                    recommended_action="Monitor closely. Consider medical consultation if persistent."
+                ))
+            elif hr < 40 and "bradycardia" not in medical_conditions:
+                severity = "high" if hr < 35 else "medium"
+                alerts.append(HealthAlert(
+                    alert_type="heart_rate_low",
+                    severity=severity,
+                    message=f"Unusually low heart rate: {hr} BPM. May indicate heart rhythm issues.",
+                    biometric_data=biometric_data,
+                    recommended_action="Seek medical evaluation. Monitor for dizziness or fatigue." if severity == "high" else "Monitor symptoms and consider medical consultation."
+                ))
         
-        # Stress level analysis
-        if biometric_data.stress_level > 0.8:
-            alerts.append(HealthAlert(
-                alert_type="stress_overload",
-                severity="high",
-                message="High stress detected. Your body is showing signs of significant stress.",
-                biometric_data=biometric_data,
-                recommended_action="Find a safe, quiet place to rest and practice deep breathing"
-            ))
-        elif biometric_data.stress_level > 0.6:
-            alerts.append(HealthAlert(
-                alert_type="stress_warning",
-                severity="medium",
-                message="Elevated stress levels detected. Consider taking a break.",
-                biometric_data=biometric_data,
-                recommended_action="Practice relaxation techniques, consider reducing pace"
-            ))
+        # HEART RATE VARIABILITY ANALYSIS (Advanced metric)
+        if biometric_data.heart_rate_variability is not None:
+            hrv = biometric_data.heart_rate_variability
+            # Normal HRV ranges vary greatly, but very low HRV is concerning
+            if hrv < 10:  # Very low HRV
+                alerts.append(HealthAlert(
+                    alert_type="hrv_very_low",
+                    severity="high" if hrv < 5 else "medium",
+                    message=f"Very low heart rate variability: {hrv}ms. This may indicate high stress or health issues.",
+                    biometric_data=biometric_data,
+                    recommended_action="Prioritize rest and recovery. Consider stress management techniques."
+                ))
         
-        # Fatigue analysis
-        if biometric_data.fatigue_level > 0.8:
-            alerts.append(HealthAlert(
-                alert_type="fatigue_warning",
-                severity="medium",
-                message="High fatigue detected. Your body needs rest.",
-                biometric_data=biometric_data,
-                recommended_action="Find a safe place to rest, consider ending activity"
-            ))
-        
-        # Blood oxygen analysis (if available)
-        if biometric_data.blood_oxygen and biometric_data.blood_oxygen < 95:
-            severity = "critical" if biometric_data.blood_oxygen < 90 else "high"
-            auto_emergency = biometric_data.blood_oxygen < 90
+        # BLOOD PRESSURE ANALYSIS (if available)
+        if biometric_data.blood_pressure_systolic and biometric_data.blood_pressure_diastolic:
+            systolic = biometric_data.blood_pressure_systolic
+            diastolic = biometric_data.blood_pressure_diastolic
             
-            alerts.append(HealthAlert(
-                alert_type="oxygen_low",
+            # Hypertensive crisis
+            if systolic >= 180 or diastolic >= 120:
+                alerts.append(HealthAlert(
+                    alert_type="blood_pressure_crisis",
+                    severity="critical",
+                    message=f"HYPERTENSIVE CRISIS: BP {systolic}/{diastolic} mmHg. Immediate medical attention required.",
+                    biometric_data=biometric_data,
+                    recommended_action="Call emergency services immediately. Do not delay.",
+                    auto_emergency=True
+                ))
+            # Stage 2 hypertension
+            elif systolic >= 140 or diastolic >= 90:
+                alerts.append(HealthAlert(
+                    alert_type="blood_pressure_high",
+                    severity="high",
+                    message=f"High blood pressure: {systolic}/{diastolic} mmHg. Seek medical attention.",
+                    biometric_data=biometric_data,
+                    recommended_action="Rest immediately. Avoid strenuous activity. Consult healthcare provider."
+                ))
+            # Hypotension during activity
+            elif systolic < 90 and activity in ["moderate", "vigorous"]:
+                alerts.append(HealthAlert(
+                    alert_type="blood_pressure_low",
+                    severity="medium",
+                    message=f"Low blood pressure during activity: {systolic}/{diastolic} mmHg.",
+                    biometric_data=biometric_data,
+                    recommended_action="Stop activity. Sit or lie down. Hydrate slowly."
+                ))
+        
+        # ADVANCED BLOOD OXYGEN ANALYSIS
+        if biometric_data.blood_oxygen:
+            spo2 = biometric_data.blood_oxygen
+            altitude = biometric_data.altitude or 0
+            
+            # Adjust thresholds for altitude
+            altitude_adjustment = max(0, (altitude - 1500) / 1000 * 2)  # Reduce threshold by ~2% per 1000m above 1500m
+            normal_threshold = 95 - altitude_adjustment
+            critical_threshold = 90 - altitude_adjustment
+            
+            if spo2 < critical_threshold:
+                alerts.append(HealthAlert(
+                    alert_type="oxygen_critical",
+                    severity="critical",
+                    message=f"CRITICAL: Blood oxygen {spo2}% is dangerously low{' (altitude adjusted)' if altitude > 1500 else ''}.",
+                    biometric_data=biometric_data,
+                    recommended_action="Seek immediate medical attention. Consider oxygen therapy.",
+                    auto_emergency=True
+                ))
+            elif spo2 < normal_threshold:
+                alerts.append(HealthAlert(
+                    alert_type="oxygen_low",
+                    severity="high",
+                    message=f"Low blood oxygen: {spo2}%{' at altitude ' + str(int(altitude)) + 'm' if altitude > 1500 else ''}.",
+                    biometric_data=biometric_data,
+                    recommended_action="Rest and monitor breathing. Descend to lower altitude if possible."
+                ))
+        
+        # ADVANCED STRESS & RECOVERY ANALYSIS
+        if biometric_data.stress_level > 0.8:
+            # Factor in HRV and recovery score for more accurate stress assessment
+            hrv_factor = 1.2 if biometric_data.heart_rate_variability and biometric_data.heart_rate_variability < 15 else 1.0
+            recovery_factor = 0.8 if biometric_data.recovery_score and biometric_data.recovery_score > 0.7 else 1.0
+            
+            adjusted_stress = biometric_data.stress_level * hrv_factor * recovery_factor
+            
+            if adjusted_stress > 0.9:
+                alerts.append(HealthAlert(
+                    alert_type="stress_critical",
+                    severity="high",
+                    message="Critical stress levels detected. Your body is in high-stress state with poor recovery indicators.",
+                    biometric_data=biometric_data,
+                    recommended_action="Stop current activity. Practice deep breathing. Find safe, quiet environment."
+                ))
+            else:
+                alerts.append(HealthAlert(
+                    alert_type="stress_elevated",
+                    severity="medium",
+                    message="Elevated stress levels with concerning physiological markers.",
+                    biometric_data=biometric_data,
+                    recommended_action="Reduce activity intensity. Focus on controlled breathing."
+                ))
+        
+        # FATIGUE & RECOVERY ANALYSIS
+        if biometric_data.fatigue_level > 0.7:
+            recovery = biometric_data.recovery_score or 0.5
+            if recovery < 0.3 and biometric_data.fatigue_level > 0.8:
+                alerts.append(HealthAlert(
+                    alert_type="fatigue_severe",
+                    severity="high",
+                    message="Severe fatigue with poor recovery indicators. Risk of overexertion injury.",
+                    biometric_data=biometric_data,
+                    recommended_action="End activity immediately. Extended rest required."
+                ))
+            elif biometric_data.fatigue_level > 0.8:
+                alerts.append(HealthAlert(
+                    alert_type="fatigue_high",
+                    severity="medium",
+                    message="High fatigue levels detected. Performance and safety may be compromised.",
+                    biometric_data=biometric_data,
+                    recommended_action="Reduce pace significantly. Plan for rest breaks."
+                ))
                 severity=severity,
                 message=f"Low blood oxygen: {biometric_data.blood_oxygen}%. Seek immediate help.",
                 biometric_data=biometric_data,
