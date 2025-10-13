@@ -46,6 +46,30 @@ class SafetyAnalysisRequest(BaseModel):
     user_context: Optional[Dict] = Field(default_factory=dict)  # speed, activity type, etc.
     movement_history: Optional[List[LocationData]] = Field(default_factory=list)  # Last 10 locations for pattern analysis
 
+class CyclingContext(BaseModel):
+    speed_kmh: Optional[float] = None  # Current cycling speed
+    avg_speed_kmh: Optional[float] = None  # Average speed over journey
+    road_type: str = "mixed"  # "bike_lane", "road", "mixed", "trail", "highway_shoulder"
+    traffic_density: str = "medium"  # "light", "medium", "heavy"
+    bike_type: str = "road"  # "road", "mountain", "electric", "cargo"
+    rider_experience: str = "intermediate"  # "beginner", "intermediate", "advanced", "professional" 
+    group_riding: bool = False  # Solo vs group cycling
+    time_of_ride: str = "day"  # "dawn", "day", "dusk", "night"
+    weather_conditions: str = "clear"  # Current riding conditions
+    
+class CyclingThreat(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    threat_type: str  # "vehicle_behind", "door_zone", "intersection", "road_hazard", "wind_gust"
+    severity: str = "medium"  # "low", "medium", "high", "critical"
+    distance_meters: Optional[float] = None
+    relative_speed_kmh: Optional[float] = None  # Speed difference with threat
+    direction: str = "behind"  # "behind", "ahead", "left", "right", "crossing"
+    threat_description: str = ""
+    recommended_action: str = "maintain_awareness"
+    time_to_impact: Optional[float] = None  # seconds until potential collision
+    confidence: float = Field(ge=0.0, le=1.0, default=0.8)
+    timestamp: datetime = Field(default_factory=datetime.utcnow)
+
 class WeatherData(BaseModel):
     temperature: float
     humidity: float
