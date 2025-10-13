@@ -2851,6 +2851,12 @@ const styles = StyleSheet.create({
   demoButton: {
     backgroundColor: '#607D8B',
   },
+  cyclingButton: {
+    backgroundColor: '#4CAF50',
+  },
+  cyclingActiveButton: {
+    backgroundColor: '#2E7D32',
+  },
   testEmergencyButton: {
     backgroundColor: '#FF5722',
   },
