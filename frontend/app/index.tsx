@@ -2351,4 +2351,51 @@ const styles = StyleSheet.create({
     color: '#666',
     marginTop: 4,
   },
+  // Voice Trigger Status Styles
+  statusCard: {
+    backgroundColor: '#1A1A2E',
+    borderRadius: 15,
+    padding: 15,
+    marginHorizontal: 20,
+    marginBottom: 15,
+    borderWidth: 1,
+    borderColor: '#333',
+  },
+  listeningCard: {
+    backgroundColor: 'rgba(76, 175, 80, 0.1)',
+    borderColor: '#4CAF50',
+    borderWidth: 2,
+  },
+  listeningIndicator: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 10,
+  },
+  pulsingDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: '#4CAF50',
+    marginLeft: 8,
+    opacity: 0.8,
+  },
+  listeningText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '600',
+    textAlign: 'center',
+    marginBottom: 15,
+  },
+  stopListeningButton: {
+    backgroundColor: '#FF5722',
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderRadius: 20,
+    alignSelf: 'center',
+  },
+  stopListeningText: {
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: '600',
+  },
 });
