@@ -1325,7 +1325,7 @@ export default function SafeWalkApp() {
           break;
           
         case 'help':
-          response = `Street Shield voice commands: Ask for safety score, location, weather, health status, threats nearby, current time, battery level, or emergency contacts. You can also say your trigger word for emergencies.`;
+          response = `Street Shield voice commands: Say Street Shield followed by your question. Examples: Street Shield, what is my safety score? Street Shield, where am I? Street Shield, any threats nearby? You can also ask about weather, health, time, battery, or emergency contacts. For emergencies, say your custom trigger word.`;
           break;
           
         default:
