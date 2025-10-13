@@ -158,15 +158,32 @@ class ProximityAnalysis(BaseModel):
 
 class BiometricData(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    user_id: str = "demo_user"
+    # Core vitals
     heart_rate: Optional[int] = None  # BPM
-    heart_rate_variability: Optional[float] = None  # HRV
-    step_count: Optional[int] = None
-    calories_burned: Optional[float] = None
-    stress_level: float = Field(ge=0.0, le=1.0, default=0.0)  # 0.0 = relaxed, 1.0 = high stress
-    fatigue_level: float = Field(ge=0.0, le=1.0, default=0.0)  # 0.0 = energetic, 1.0 = exhausted
-    activity_level: str = "moderate"  # "sedentary", "light", "moderate", "vigorous"
+    heart_rate_variability: Optional[float] = None  # HRV in milliseconds
     blood_oxygen: Optional[int] = None  # SpO2 percentage
-    skin_temperature: Optional[float] = None  # Celsius
+    blood_pressure_systolic: Optional[int] = None  # mmHg
+    blood_pressure_diastolic: Optional[int] = None  # mmHg
+    # Advanced metrics
+    stress_level: float = Field(ge=0.0, le=1.0, default=0.0)  # 0.0 to 1.0
+    fatigue_level: float = Field(ge=0.0, le=1.0, default=0.0)  # 0.0 to 1.0
+    recovery_score: Optional[float] = Field(ge=0.0, le=1.0, default=None)  # Recovery index
+    # Activity context
+    activity_level: str = "light"  # "rest", "light", "moderate", "vigorous", "maximum"
+    steps_count: Optional[int] = None
+    calories_burned: Optional[float] = None
+    distance_traveled: Optional[float] = None  # kilometers
+    # Environmental context
+    ambient_temperature: Optional[float] = None  # Celsius
+    altitude: Optional[float] = None  # meters above sea level
+    # User profile for accurate analysis
+    user_age: Optional[int] = Field(ge=10, le=120, default=30)
+    user_fitness_level: str = "average"  # "poor", "below_average", "average", "above_average", "excellent"
+    user_medical_conditions: List[str] = Field(default_factory=list)  # ["hypertension", "diabetes", etc.]
+    # Sensor quality indicators
+    sensor_accuracy: float = Field(ge=0.0, le=1.0, default=0.8)  # Sensor reliability
+    measurement_duration: Optional[int] = None  # seconds of measurement
     timestamp: datetime = Field(default_factory=datetime.utcnow)
 
 class EnvironmentalNoiseProfile(BaseModel):
