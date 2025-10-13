@@ -905,8 +905,12 @@ export default function SafeWalkApp() {
 
   // Voice trigger detection system
   const [isListeningForTrigger, setIsListeningForTrigger] = useState(false);
+  const [isHandsFreeMode, setIsHandsFreeMode] = useState(false);
+  const [ambientListeningActive, setAmbientListeningActive] = useState(false);
   const listeningTimeout = useRef<NodeJS.Timeout | null>(null);
+  const handsFreeInterval = useRef<NodeJS.Timeout | null>(null);
   const triggerActivationRef = useRef<boolean>(false);
+  const lastAmbientCheck = useRef<number>(0);
 
   const startVoiceTriggerListening = async () => {
     if (!emergencyTriggerWord || emergencyTriggerWord.length < 3) {
