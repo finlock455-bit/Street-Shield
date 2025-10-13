@@ -806,23 +806,6 @@ async def analyze_biometric_data(biometric_data: BiometricData, location: Locati
             biometric_data=biometric_data,
             recommended_action="Restart health monitoring or check device status."
         )]
-        
-        # Contextual health analysis
-        weather_temp = safety_context.get("temperature", 20)
-        if weather_temp > 35 and biometric_data.heart_rate and biometric_data.heart_rate > 140:
-            alerts.append(HealthAlert(
-                alert_type="heat_exhaustion_risk",
-                severity="high",
-                message=f"Heat exhaustion risk: High temperature ({weather_temp}°C) + elevated heart rate.",
-                biometric_data=biometric_data,
-                recommended_action="Find shade, drink water, cool down immediately"
-            ))
-        
-        return alerts
-        
-    except Exception as e:
-        logging.error(f"Error in biometric analysis: {e}")
-        return []
 
 async def get_real_weather_data(lat: float, lon: float) -> Optional[WeatherData]:
     """Get real weather data from OpenWeatherMap API"""
