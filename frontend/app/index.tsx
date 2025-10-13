@@ -1119,6 +1119,200 @@ export default function SafeWalkApp() {
     return words.some(word => word === normalizedTrigger);
   };
 
+  // VOICE-ACTIVATED INFORMATION REQUEST SYSTEM
+  const processVoiceInfoRequest = async (spokenText: string): Promise<boolean> => {
+    if (!spokenText) return false;
+    
+    const text = spokenText.toLowerCase().trim();
+    const now = Date.now();
+    
+    // Prevent spam requests
+    if (now - lastInfoRequest < 3000) return false;
+    
+    // Voice command patterns
+    const commands = {
+      safety: [
+        'what is my safety score', 'how safe am i', 'safety status', 
+        'current safety', 'shield status', 'safety check'
+      ],
+      location: [
+        'where am i', 'current location', 'my location', 'where are we',
+        'what street', 'current address'
+      ],
+      weather: [
+        'weather', 'temperature', 'how hot', 'how cold', 'weather conditions',
+        'is it raining', 'weather update'
+      ],
+      health: [
+        'health status', 'heart rate', 'how am i feeling', 'vital signs',
+        'biometrics', 'health check', 'my health'
+      ],
+      threats: [
+        'any threats', 'dangers nearby', 'whats around me', 'proximity check',
+        'any danger', 'threats detected', 'safety scan'
+      ],
+      time: [
+        'what time', 'current time', 'time check', 'whats the time'
+      ],
+      battery: [
+        'battery level', 'battery status', 'how much battery', 'power level'
+      ],
+      contacts: [
+        'emergency contacts', 'who will be called', 'my contacts', 'contact list'
+      ],
+      help: [
+        'help', 'what can you do', 'commands', 'voice commands', 'options'
+      ]
+    };
+    
+    // Match command to category
+    let matchedCategory = null;
+    for (const [category, patterns] of Object.entries(commands)) {
+      if (patterns.some(pattern => text.includes(pattern))) {
+        matchedCategory = category;
+        break;
+      }
+    }
+    
+    if (!matchedCategory) return false;
+    
+    setLastInfoRequest(now);
+    await handleVoiceInfoRequest(matchedCategory);
+    return true;
+  };
+
+  const handleVoiceInfoRequest = async (category: string) => {
+    try {
+      let response = "";
+      
+      switch (category) {
+        case 'safety':
+          const score = safetyAnalysis?.safety_score?.overall_score || 0;
+          const riskLevel = score > 80 ? "very safe" : score > 60 ? "moderately safe" : 
+                          score > 40 ? "caution advised" : "high risk area";
+          response = `Your current safety score is ${score} out of 100. You are in a ${riskLevel} zone. ${
+            score < 60 ? "Stay alert and consider changing route if possible." : "Continue with normal caution."
+          }`;
+          break;
+          
+        case 'location':
+          if (location) {
+            response = `You are currently at latitude ${location.latitude.toFixed(4)}, longitude ${location.longitude.toFixed(4)}. ${
+              location.altitude ? `Elevation approximately ${Math.round(location.altitude)} meters.` : ""
+            }`;
+          } else {
+            response = "Location information is currently unavailable.";
+          }
+          break;
+          
+        case 'weather':
+          const weather = safetyAnalysis?.weather_data;
+          if (weather) {
+            response = `Current temperature is ${weather.temperature} degrees Celsius. ${
+              weather.conditions ? `Weather conditions: ${weather.conditions}.` : ""
+            } ${weather.wind_speed ? `Wind speed: ${weather.wind_speed} kilometers per hour.` : ""}`;
+          } else {
+            response = "Weather information is currently unavailable.";
+          }
+          break;
+          
+        case 'health':
+          const biometric = biometricData;
+          if (biometric.heart_rate) {
+            response = `Your heart rate is ${biometric.heart_rate} beats per minute. ${
+              biometric.stress_level > 0.7 ? "Stress levels are elevated." : "Stress levels are normal."
+            } ${biometric.fatigue_level > 0.7 ? "Fatigue levels are high." : "Energy levels are good."}`;
+          } else {
+            response = "Health monitoring data is being collected. Please ensure your sensors are active.";
+          }
+          break;
+          
+        case 'threats':
+          const threats = proximityThreats.length;
+          const escooterAlerts = safetyAnalysis?.safety_score?.alerts?.filter(alert => 
+            alert.type === 'proximity_threat' && 
+            (alert.message.toLowerCase().includes('electric scooter') || 
+             alert.message.toLowerCase().includes('silent vehicle'))
+          ) || [];
+          
+          if (threats > 0 || escooterAlerts.length > 0) {
+            response = `${threats} proximity threats detected. ${
+              escooterAlerts.length > 0 ? `Warning: Silent electric vehicles detected nearby.` : ""
+            } Stay vigilant and be prepared to move to safety.`;
+          } else {
+            response = "No immediate threats detected in your area. Continue with normal awareness.";
+          }
+          break;
+          
+        case 'time':
+          const currentTime = new Date();
+          response = `Current time is ${currentTime.toLocaleTimeString('en-US', {
+            hour: 'numeric',
+            minute: '2-digit',
+            hour12: true
+          })}. ${currentTime.toLocaleDateString('en-US', { 
+            weekday: 'long',
+            month: 'long',
+            day: 'numeric'
+          })}.`;
+          break;
+          
+        case 'battery':
+          response = "Battery monitoring is active. Street Shield is optimized for extended use with smart power management.";
+          break;
+          
+        case 'contacts':
+          const contactCount = emergencyContacts.filter(c => c.length > 0).length;
+          response = `You have ${contactCount} emergency contact${contactCount !== 1 ? 's' : ''} configured. ${
+            emergencyTriggerWord ? `Your emergency trigger word is ${emergencyTriggerWord}.` : "No trigger word set."
+          }`;
+          break;
+          
+        case 'help':
+          response = `Street Shield voice commands: Ask for safety score, location, weather, health status, threats nearby, current time, battery level, or emergency contacts. You can also say your trigger word for emergencies.`;
+          break;
+          
+        default:
+          response = "I didn't understand that request. Try asking about safety, location, weather, health, threats, time, or contacts.";
+      }
+      
+      // Provide audio response
+      await processVoiceAlert(response, 'info_request', { 
+        priority: 'low',
+        interruptible: true
+      });
+      
+    } catch (error) {
+      console.error('Error processing voice info request:', error);
+      await speakAlert("Sorry, I couldn't process that request right now.");
+    }
+  };
+
+  // Voice activation for info requests
+  const activateVoiceInfoRequest = async () => {
+    if (!isHandsFreeMode && !isListeningForTrigger) {
+      await speakAlert("Voice info system activated. Ask me about your safety, location, weather, health, or any nearby threats.");
+    }
+    
+    setIsVoiceInfoActive(true);
+    
+    // Auto-deactivate after 10 seconds to save battery
+    voiceInfoTimeout.current = setTimeout(() => {
+      setIsVoiceInfoActive(false);
+      if (voiceAlertsEnabled) {
+        speakAlert("Voice info listening stopped.");
+      }
+    }, 10000);
+  };
+
+  const simulateVoiceInfoRequest = async (query: string) => {
+    // For demo/testing purposes - simulate voice input
+    const processed = await processVoiceInfoRequest(query);
+    if (!processed) {
+      await speakAlert("I didn't recognize that command. Try asking about safety, location, weather, health, threats, time, or contacts.");
+    }
+  };
+
   // MUSIC-FRIENDLY VOICE SYSTEM
   const speakAlert = async (message: string, priority: 'low' | 'medium' | 'high' | 'critical' = 'medium', duckAudio: boolean = true) => {
     try {
