@@ -3228,6 +3228,79 @@ const styles = StyleSheet.create({
     color: '#666',
     marginTop: 4,
   },
+  // Cycling Styles
+  cyclingCard: {
+    backgroundColor: '#fff',
+    borderColor: '#4CAF50',
+    borderWidth: 2,
+  },
+  cyclingGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+    marginTop: 10,
+  },
+  cyclingItem: {
+    alignItems: 'center',
+    width: '48%',
+    backgroundColor: 'rgba(76, 175, 80, 0.1)',
+    padding: 10,
+    borderRadius: 8,
+    marginBottom: 8,
+  },
+  cyclingLabel: {
+    fontSize: 12,
+    color: '#666',
+    marginBottom: 4,
+    textAlign: 'center',
+  },
+  cyclingValue: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#4CAF50',
+    textAlign: 'center',
+  },
+  cyclingThreats: {
+    marginTop: 15,
+    padding: 10,
+    backgroundColor: 'rgba(255, 152, 0, 0.1)',
+    borderRadius: 8,
+  },
+  cyclingThreatsTitle: {
+    fontSize: 14,
+    fontWeight: 'bold',
+    color: '#FF9800',
+    marginBottom: 8,
+  },
+  cyclingThreatItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 5,
+  },
+  cyclingThreatSeverity: {
+    fontSize: 10,
+    fontWeight: 'bold',
+    marginRight: 8,
+    minWidth: 60,
+  },
+  cyclingThreatDesc: {
+    fontSize: 12,
+    color: '#666',
+    flex: 1,
+  },
+  cyclingStatus: {
+    fontSize: 12,
+    color: '#666',
+    textAlign: 'center',
+    marginTop: 10,
+    fontStyle: 'italic',
+  },
+  cyclingActiveButton: {
+    backgroundColor: '#4CAF50',
+  },
+  cyclingButton: {
+    backgroundColor: '#81C784',
+  },
   // Voice Trigger Status Styles
   statusCard: {
     backgroundColor: '#1A1A2E',
