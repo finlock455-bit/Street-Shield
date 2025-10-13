@@ -888,13 +888,78 @@ export default function SafeWalkApp() {
     }, 15000); // Back to 15 seconds
   };
 
-  // Simulated voice trigger detection (in real implementation, would use speech recognition)
-  const simulateVoiceTrigger = (spokenText: string) => {
-    if (emergencyTriggerWord && spokenText.toLowerCase().includes(emergencyTriggerWord.toLowerCase())) {
+  // Voice trigger detection system
+  const [isListeningForTrigger, setIsListeningForTrigger] = useState(false);
+  const listeningTimeout = useRef<NodeJS.Timeout | null>(null);
+  const triggerActivationRef = useRef<boolean>(false);
+
+  const startVoiceTriggerListening = async () => {
+    if (!emergencyTriggerWord || emergencyTriggerWord.length < 3) {
+      await speakAlert("No trigger word set. Please set up your emergency system first.");
+      return;
+    }
+
+    try {
+      setIsListeningForTrigger(true);
+      triggerActivationRef.current = false;
+      
+      if (voiceAlertsEnabled) {
+        await speakAlert(`Voice trigger activated. Say ${emergencyTriggerWord} to trigger emergency mode. Listening for 30 seconds.`);
+      }
+
+      // Auto-deactivate after 30 seconds for battery conservation
+      listeningTimeout.current = setTimeout(() => {
+        stopVoiceTriggerListening();
+      }, 30000);
+
+    } catch (error) {
+      console.error('Error starting voice trigger listening:', error);
+      setIsListeningForTrigger(false);
+    }
+  };
+
+  const stopVoiceTriggerListening = () => {
+    setIsListeningForTrigger(false);
+    if (listeningTimeout.current) {
+      clearTimeout(listeningTimeout.current);
+      listeningTimeout.current = null;
+    }
+    
+    if (voiceAlertsEnabled && !triggerActivationRef.current) {
+      speakAlert("Voice trigger listening stopped.");
+    }
+  };
+
+  // Simulate voice trigger activation (for manual testing)
+  const activateVoiceTrigger = async () => {
+    if (!isListeningForTrigger) {
+      await speakAlert("Voice trigger is not active. Press the voice trigger button first.");
+      return false;
+    }
+
+    if (emergencyTriggerWord && emergencyTriggerWord.length >= 3) {
+      triggerActivationRef.current = true;
+      stopVoiceTriggerListening();
+      await speakAlert(`Emergency trigger word ${emergencyTriggerWord} detected. Activating emergency mode.`);
       triggerEmergencyMode();
       return true;
     }
     return false;
+  };
+
+  // Advanced trigger detection (for future implementation with real speech recognition)
+  const detectTriggerInSpeech = (spokenText: string): boolean => {
+    if (!emergencyTriggerWord || !spokenText) return false;
+    
+    const normalizedSpoken = spokenText.toLowerCase().trim();
+    const normalizedTrigger = emergencyTriggerWord.toLowerCase().trim();
+    
+    // Exact match
+    if (normalizedSpoken === normalizedTrigger) return true;
+    
+    // Partial match with context (must be separate word)
+    const words = normalizedSpoken.split(/\s+/);
+    return words.some(word => word === normalizedTrigger);
   };
 
   // MUSIC-FRIENDLY VOICE SYSTEM
