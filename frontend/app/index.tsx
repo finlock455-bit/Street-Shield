@@ -1538,18 +1538,18 @@ export default function SafeWalkApp() {
     return 'night';
   };
 
-  // Enhanced voice info processing for cycling
-  const processCyclingVoiceCommand = async (spokenText: string): Promise<boolean> => {
+  // Enhanced voice info processing for cycling (after Street Shield trigger)
+  const processCyclingVoiceCommand = async (command: string): Promise<boolean> => {
     if (!isCyclingMode) return false;
     
-    const text = spokenText.toLowerCase().trim();
+    const text = command.toLowerCase().trim();
     
-    // Cycling-specific voice commands
+    // Cycling-specific voice commands (without "Street Shield" prefix)
     const cyclingCommands = {
-      speed: ['what is my speed', 'how fast am i going', 'current speed', 'speed check'],
-      threats: ['cycling threats', 'bike hazards', 'vehicle behind', 'road hazards'],
-      safety: ['cycling safety', 'bike safety score', 'how safe is cycling'],
-      route: ['route suggestion', 'bike lanes nearby', 'safer route']
+      speed: ['speed', 'how fast', 'current speed', 'speed check', 'velocity'],
+      threats: ['cycling threats', 'bike hazards', 'vehicle behind', 'road hazards', 'dangers', 'bike threats'],
+      safety: ['cycling safety', 'bike safety score', 'safe cycling', 'cycling risk'],
+      route: ['route suggestion', 'bike lanes', 'safer route', 'route', 'bike path']
     };
     
     for (const [category, patterns] of Object.entries(cyclingCommands)) {
