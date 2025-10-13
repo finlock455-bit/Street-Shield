@@ -1538,8 +1538,31 @@ export default function SafeWalkApp() {
           </View>
         </View>
 
-        {/* Voice Trigger Status */}
-        {isListeningForTrigger && (
+        {/* Hands-Free Mode Status */}
+        {isHandsFreeMode && (
+          <View style={[styles.statusCard, styles.handsFreeCard]}>
+            <View style={styles.handsFreeIndicator}>
+              <Ionicons name="shield-checkmark" size={20} color="#2196F3" />
+              <View style={[styles.pulsingDot, { backgroundColor: '#2196F3' }]} />
+              {ambientListeningActive && <Ionicons name="mic" size={16} color="#4CAF50" style={{ marginLeft: 8 }} />}
+            </View>
+            <Text style={styles.handsFreeTitle}>
+              🛡️ HANDS-FREE PROTECTION ACTIVE
+            </Text>
+            <Text style={styles.handsFreeDescription}>
+              Smart listening for "{emergencyTriggerWord}" - Battery optimized • {isListeningForTrigger ? 'Currently listening' : 'Standby mode'}
+            </Text>
+            <TouchableOpacity 
+              style={styles.stopHandsFreeButton}
+              onPress={stopHandsFreeMode}
+            >
+              <Text style={styles.stopHandsFreeText}>Deactivate</Text>
+            </TouchableOpacity>
+          </View>
+        )}
+
+        {/* Manual Voice Trigger Status */}
+        {!isHandsFreeMode && isListeningForTrigger && (
           <View style={[styles.statusCard, styles.listeningCard]}>
             <View style={styles.listeningIndicator}>
               <Ionicons name="mic" size={20} color="#4CAF50" />
