@@ -3021,4 +3021,36 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
   },
+  // Voice Info Only Status Styles
+  voiceInfoCard: {
+    backgroundColor: 'rgba(156, 39, 176, 0.1)',
+    borderColor: '#9C27B0',
+    borderWidth: 2,
+  },
+  voiceInfoTitle: {
+    color: '#fff',
+    fontSize: 18,
+    fontWeight: 'bold',
+    textAlign: 'center',
+    marginBottom: 8,
+  },
+  voiceInfoDescription: {
+    color: '#B0BEC5',
+    fontSize: 14,
+    textAlign: 'center',
+    marginBottom: 15,
+    lineHeight: 20,
+  },
+  stopVoiceInfoButton: {
+    backgroundColor: '#F44336',
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderRadius: 20,
+    alignSelf: 'center',
+  },
+  stopVoiceInfoText: {
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: '600',
+  },
 });
