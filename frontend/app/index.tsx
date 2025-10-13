@@ -2047,7 +2047,7 @@ export default function SafeWalkApp() {
             {isVoiceInfoActive && (
               <TouchableOpacity
                 style={[styles.featureButton, styles.demoButton]}
-                onPress={() => simulateVoiceInfoRequest("what is my safety score")}
+                onPress={() => simulateVoiceInfoRequest("street shield what is my safety score")}
               >
                 <View style={styles.featureIcon}>
                   <Ionicons 
@@ -2060,7 +2060,7 @@ export default function SafeWalkApp() {
                   Demo: Safety Check
                 </Text>
                 <Text style={styles.featureStatus}>
-                  TRY NOW
+                  "STREET SHIELD..."
                 </Text>
               </TouchableOpacity>
             )}
