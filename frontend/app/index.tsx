@@ -1482,22 +1482,56 @@ export default function SafeWalkApp() {
               <TouchableOpacity
                 style={[
                   styles.featureButton, 
+                  isHandsFreeMode ? styles.handsFreeButton :
                   isListeningForTrigger ? styles.listeningButton : styles.emergencyButton
                 ]}
-                onPress={isListeningForTrigger ? activateVoiceTrigger : startVoiceTriggerListening}
+                onPress={
+                  isHandsFreeMode ? stopHandsFreeMode :
+                  isListeningForTrigger ? activateVoiceTrigger : startHandsFreeMode
+                }
               >
                 <View style={styles.featureIcon}>
                   <Ionicons 
-                    name={isListeningForTrigger ? "mic" : "warning"} 
+                    name={
+                      isHandsFreeMode ? "shield-checkmark" :
+                      isListeningForTrigger ? "mic" : "warning"
+                    }
                     size={20} 
                     color="#FFF" 
                   />
                 </View>
                 <Text style={styles.featureButtonText}>
-                  {isListeningForTrigger ? "Say Trigger Word" : "Voice Trigger"}
+                  {isHandsFreeMode ? "Hands-Free ON" :
+                   isListeningForTrigger ? "Say Trigger Word" : "Hands-Free Mode"}
                 </Text>
                 <Text style={styles.featureStatus}>
-                  {isListeningForTrigger ? "LISTENING" : "READY"}
+                  {isHandsFreeMode ? "ACTIVE" :
+                   isListeningForTrigger ? "LISTENING" : "TAP TO START"}
+                </Text>
+              </TouchableOpacity>
+            )}
+
+            {/* Manual Voice Trigger (when hands-free is active) */}
+            {isHandsFreeMode && (
+              <TouchableOpacity
+                style={[
+                  styles.featureButton, 
+                  isListeningForTrigger ? styles.listeningButton : styles.manualTriggerButton
+                ]}
+                onPress={isListeningForTrigger ? activateVoiceTrigger : startVoiceTriggerListening}
+              >
+                <View style={styles.featureIcon}>
+                  <Ionicons 
+                    name={isListeningForTrigger ? "mic" : "mic-outline"} 
+                    size={20} 
+                    color="#FFF" 
+                  />
+                </View>
+                <Text style={styles.featureButtonText}>
+                  {isListeningForTrigger ? "Say Word Now" : "Manual Trigger"}
+                </Text>
+                <Text style={styles.featureStatus}>
+                  {isListeningForTrigger ? "ACTIVE" : "READY"}
                 </Text>
               </TouchableOpacity>
             )}
