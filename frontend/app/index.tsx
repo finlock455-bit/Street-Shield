@@ -917,6 +917,11 @@ export default function SafeWalkApp() {
   const triggerActivationRef = useRef<boolean>(false);
   const lastAmbientCheck = useRef<number>(0);
 
+  // Voice Information Request System
+  const [isVoiceInfoActive, setIsVoiceInfoActive] = useState(false);
+  const [lastInfoRequest, setLastInfoRequest] = useState<number>(0);
+  const voiceInfoTimeout = useRef<NodeJS.Timeout | null>(null);
+
   // Smart hands-free voice trigger system
   const startHandsFreeMode = async () => {
     if (!emergencyTriggerWord || emergencyTriggerWord.length < 3) {
