@@ -744,6 +744,68 @@ async def analyze_biometric_data(biometric_data: BiometricData, location: Locati
                     biometric_data=biometric_data,
                     recommended_action="Reduce pace significantly. Plan for rest breaks."
                 ))
+        
+        # MEDICAL CONDITION SPECIFIC MONITORING
+        if "hypertension" in medical_conditions and biometric_data.heart_rate:
+            if biometric_data.heart_rate > (max_hr * 0.75):  # Lower threshold for hypertensive patients
+                alerts.append(HealthAlert(
+                    alert_type="hypertension_hr_warning",
+                    severity="medium",
+                    message=f"Heart rate {biometric_data.heart_rate} BPM may be too high for your hypertension condition.",
+                    biometric_data=biometric_data,
+                    recommended_action="Reduce activity intensity. Monitor blood pressure if possible."
+                ))
+        
+        if "diabetes" in medical_conditions and biometric_data.fatigue_level > 0.6:
+            alerts.append(HealthAlert(
+                alert_type="diabetic_fatigue_warning",
+                severity="medium",
+                message="Elevated fatigue levels detected. Monitor blood sugar levels.",
+                biometric_data=biometric_data,
+                recommended_action="Check blood glucose if possible. Consider eating if levels are low."
+            ))
+        
+        # ENVIRONMENTAL FACTOR ANALYSIS
+        if biometric_data.ambient_temperature:
+            temp = biometric_data.ambient_temperature
+            if temp > 30 and biometric_data.heart_rate and biometric_data.heart_rate > target_hr_high:
+                alerts.append(HealthAlert(
+                    alert_type="heat_stress",
+                    severity="high",
+                    message=f"High heart rate {biometric_data.heart_rate} BPM in hot weather {temp}°C. Risk of heat exhaustion.",
+                    biometric_data=biometric_data,
+                    recommended_action="Find shade immediately. Hydrate and cool down. Reduce activity."
+                ))
+            elif temp < 0 and biometric_data.heart_rate and biometric_data.heart_rate > target_hr_high:
+                alerts.append(HealthAlert(
+                    alert_type="cold_stress",
+                    severity="medium",
+                    message=f"Elevated heart rate in cold weather {temp}°C. Monitor for hypothermia symptoms.",
+                    biometric_data=biometric_data,
+                    recommended_action="Warm up gradually. Check extremities for numbness."
+                ))
+        
+        # SENSOR ACCURACY WARNINGS
+        if biometric_data.sensor_accuracy < 0.6:
+            alerts.append(HealthAlert(
+                alert_type="sensor_accuracy_low",
+                severity="low",
+                message=f"Low sensor accuracy ({int(biometric_data.sensor_accuracy*100)}%). Health readings may be unreliable.",
+                biometric_data=biometric_data,
+                recommended_action="Adjust device positioning. Clean sensors if needed."
+            ))
+        
+        return alerts
+        
+    except Exception as e:
+        logging.error(f"Error analyzing biometric data: {e}")
+        return [HealthAlert(
+            alert_type="analysis_error",
+            severity="medium",
+            message="Health monitoring system encountered an error. Please check device connections.",
+            biometric_data=biometric_data,
+            recommended_action="Restart health monitoring or check device status."
+        )]
                 severity=severity,
                 message=f"Low blood oxygen: {biometric_data.blood_oxygen}%. Seek immediate help.",
                 biometric_data=biometric_data,
