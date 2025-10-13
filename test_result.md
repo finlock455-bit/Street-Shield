@@ -480,9 +480,11 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Emergency Contact Management System"
-    - "Enhanced Health Monitoring with Medical Accuracy"
-    - "Cycling Mode Safety System"
+    - "Emergency Contact UI and Voice System"
+    - "Enhanced Health Dashboard with Real Sensors"
+    - "Cycling Mode UI and Controls"
+    - "Voice-Activated Information System"
+    - "Electric Scooter Alert UI"
   stuck_tasks:
     - "Real-time Location Tracking"
     - "Push Notifications System"
