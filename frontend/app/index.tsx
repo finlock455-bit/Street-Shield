@@ -1973,7 +1973,30 @@ export default function SafeWalkApp() {
               </TouchableOpacity>
             )}
 
-                {/* Voice Information Request Button */}
+                {/* Cycling Mode Button */}
+            <TouchableOpacity
+              style={[
+                styles.featureButton, 
+                isCyclingMode ? styles.cyclingActiveButton : styles.cyclingButton
+              ]}
+              onPress={toggleCyclingMode}
+            >
+              <View style={styles.featureIcon}>
+                <Ionicons 
+                  name={isCyclingMode ? "bicycle" : "bicycle-outline"} 
+                  size={20} 
+                  color="#FFF" 
+                />
+              </View>
+              <Text style={styles.featureButtonText}>
+                {isCyclingMode ? "Cycling ON" : "Cycling Mode"}
+              </Text>
+              <Text style={styles.featureStatus}>
+                {isCyclingMode ? `${cyclingData.speed_kmh.toFixed(0)} KM/H` : "TAP FOR BIKES"}
+              </Text>
+            </TouchableOpacity>
+
+            {/* Voice Information Request Button */}
             <TouchableOpacity
               style={[
                 styles.featureButton, 
