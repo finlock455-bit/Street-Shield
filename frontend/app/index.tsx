@@ -2534,6 +2534,9 @@ const styles = StyleSheet.create({
   infoButton: {
     backgroundColor: '#9C27B0',
   },
+  demoButton: {
+    backgroundColor: '#607D8B',
+  },
   testEmergencyButton: {
     backgroundColor: '#FF5722',
   },
