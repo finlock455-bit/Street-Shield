@@ -806,12 +806,6 @@ async def analyze_biometric_data(biometric_data: BiometricData, location: Locati
             biometric_data=biometric_data,
             recommended_action="Restart health monitoring or check device status."
         )]
-                severity=severity,
-                message=f"Low blood oxygen: {biometric_data.blood_oxygen}%. Seek immediate help.",
-                biometric_data=biometric_data,
-                recommended_action="Stop activity, get fresh air, call for help if symptoms persist",
-                auto_emergency=auto_emergency
-            ))
         
         # Contextual health analysis
         weather_temp = safety_context.get("temperature", 20)
