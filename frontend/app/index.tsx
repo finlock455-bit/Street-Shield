@@ -1711,6 +1711,32 @@ export default function SafeWalkApp() {
               </TouchableOpacity>
             )}
 
+            {/* Voice Information Request Button */}
+            <TouchableOpacity
+              style={[
+                styles.featureButton, 
+                isVoiceInfoActive ? styles.listeningButton : styles.infoButton
+              ]}
+              onPress={isVoiceInfoActive ? 
+                () => simulateVoiceInfoRequest("what is my safety score") : 
+                activateVoiceInfoRequest
+              }
+            >
+              <View style={styles.featureIcon}>
+                <Ionicons 
+                  name={isVoiceInfoActive ? "chatbubble" : "information-circle"} 
+                  size={20} 
+                  color="#FFF" 
+                />
+              </View>
+              <Text style={styles.featureButtonText}>
+                {isVoiceInfoActive ? "Ask Question" : "Voice Info"}
+              </Text>
+              <Text style={styles.featureStatus}>
+                {isVoiceInfoActive ? "LISTENING" : "TAP TO START"}
+              </Text>
+            </TouchableOpacity>
+
             {/* Manual Voice Trigger (when hands-free is active) */}
             {isHandsFreeMode && (
               <TouchableOpacity
