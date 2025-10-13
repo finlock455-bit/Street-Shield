@@ -131,6 +131,21 @@ export default function SafeWalkApp() {
       stopTracking();
     };
   }, []);
+  useEffect(() => {
+    return () => {
+      // Cleanup intervals on unmount
+      if (analysisInterval.current) {
+        clearInterval(analysisInterval.current);
+      }
+      // Cleanup voice trigger timeouts
+      if (listeningTimeout.current) {
+        clearTimeout(listeningTimeout.current);
+      }
+      if (triggerWordTimeout.current) {
+        clearTimeout(triggerWordTimeout.current);
+      }
+    };
+  }, []);
 
   const initializeApp = async () => {
     await requestPermissions();
