@@ -2226,8 +2226,11 @@ const styles = StyleSheet.create({
   listeningButton: {
     backgroundColor: '#4CAF50',
   },
-  listeningButton: {
-    backgroundColor: '#4CAF50',
+  handsFreeButton: {
+    backgroundColor: '#2196F3',
+  },
+  manualTriggerButton: {
+    backgroundColor: '#FF9800',
   },
   testEmergencyButton: {
     backgroundColor: '#FF5722',
