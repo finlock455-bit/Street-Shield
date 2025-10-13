@@ -831,6 +831,140 @@ async def analyze_biometric_data(biometric_data: BiometricData, location: Locati
             recommended_action="Restart health monitoring or check device status."
         )]
 
+async def analyze_cycling_threats(location: LocationData, cycling_context: CyclingContext, movement_history: List[LocationData]) -> List[CyclingThreat]:
+    """Advanced cycling-specific threat detection and analysis"""
+    try:
+        threats = []
+        current_speed = cycling_context.speed_kmh or 0
+        road_type = cycling_context.road_type
+        traffic_density = cycling_context.traffic_density
+        experience_level = cycling_context.rider_experience
+        
+        # Calculate cycling-specific risk factors
+        speed_risk_factor = min(current_speed / 50.0, 1.0)  # Risk increases with speed
+        traffic_risk_multiplier = {"light": 0.3, "medium": 0.6, "heavy": 1.0}.get(traffic_density, 0.6)
+        experience_multiplier = {"beginner": 1.3, "intermediate": 1.0, "advanced": 0.7, "professional": 0.5}.get(experience_level, 1.0)
+        
+        # VEHICLE APPROACH DETECTION (Critical for cyclists)
+        vehicle_approach_probability = 0.0
+        if road_type in ["road", "highway_shoulder"]:
+            vehicle_approach_probability += 0.4 * traffic_risk_multiplier
+        elif road_type == "mixed":
+            vehicle_approach_probability += 0.25 * traffic_risk_multiplier
+            
+        # Higher risk during rush hours
+        current_hour = datetime.utcnow().hour
+        if current_hour in [7, 8, 9, 17, 18, 19]:
+            vehicle_approach_probability += 0.2
+            
+        if random.random() < vehicle_approach_probability:
+            # Simulate vehicle approaching from behind (most dangerous for cyclists)
+            vehicle_speed = random.uniform(30, 60)  # km/h
+            relative_speed = vehicle_speed - current_speed
+            distance = random.uniform(20, 100)  # meters behind
+            time_to_impact = distance / (relative_speed / 3.6) if relative_speed > 0 else None  # seconds
+            
+            severity = "critical" if (relative_speed > 30 and distance < 50) else "high" if relative_speed > 20 else "medium"
+            
+            threats.append(CyclingThreat(
+                threat_type="vehicle_behind",
+                severity=severity,
+                distance_meters=distance,
+                relative_speed_kmh=relative_speed,
+                direction="behind",
+                threat_description=f"Vehicle approaching at {vehicle_speed:.0f} km/h, {distance:.0f}m behind",
+                recommended_action="move_right" if severity == "critical" else "maintain_line",
+                time_to_impact=time_to_impact,
+                confidence=0.85 + (0.1 if traffic_density == "heavy" else 0)
+            ))
+        
+        # DOOR ZONE HAZARD DETECTION
+        door_zone_probability = 0.0
+        if road_type in ["road", "mixed"] and traffic_density in ["medium", "heavy"]:
+            door_zone_probability = 0.3  # Parked cars create door zone risks
+            
+        if random.random() < door_zone_probability:
+            threats.append(CyclingThreat(
+                threat_type="door_zone",
+                severity="high",
+                distance_meters=random.uniform(10, 30),
+                direction="right",
+                threat_description="Potential car door opening zone detected",
+                recommended_action="move_left_safe",
+                confidence=0.75
+            ))
+        
+        # INTERSECTION HAZARD ANALYSIS
+        intersection_risk = 0.0
+        if len(movement_history) >= 3:
+            # Analyze if approaching intersection (speed changes, direction changes)
+            speed_variance = any(abs(h.speed or 0 - current_speed) > 5 for h in movement_history[-3:])
+            if speed_variance:
+                intersection_risk = 0.4 * experience_multiplier
+                
+        if random.random() < intersection_risk:
+            threats.append(CyclingThreat(
+                threat_type="intersection",
+                severity="high",
+                distance_meters=random.uniform(20, 80),
+                direction="ahead",
+                threat_description="Intersection ahead - vehicle crossing potential",
+                recommended_action="reduce_speed_scan",
+                confidence=0.8
+            ))
+        
+        # ROAD SURFACE HAZARDS (Speed-dependent)
+        road_hazard_probability = speed_risk_factor * 0.2
+        if random.random() < road_hazard_probability:
+            hazard_types = ["pothole", "debris", "wet_surface", "gravel", "construction"]
+            hazard = random.choice(hazard_types)
+            
+            threats.append(CyclingThreat(
+                threat_type="road_hazard",
+                severity="medium" if current_speed > 25 else "low",
+                distance_meters=random.uniform(15, 50),
+                direction="ahead",
+                threat_description=f"Road hazard detected: {hazard}",
+                recommended_action="avoid_obstacle",
+                confidence=0.7
+            ))
+        
+        # WIND GUST ANALYSIS (Critical at higher speeds)
+        if current_speed > 20:  # Wind becomes dangerous at higher cycling speeds
+            wind_probability = 0.15 * (current_speed / 40)  # Higher risk at higher speeds
+            
+            if random.random() < wind_probability:
+                threats.append(CyclingThreat(
+                    threat_type="wind_gust",
+                    severity="medium" if current_speed > 30 else "low",
+                    direction=random.choice(["left", "right", "ahead"]),
+                    threat_description=f"Strong wind detected - stability risk at {current_speed:.0f} km/h",
+                    recommended_action="grip_handlebars_firm",
+                    confidence=0.6
+                ))
+        
+        # E-SCOOTER INTERACTIONS (Specific to cycling)
+        if road_type in ["bike_lane", "mixed"]:
+            escooter_interaction_probability = 0.2
+            
+            if random.random() < escooter_interaction_probability:
+                threats.append(CyclingThreat(
+                    threat_type="vehicle_conflict",
+                    severity="medium",
+                    distance_meters=random.uniform(10, 40),
+                    relative_speed_kmh=random.uniform(-15, 10),  # E-scooters typically slower
+                    direction=random.choice(["ahead", "behind"]),
+                    threat_description="E-scooter interaction - unpredictable movement pattern",
+                    recommended_action="maintain_safe_distance",
+                    confidence=0.75
+                ))
+        
+        return threats
+        
+    except Exception as e:
+        logging.error(f"Error analyzing cycling threats: {e}")
+        return []
+
 async def get_real_weather_data(lat: float, lon: float) -> Optional[WeatherData]:
     """Get real weather data from OpenWeatherMap API"""
     if not OPENWEATHER_API_KEY:
