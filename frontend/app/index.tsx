@@ -2458,6 +2458,9 @@ const styles = StyleSheet.create({
   manualTriggerButton: {
     backgroundColor: '#FF9800',
   },
+  infoButton: {
+    backgroundColor: '#9C27B0',
+  },
   testEmergencyButton: {
     backgroundColor: '#FF5722',
   },
