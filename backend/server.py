@@ -1740,6 +1740,172 @@ async def get_health_history(user_id: str, limit: int = 100):
         logging.error(f"Error getting health history: {e}")
         raise HTTPException(status_code=500, detail="Error retrieving health history")
 
+# Cycling Safety Management Endpoints
+
+@api_router.post("/cycling/threats")
+async def analyze_cycling_threats_endpoint(request: Dict):
+    """Analyze cycling-specific threats and hazards"""
+    try:
+        location_data = LocationData(**request.get("location", {}))
+        cycling_context_data = request.get("cycling_context", {})
+        movement_history_data = request.get("movement_history", [])
+        
+        # Create cycling context with defaults
+        cycling_context = CyclingContext(
+            speed_kmh=cycling_context_data.get("speed_kmh"),
+            avg_speed_kmh=cycling_context_data.get("avg_speed_kmh"),
+            road_type=cycling_context_data.get("road_type", "mixed"),
+            traffic_density=cycling_context_data.get("traffic_density", "medium"),
+            bike_type=cycling_context_data.get("bike_type", "road"),
+            rider_experience=cycling_context_data.get("rider_experience", "intermediate"),
+            group_riding=cycling_context_data.get("group_riding", False),
+            time_of_ride=cycling_context_data.get("time_of_ride", "day"),
+            weather_conditions=cycling_context_data.get("weather_conditions", "clear")
+        )
+        
+        movement_history = [LocationData(**loc) for loc in movement_history_data]
+        
+        threats = await analyze_cycling_threats(location_data, cycling_context, movement_history)
+        
+        # Convert threats to dict for JSON response
+        threats_dict = [threat.dict() for threat in threats]
+        
+        return {
+            "cycling_threats": threats_dict,
+            "threat_count": len(threats),
+            "risk_level": "high" if any(t.severity in ["high", "critical"] for t in threats) else "medium" if threats else "low",
+            "timestamp": datetime.utcnow().isoformat()
+        }
+        
+    except Exception as e:
+        logging.error(f"Error analyzing cycling threats: {e}")
+        raise HTTPException(status_code=500, detail="Error analyzing cycling threats")
+
+@api_router.post("/cycling/safety-score")
+async def calculate_cycling_safety_score(request: Dict):
+    """Calculate cycling-specific safety score with speed and road considerations"""
+    try:
+        location_data = LocationData(**request.get("location", {}))
+        cycling_context_data = request.get("cycling_context", {})
+        
+        speed_kmh = cycling_context_data.get("speed_kmh", 0)
+        road_type = cycling_context_data.get("road_type", "mixed")
+        traffic_density = cycling_context_data.get("traffic_density", "medium")
+        rider_experience = cycling_context_data.get("rider_experience", "intermediate")
+        
+        # Base safety score
+        base_score = 75
+        
+        # Speed-based risk adjustment
+        if speed_kmh > 40:
+            base_score -= 15  # High speed risk
+        elif speed_kmh > 30:
+            base_score -= 10
+        elif speed_kmh > 20:
+            base_score -= 5
+        
+        # Road type risk adjustment
+        road_risk_adjustment = {
+            "bike_lane": 10,
+            "trail": 15,
+            "mixed": 0,
+            "road": -15,
+            "highway_shoulder": -25
+        }.get(road_type, 0)
+        
+        base_score += road_risk_adjustment
+        
+        # Traffic density adjustment
+        traffic_adjustment = {
+            "light": 10,
+            "medium": 0,
+            "heavy": -15
+        }.get(traffic_density, 0)
+        
+        base_score += traffic_adjustment
+        
+        # Experience adjustment
+        experience_adjustment = {
+            "beginner": -10,
+            "intermediate": 0,
+            "advanced": 5,
+            "professional": 10
+        }.get(rider_experience, 0)
+        
+        base_score += experience_adjustment
+        
+        # Time-based adjustment (rush hour penalty)
+        current_hour = datetime.utcnow().hour
+        if current_hour in [7, 8, 9, 17, 18, 19]:
+            base_score -= 10
+        
+        # Ensure score is within bounds
+        final_score = max(0, min(100, base_score))
+        
+        # Generate cycling-specific recommendations
+        recommendations = []
+        if speed_kmh > 35:
+            recommendations.append("Consider reducing speed for better reaction time")
+        if road_type in ["road", "highway_shoulder"]:
+            recommendations.append("Use dedicated bike lanes when available")
+        if traffic_density == "heavy":
+            recommendations.append("Extra vigilance required in heavy traffic")
+        if final_score < 50:
+            recommendations.append("Consider alternative route with better cycling infrastructure")
+        
+        return {
+            "cycling_safety_score": final_score,
+            "risk_level": "high" if final_score < 40 else "medium" if final_score < 70 else "low",
+            "speed_risk_factor": min(speed_kmh / 50.0, 1.0),
+            "road_type": road_type,
+            "traffic_density": traffic_density,
+            "recommendations": recommendations,
+            "timestamp": datetime.utcnow().isoformat()
+        }
+        
+    except Exception as e:
+        logging.error(f"Error calculating cycling safety score: {e}")
+        raise HTTPException(status_code=500, detail="Error calculating cycling safety score")
+
+@api_router.get("/cycling/route-suggestions/{lat}/{lon}")
+async def get_cycling_route_suggestions(lat: float, lon: float, destination_lat: float = None, destination_lon: float = None):
+    """Get cycling-optimized route suggestions and hazard warnings"""
+    try:
+        # Simulate cycling route analysis
+        suggestions = {
+            "current_location": {"lat": lat, "lon": lon},
+            "bike_lanes_nearby": [
+                {"name": "Main Street Bike Lane", "distance_m": 200, "safety_rating": 85},
+                {"name": "Riverside Trail", "distance_m": 800, "safety_rating": 95}
+            ],
+            "hazard_zones": [
+                {"type": "high_traffic", "location": "5th & Main Intersection", "distance_m": 150},
+                {"type": "construction", "location": "Broadway Bridge", "distance_m": 500}
+            ],
+            "recommended_routes": [
+                {
+                    "route_id": "safe_1",
+                    "description": "Bike lane route via Main Street",
+                    "safety_score": 85,
+                    "estimated_time_min": 12,
+                    "distance_km": 3.2
+                },
+                {
+                    "route_id": "fast_1", 
+                    "description": "Direct route via city streets",
+                    "safety_score": 65,
+                    "estimated_time_min": 8,
+                    "distance_km": 2.1
+                }
+            ]
+        }
+        
+        return suggestions
+        
+    except Exception as e:
+        logging.error(f"Error getting cycling route suggestions: {e}")
+        raise HTTPException(status_code=500, detail="Error getting route suggestions")
+
 # Emergency Contact Management Endpoints
 
 @api_router.post("/emergency/settings")
