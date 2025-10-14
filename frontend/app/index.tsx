@@ -2402,6 +2402,7 @@ export default function SafeWalkApp() {
           <View style={styles.modalHeader}>
             <Text style={styles.modalTitle}>Emergency Setup</Text>
             <TouchableOpacity onPress={() => {
+              Speech.stop(); // Stop any ongoing voice prompts
               setIsEmergencySetupOpen(false);
               // Reset voice interaction state when closing
               setVoiceInteractionState({
