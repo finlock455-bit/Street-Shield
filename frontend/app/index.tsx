@@ -794,7 +794,7 @@ export default function SafeWalkApp() {
       setIsEmergencySetupOpen(false);
       
       if (voiceAlertsEnabled) {
-        await speakAlert(`Perfect! Your emergency system is ready. Your trigger word is ${triggerWord}. I added ${validContacts.length} emergency contact${validContacts.length > 1 ? 's' : ''}. If you say ${triggerWord}, I will alert all your contacts with your location. Street Shield emergency protection is active.`);
+        await speakAlert(`Emergency setup complete. Trigger word: ${triggerWord}. ${validContacts.length} contact${validContacts.length > 1 ? 's' : ''} added.`, 'low');
       }
     } catch (error) {
       console.error('Error saving emergency settings:', error);
