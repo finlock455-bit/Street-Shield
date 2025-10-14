@@ -1152,14 +1152,22 @@ export default function SafeWalkApp() {
     const text = spokenText.toLowerCase().trim();
     const now = Date.now();
     
+    console.log('🎤 Voice input received:', text);
+    
     // Prevent spam requests
-    if (now - lastInfoRequest < 3000) return false;
+    if (now - lastInfoRequest < 3000) {
+      console.log('⏱️ Too soon, preventing spam');
+      return false;
+    }
     
     // Check for "Street Shield" trigger word first
     const triggerPhrases = ['street shield', 'streetshield', 'shield'];
     const hasTrigger = triggerPhrases.some(trigger => text.includes(trigger));
     
+    console.log('🔍 Has trigger word?', hasTrigger);
+    
     if (!hasTrigger) {
+      console.log('❌ No trigger word found');
       return false; // Must say "Street Shield" first
     }
     
@@ -1169,8 +1177,12 @@ export default function SafeWalkApp() {
       command = command.replace(trigger, '').trim();
     }
     
+    console.log('📝 Command after trigger removal:', command);
+    
     // Remove common connecting words
     command = command.replace(/^(what|how|where|when|is|are|my|the|current|can|you|do)\s+/g, '').trim();
+    
+    console.log('✨ Final command:', command);
     
     // Voice command patterns (now without trigger word)
     const commands = {
