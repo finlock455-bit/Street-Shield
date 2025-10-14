@@ -954,7 +954,7 @@ export default function SafeWalkApp() {
       setAmbientListeningActive(true);
       
       if (voiceAlertsEnabled) {
-        await speakAlert(`Hands-free emergency mode activated. Street Shield will continuously monitor for your trigger word ${emergencyTriggerWord}. This uses smart listening to preserve battery life.`);
+        await speakAlert(`Hands-free mode active. Listening for ${emergencyTriggerWord}.`, 'low');
       }
 
       // Start intelligent listening cycles
