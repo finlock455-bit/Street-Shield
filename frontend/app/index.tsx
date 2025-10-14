@@ -2943,6 +2943,11 @@ const styles = StyleSheet.create({
   testEmergencyButton: {
     backgroundColor: '#FF5722',
   },
+  emergencyActiveButton: {
+    backgroundColor: '#D32F2F',
+    borderWidth: 2,
+    borderColor: '#FF5252',
+  },
   // Modal Styles
   modalContainer: {
     flex: 1,
