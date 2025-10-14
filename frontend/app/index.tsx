@@ -1179,8 +1179,11 @@ export default function SafeWalkApp() {
     
     console.log('📝 Command after trigger removal:', command);
     
-    // Remove common connecting words
-    command = command.replace(/^(what|how|where|when|is|are|my|the|current|can|you|do)\s+/g, '').trim();
+    // Remove common connecting words more comprehensively
+    command = command
+      .replace(/^(what|how|where|when|is|are|my|the|current|can|you|do|tell|me|about)\s+/gi, '')
+      .replace(/\s+(is|are|the|my|current)\s+/gi, ' ')
+      .trim();
     
     console.log('✨ Final command:', command);
     
