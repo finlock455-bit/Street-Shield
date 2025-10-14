@@ -1222,8 +1222,10 @@ export default function SafeWalkApp() {
     
     // First try cycling-specific commands if in cycling mode
     if (isCyclingMode) {
+      console.log('🚴 Checking cycling commands...');
       const cyclingProcessed = await processCyclingVoiceCommand(command);
       if (cyclingProcessed) {
+        console.log('✅ Cycling command processed');
         setLastInfoRequest(now);
         return true;
       }
@@ -1234,9 +1236,11 @@ export default function SafeWalkApp() {
     for (const [category, patterns] of Object.entries(commands)) {
       if (patterns.some(pattern => command.includes(pattern))) {
         matchedCategory = category;
+        console.log(`✅ Matched category: ${category}`);
         break;
       }
     }
+    console.log('🔎 Final matched category:', matchedCategory);
     
     if (!matchedCategory) {
       // Provide helpful guidance if Street Shield was said but command not recognized
