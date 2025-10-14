@@ -2547,10 +2547,8 @@ export default function SafeWalkApp() {
           <View style={styles.modalFooter}>
             <TouchableOpacity
               style={styles.cancelButton}
-              onPress={async () => {
-                if (voiceAlertsEnabled) {
-                  await speakAlert("Emergency setup cancelled. You can set this up anytime for your safety.");
-                }
+              onPress={() => {
+                Speech.stop(); // Stop any ongoing voice prompts
                 setIsEmergencySetupOpen(false);
               }}
             >
