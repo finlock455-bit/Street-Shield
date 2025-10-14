@@ -2201,6 +2201,67 @@ export default function SafeWalkApp() {
           </View>
         )}
 
+        {/* Emergency Mode Status Display */}
+        {isEmergencyModeActive && (
+          <View style={[styles.statusCard, styles.emergencyStatusCard]}>
+            <View style={styles.emergencyHeader}>
+              <Ionicons name="warning" size={24} color="#F44336" />
+              <Text style={styles.emergencyStatusTitle}>🚨 EMERGENCY MODE ACTIVE</Text>
+              <View style={[styles.pulsingDot, { backgroundColor: '#F44336' }]} />
+            </View>
+            
+            <View style={styles.emergencyDetails}>
+              <View style={styles.emergencyDetailItem}>
+                <Ionicons name="people" size={18} color="#F44336" />
+                <Text style={styles.emergencyDetailText}>
+                  {emergencyContacts.length} Emergency Contact{emergencyContacts.length !== 1 ? 's' : ''} Alerted
+                </Text>
+              </View>
+              
+              <View style={styles.emergencyDetailItem}>
+                <Ionicons name="location" size={18} color="#F44336" />
+                <Text style={styles.emergencyDetailText}>
+                  Live location shared: {location ? `${location.latitude.toFixed(4)}, ${location.longitude.toFixed(4)}` : 'Getting location...'}
+                </Text>
+              </View>
+              
+              <View style={styles.emergencyDetailItem}>
+                <Ionicons name="shield-checkmark" size={18} color="#F44336" />
+                <Text style={styles.emergencyDetailText}>
+                  Local authorities notified (simulated)
+                </Text>
+              </View>
+              
+              <View style={styles.emergencyDetailItem}>
+                <Ionicons name="pulse" size={18} color="#F44336" />
+                <Text style={styles.emergencyDetailText}>
+                  Enhanced monitoring every 5 seconds
+                </Text>
+              </View>
+            </View>
+
+            <View style={styles.emergencyContactsList}>
+              <Text style={styles.emergencyContactsTitle}>Contacts Notified:</Text>
+              {emergencyContacts.filter(c => c.length > 0).map((contact, index) => (
+                <Text key={index} style={styles.emergencyContact}>
+                  ✓ {contact}
+                </Text>
+              ))}
+            </View>
+            
+            <TouchableOpacity 
+              style={styles.deactivateEmergencyButton}
+              onPress={deactivateEmergencyMode}
+            >
+              <Text style={styles.deactivateEmergencyText}>Deactivate Emergency</Text>
+            </TouchableOpacity>
+            
+            <Text style={styles.emergencyNote}>
+              Note: In production, contacts would receive SMS/push notifications with your real-time location and emergency details.
+            </Text>
+          </View>
+        )}
+
         {/* Manual Voice Trigger Status */}
         {!isHandsFreeMode && isListeningForTrigger && (
           <View style={[styles.statusCard, styles.listeningCard]}>
