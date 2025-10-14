@@ -3572,4 +3572,77 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
   },
+  // Emergency Status Card Styles
+  emergencyStatusCard: {
+    backgroundColor: 'rgba(244, 67, 54, 0.15)',
+    borderColor: '#F44336',
+    borderWidth: 3,
+  },
+  emergencyHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 15,
+  },
+  emergencyStatusTitle: {
+    color: '#F44336',
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginLeft: 10,
+    marginRight: 10,
+  },
+  emergencyDetails: {
+    marginBottom: 15,
+  },
+  emergencyDetailItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 10,
+    backgroundColor: 'rgba(0, 0, 0, 0.3)',
+    padding: 10,
+    borderRadius: 8,
+  },
+  emergencyDetailText: {
+    color: '#fff',
+    fontSize: 13,
+    marginLeft: 10,
+    flex: 1,
+  },
+  emergencyContactsList: {
+    backgroundColor: 'rgba(0, 0, 0, 0.3)',
+    padding: 12,
+    borderRadius: 8,
+    marginBottom: 15,
+  },
+  emergencyContactsTitle: {
+    color: '#F44336',
+    fontSize: 14,
+    fontWeight: 'bold',
+    marginBottom: 8,
+  },
+  emergencyContact: {
+    color: '#4CAF50',
+    fontSize: 13,
+    marginBottom: 4,
+  },
+  deactivateEmergencyButton: {
+    backgroundColor: '#FF5722',
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    borderRadius: 20,
+    alignSelf: 'center',
+    marginBottom: 10,
+  },
+  deactivateEmergencyText: {
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  emergencyNote: {
+    color: '#B0BEC5',
+    fontSize: 11,
+    textAlign: 'center',
+    fontStyle: 'italic',
+    marginTop: 5,
+  },
 });
