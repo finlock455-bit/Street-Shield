@@ -2013,6 +2013,50 @@ export default function SafeWalkApp() {
               </TouchableOpacity>
             )}
 
+            {/* Test Emergency Trigger Button */}
+            {emergencyTriggerWord && !isEmergencyModeActive && (
+              <TouchableOpacity
+                style={[styles.featureButton, styles.testEmergencyButton]}
+                onPress={async () => {
+                  await speakAlert(`Testing emergency trigger: ${emergencyTriggerWord}`, 'high');
+                  setTimeout(() => triggerEmergencyMode(), 1000);
+                }}
+              >
+                <View style={styles.featureIcon}>
+                  <Ionicons 
+                    name="alert-circle" 
+                    size={20} 
+                    color="#FFF" 
+                  />
+                </View>
+                <Text style={styles.featureButtonText}>
+                  Test Emergency
+                </Text>
+                <Text style={styles.featureStatus}>
+                  DEMO TRIGGER
+                </Text>
+              </TouchableOpacity>
+            )}
+
+            {/* Emergency Active Indicator */}
+            {isEmergencyModeActive && (
+              <View style={[styles.featureButton, styles.emergencyActiveButton]}>
+                <View style={styles.featureIcon}>
+                  <Ionicons 
+                    name="warning" 
+                    size={20} 
+                    color="#FFF" 
+                  />
+                </View>
+                <Text style={styles.featureButtonText}>
+                  🚨 EMERGENCY ACTIVE
+                </Text>
+                <Text style={styles.featureStatus}>
+                  CONTACTS ALERTED
+                </Text>
+              </View>
+            )}
+
                 {/* Cycling Mode Button */}
             <TouchableOpacity
               style={[
