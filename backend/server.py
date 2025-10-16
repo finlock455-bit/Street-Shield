@@ -324,7 +324,6 @@ async def detect_proximity_threats(location: LocationData, movement_history: Lis
         # Check movement history for consistent followers
         if len(movement_history) >= 5:
             # Simulate detection of someone following similar path
-            import random
             if random.random() < threat_probability:
                 # Create a simulated threat
                 follower_threat = ProximityThreat(
