@@ -1665,6 +1665,9 @@ export default function SafeWalkApp() {
     try {
       if (!voiceAlertsEnabled) return;
       
+      // Trigger haptic feedback based on priority
+      await triggerHapticFeedback(priority);
+      
       // Clean message for better TTS pronunciation
       let cleanedMessage = message
         // Add natural pauses
