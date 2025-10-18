@@ -1616,6 +1616,50 @@ export default function SafeWalkApp() {
     await processVoiceAlert(response, 'cycling_info', { priority: 'low' });
   };
 
+  // HAPTIC FEEDBACK SYSTEM WITH PRIORITY LEVELS
+  const triggerHapticFeedback = async (priority: 'low' | 'medium' | 'high' | 'critical' = 'medium') => {
+    try {
+      // Different haptic patterns based on priority
+      switch (priority) {
+        case 'critical':
+          // Critical: Strong, urgent pattern (3 heavy impacts)
+          await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+          setTimeout(async () => {
+            await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
+          }, 200);
+          setTimeout(async () => {
+            await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
+          }, 400);
+          console.log('🔴 Critical haptic feedback triggered');
+          break;
+          
+        case 'high':
+          // High: Two medium impacts
+          await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
+          setTimeout(async () => {
+            await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+          }, 150);
+          console.log('🟠 High priority haptic feedback triggered');
+          break;
+          
+        case 'medium':
+          // Medium: Single medium impact
+          await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+          console.log('🟡 Medium priority haptic feedback triggered');
+          break;
+          
+        case 'low':
+          // Low: Gentle light impact
+          await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+          console.log('🟢 Low priority haptic feedback triggered');
+          break;
+      }
+    } catch (error) {
+      console.error('Haptic feedback error:', error);
+      // Fail silently - haptics might not be available on all devices
+    }
+  };
+
   // MUSIC-FRIENDLY VOICE SYSTEM
   const speakAlert = async (message: string, priority: 'low' | 'medium' | 'high' | 'critical' = 'medium', duckAudio: boolean = true) => {
     try {
