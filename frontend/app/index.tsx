@@ -17,10 +17,12 @@ import * as Location from 'expo-location';
 import * as Speech from 'expo-speech';
 import * as Notifications from 'expo-notifications';
 import * as Haptics from 'expo-haptics';
+import * as Localization from 'expo-localization';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Ionicons } from '@expo/vector-icons';
 import { Audio } from 'expo-av';
 import { Accelerometer, Pedometer, DeviceMotion } from 'expo-sensors';
+import i18n from '../translations';
 
 const { width, height } = Dimensions.get('window');
 
