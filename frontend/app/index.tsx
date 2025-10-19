@@ -1821,6 +1821,30 @@ export default function SafeWalkApp() {
     await AsyncStorage.setItem('voiceAlertsEnabled', JSON.stringify(newValue));
   };
 
+  // LANGUAGE MANAGEMENT
+  const changeLanguage = async (languageCode: string) => {
+    i18n.locale = languageCode;
+    setCurrentLanguage(languageCode);
+    await AsyncStorage.setItem('userLanguage', languageCode);
+    setShowLanguagePicker(false);
+    
+    // Announce language change in the new language
+    if (voiceAlertsEnabled) {
+      await speakAlert(i18n.t('appTitle'), 'low');
+    }
+  };
+  
+  const getLanguageName = (code: string) => {
+    const names: {[key: string]: string} = {
+      'en': 'English',
+      'es': 'Español',
+      'fr': 'Français',
+      'de': 'Deutsch',
+      'zh': '中文'
+    };
+    return names[code] || code;
+  };
+
   const getSafetyColor = (score: number): string => {
     if (score >= 80) return '#4CAF50'; // Green - Safe
     if (score >= 60) return '#FFC107'; // Yellow - Caution
