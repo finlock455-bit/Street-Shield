@@ -79,6 +79,10 @@ interface SafetyAnalysis {
 const BACKEND_URL = process.env.EXPO_PUBLIC_BACKEND_URL || '';
 
 export default function SafeWalkApp() {
+  // Language state
+  const [currentLanguage, setCurrentLanguage] = useState(i18n.locale);
+  const [showLanguagePicker, setShowLanguagePicker] = useState(false);
+  
   const [location, setLocation] = useState<LocationData | null>(null);
   const [safetyAnalysis, setSafetyAnalysis] = useState<SafetyAnalysis | null>(null);
   const [isTracking, setIsTracking] = useState(false);
