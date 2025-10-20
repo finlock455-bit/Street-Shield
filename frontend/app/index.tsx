@@ -1886,12 +1886,64 @@ export default function SafeWalkApp() {
               <Ionicons name="shield-checkmark" size={32} color="#fff" />
             </View>
             <View style={styles.titleText}>
-              <Text style={styles.appTitle}>Street Shield</Text>
+              <Text style={styles.appTitle}>{i18n.t('appTitle')}</Text>
               <Text style={styles.appSubtitle}>Advanced AI Protection</Text>
             </View>
           </View>
+          <TouchableOpacity 
+            style={styles.languageButton}
+            onPress={() => setShowLanguagePicker(true)}
+          >
+            <Ionicons name="language" size={24} color="#00FF88" />
+            <Text style={styles.languageCode}>{currentLanguage.toUpperCase()}</Text>
+          </TouchableOpacity>
           <View style={styles.headerGlow} />
         </View>
+
+        {/* Language Picker Modal */}
+        <Modal
+          visible={showLanguagePicker}
+          transparent={true}
+          animationType="slide"
+          onRequestClose={() => setShowLanguagePicker(false)}
+        >
+          <View style={styles.modalOverlay}>
+            <View style={styles.languageModal}>
+              <View style={styles.languageModalHeader}>
+                <Text style={styles.languageModalTitle}>Select Language / Seleccionar idioma</Text>
+                <TouchableOpacity onPress={() => setShowLanguagePicker(false)}>
+                  <Ionicons name="close" size={28} color="#fff" />
+                </TouchableOpacity>
+              </View>
+              
+              <ScrollView style={styles.languageList}>
+                {['en', 'es', 'fr', 'de', 'zh'].map((lang) => (
+                  <TouchableOpacity
+                    key={lang}
+                    style={[
+                      styles.languageOption,
+                      currentLanguage === lang && styles.languageOptionActive
+                    ]}
+                    onPress={() => changeLanguage(lang)}
+                  >
+                    <Text style={styles.languageFlag}>
+                      {lang === 'en' ? '🇬🇧' : lang === 'es' ? '🇪🇸' : lang === 'fr' ? '🇫🇷' : lang === 'de' ? '🇩🇪' : '🇨🇳'}
+                    </Text>
+                    <Text style={[
+                      styles.languageName,
+                      currentLanguage === lang && styles.languageNameActive
+                    ]}>
+                      {getLanguageName(lang)}
+                    </Text>
+                    {currentLanguage === lang && (
+                      <Ionicons name="checkmark-circle" size={24} color="#00FF88" />
+                    )}
+                  </TouchableOpacity>
+                ))}
+              </ScrollView>
+            </View>
+          </View>
+        </Modal>
 
         {/* Dynamic Safety Score Display */}
         {safetyAnalysis && (
