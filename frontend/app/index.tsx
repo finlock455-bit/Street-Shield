@@ -24,6 +24,22 @@ import { Audio } from 'expo-av';
 import { Accelerometer, Pedometer, DeviceMotion } from 'expo-sensors';
 import i18n from '../translations';
 
+// Suppress known Expo Go warnings that don't affect functionality
+const originalError = console.error;
+const originalWarn = console.warn;
+
+console.error = (...args) => {
+  if (args[0]?.includes?.('React.Fragment')) return;
+  if (args[0]?.includes?.('expo-router')) return;
+  originalError(...args);
+};
+
+console.warn = (...args) => {
+  if (args[0]?.includes?.('expo-notifications')) return;
+  if (args[0]?.includes?.('remote notifications')) return;
+  originalWarn(...args);
+};
+
 const { width, height } = Dimensions.get('window');
 
 // Notification handler
