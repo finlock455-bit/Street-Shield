@@ -740,6 +740,7 @@ export default function SafeWalkApp() {
 
     // DON'T provide routine safety score updates - only show critical changes
     // Users can check safety score visually on screen
+    const score = analysis.safety_score.overall_score;
 
     // Visual notification for low scores
     if (score < 40) {
