@@ -633,70 +633,83 @@ export default function SafeWalkApp() {
     const now = Date.now();
     const alerts = analysis.safety_score.alerts;
     
-    // Prevent spam - only alert if it's been more than 30 seconds since last alert
-    if (now - lastAlertTime < 30000) {
-      return;
-    }
+    // Helper function to check if alert should be announced
+    const shouldAnnounceAlert = (alertType: string, priority: string): boolean => {
+      const lastTime = lastAlertsByType.current[alertType] || 0;
+      const cooldown = alertCooldowns[priority as keyof typeof alertCooldowns] || alertCooldowns.medium;
+      return (now - lastTime) >= cooldown;
+    };
+    
+    // Helper function to mark alert as announced
+    const markAlertAnnounced = (alertType: string) => {
+      lastAlertsByType.current[alertType] = now;
+      setLastAlertTime(now);
+    };
 
-    // ELECTRIC SCOOTER DETECTION - Critical for music listeners
+    // ELECTRIC SCOOTER DETECTION - Only announce IMMEDIATE/CRITICAL threats
     const scooterAlerts = alerts.filter(alert => 
       alert.type === 'proximity_threat' && 
+      alert.priority === 'critical' &&  // Only critical e-scooter alerts
       (alert.message.toLowerCase().includes('electric scooter') || 
-       alert.message.toLowerCase().includes('silent vehicle'))
+       alert.message.toLowerCase().includes('silent vehicle') ||
+       alert.message.toLowerCase().includes('immediate'))
     );
 
     for (const scooterAlert of scooterAlerts) {
-      if (proximityAlertsEnabled) {
-        // High-priority notification for e-scooters due to silence
+      const alertKey = 'escooter_critical';
+      
+      if (proximityAlertsEnabled && shouldAnnounceAlert(alertKey, 'critical')) {
+        // High-priority notification for e-scooters
         await showNotification('🛴 E-Scooter Alert!', scooterAlert.message);
         
         if (voiceAlertsEnabled) {
-          // Music-friendly voice alerts for e-scooters
-          let scooterVoiceMessage = "";
-          
-          if (scooterAlert.message.toLowerCase().includes('critical') || 
-              scooterAlert.message.toLowerCase().includes('immediate')) {
-            scooterVoiceMessage = "Immediate evasion! Electric scooter approaching fast. Move aside now!";
-          } else if (scooterAlert.message.toLowerCase().includes('high') ||
-                     scooterAlert.message.toLowerCase().includes('step aside')) {
-            scooterVoiceMessage = "Electric scooter approaching. Step aside quickly to avoid collision.";
-          } else if (scooterAlert.message.toLowerCase().includes('behind')) {
-            scooterVoiceMessage = "Silent electric scooter detected behind you. Stay alert and be ready to move.";
-          } else if (scooterAlert.message.toLowerCase().includes('crossing')) {
-            scooterVoiceMessage = "Electric scooter crossing your path. Watch for silent vehicles.";
-          } else {
-            scooterVoiceMessage = "Electric scooter nearby. These vehicles are silent and fast - stay aware of your surroundings.";
+          // Only announce immediate threats
+          if (scooterAlert.message.toLowerCase().includes('immediate')) {
+            await processVoiceAlert("Immediate evasion! Electric scooter approaching fast!", 'escooter_alert', { priority: 'urgent' });
+          } else if (scooterAlert.message.toLowerCase().includes('critical')) {
+            await processVoiceAlert("Electric scooter approaching. Move aside quickly.", 'escooter_alert', { priority: 'urgent' });
           }
-          
-          await processVoiceAlert(scooterVoiceMessage, 'escooter_alert', { priority: 'urgent' });
         }
         
-        setLastAlertTime(now);
+        markAlertAnnounced(alertKey);
+        break; // Only one e-scooter alert at a time
       }
     }
 
-    // Process high-priority alerts first
+    // Process ONLY high-priority and critical alerts (not medium/low)
     for (const alert of alerts) {
-      // Skip e-scooter alerts as they're already handled above
+      // Skip e-scooter alerts as they're already handled
       if (alert.type === 'proximity_threat' && 
           (alert.message.toLowerCase().includes('electric scooter') || 
            alert.message.toLowerCase().includes('silent vehicle'))) {
         continue;
       }
       
-      if (alert.priority === 'high' || alert.priority === 'critical') {
-        await showNotification(`⚠️ Safety Alert - ${alert.type}`, alert.message);
+      // ONLY announce critical alerts via voice
+      if (alert.priority === 'critical') {
+        const alertKey = `${alert.type}_critical`;
         
-        if (voiceAlertsEnabled) {
-          let voiceMessage = `Safety alert: ${alert.message}`;
-          if (alert.priority === 'critical') {
-            voiceMessage = `Critical safety warning: ${alert.message}. Please exercise extreme caution.`;
+        if (shouldAnnounceAlert(alertKey, 'critical')) {
+          await showNotification(`⚠️ Critical Alert - ${alert.type}`, alert.message);
+          
+          if (voiceAlertsEnabled) {
+            // Make voice messages concise
+            let voiceMessage = `Critical warning: ${alert.message.split('.')[0]}.`; // Only first sentence
+            await speakAlert(voiceMessage, 'critical');
           }
-          await speakAlert(voiceMessage);
+          
+          markAlertAnnounced(alertKey);
+          break; // Only one critical alert at a time
         }
+      } else if (alert.priority === 'high') {
+        // High priority - show notification but NO voice unless acute
+        const alertKey = `${alert.type}_high`;
         
-        setLastAlertTime(now);
-        break; // Only show one high-priority alert at a time
+        if (shouldAnnounceAlert(alertKey, 'high')) {
+          await showNotification(`⚠️ Safety Alert - ${alert.type}`, alert.message);
+          markAlertAnnounced(alertKey);
+          break; // Only one high-priority notification at a time
+        }
       }
     }
 
