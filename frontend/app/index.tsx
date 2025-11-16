@@ -1680,7 +1680,7 @@ export default function SafeWalkApp() {
     }
   };
 
-  // MUSIC-FRIENDLY VOICE SYSTEM
+  // MUSIC-FRIENDLY VOICE SYSTEM WITH AMBIENT ALERTS
   const speakAlert = async (message: string, priority: 'low' | 'medium' | 'high' | 'critical' = 'medium', duckAudio: boolean = true) => {
     try {
       if (!voiceAlertsEnabled) return;
@@ -1689,68 +1689,88 @@ export default function SafeWalkApp() {
       await triggerHapticFeedback(priority);
       
       // Clean message for better TTS pronunciation
-      let cleanedMessage = message
-        // Add natural pauses
-        .replace(/([.!?])\s*/g, '$1... ')  // Add pauses after sentences
-        .replace(/,\s*/g, ', ')  // Normalize comma spacing
-        // Remove problematic punctuation
-        .replace(/[()]/g, ' ')  // Remove parentheses
-        .replace(/[-_]/g, ' ')  // Replace dashes/underscores with spaces
-        // Handle numbers and technical terms
-        .replace(/\b(\d{3,})\b/g, (match) => {  // Break up long numbers
-          return match.split('').join(' ');
-        })
-        // Improve word pronunciation
-        .replace(/\be-scooter\b/gi, 'e scooter')
-        .replace(/\be-bike\b/gi, 'e bike')
-        .replace(/\bAPI\b/g, 'A P I')
-        .replace(/\bID\b/g, 'I D')
-        // Clean up spaces
-        .replace(/\s+/g, ' ')  // Remove extra spaces
-        .trim();
+      const cleanedMessage = message
+        .replace(/km\/h/g, 'kilometers per hour')
+        .replace(/m\/s/g, 'meters per second')
+        .replace(/°C/g, ' degrees celsius')
+        .replace(/°F/g, ' degrees fahrenheit')
+        .replace(/\d+%/, (match) => `${match.replace('%', ' percent')}`);
       
-      // Smart audio ducking - lower music instead of stopping
+      // Audio ducking for music-friendly experience
       if (duckAudio && priority !== 'critical') {
-        // Brief audio duck notification (subtle chime sound)
-        await playAudioDuck();
-        await new Promise(resolve => setTimeout(resolve, 200)); // Brief pause
+        // Request audio focus with ducking (reduces music volume by 50%)
+        try {
+          await Audio.setAudioModeAsync({
+            playsInSilentModeIOS: true,
+            allowsRecordingIOS: false,
+            staysActiveInBackground: false,
+            shouldDuckAndroid: true, // Android: Duck other audio
+            playThroughEarpieceAndroid: false,
+          });
+        } catch (error) {
+          console.log('Audio ducking not available:', error);
+        }
       }
       
-      // Adaptive speech settings based on priority
-      let speechSettings = {
+      let speechSettings: any = {
         language: 'en-US',
         pitch: 1.0,
-        rate: 0.7, // Slower for better clarity, especially for emergency instructions
+        rate: 0.85, // Faster for ambient alerts
         quality: Speech.VoiceQuality.Enhanced,
+        volume: 0.7, // Lower volume for ambient feel
       };
       
-      // Adjust voice characteristics based on priority
+      // Adjust voice characteristics based on priority - AMBIENT APPROACH
       switch (priority) {
         case 'critical':
-          // Emergency: Override music, urgent tone
-          Speech.stop(); // Stop any current speech
-          speechSettings.pitch = 1.1;
-          speechSettings.rate = 0.75;  // Slightly faster but still clear for emergencies
+          // Emergency: Clear but not shouting
+          speechSettings.pitch = 1.05;
+          speechSettings.rate = 0.9;  // Clear and deliberate
+          speechSettings.volume = 1.0; // Full volume for emergencies
+          // Brief pause before critical alerts
+          Speech.stop();
+          await new Promise(resolve => setTimeout(resolve, 200));
           break;
         case 'high':
-          // Important: Brief interruption, clear delivery
+          // Important: Noticeable but not jarring
           speechSettings.pitch = 1.0;
-          speechSettings.rate = 0.7;
+          speechSettings.rate = 0.95; // Slightly faster
+          speechSettings.volume = 0.8; // 80% volume
           break;
         case 'medium':
-          // Normal: Gentle tone, doesn't interrupt music flow
-          speechSettings.pitch = 1.0;
-          speechSettings.rate = 0.7;
+          // Normal: Ambient background notification
+          speechSettings.pitch = 0.98;
+          speechSettings.rate = 1.0; // Normal speed
+          speechSettings.volume = 0.65; // 65% volume - blend with music
           break;
         case 'low':
-          // Subtle: Very gentle, almost whisper-like
-          speechSettings.pitch = 0.9;
-          speechSettings.rate = 0.65;
+          // Subtle: Very ambient, almost background
+          speechSettings.pitch = 0.95;
+          speechSettings.rate = 1.1; // Faster for brevity
+          speechSettings.volume = 0.5; // 50% volume - very subtle
           break;
       }
       
-      // Speak the alert with appropriate settings using cleaned message
-      Speech.speak(cleanedMessage, speechSettings);
+      // Speak the alert with appropriate settings
+      Speech.speak(cleanedMessage, {
+        ...speechSettings,
+        onDone: async () => {
+          // Restore normal audio mode after speaking
+          if (duckAudio && priority !== 'critical') {
+            try {
+              await Audio.setAudioModeAsync({
+                playsInSilentModeIOS: true,
+                allowsRecordingIOS: false,
+                staysActiveInBackground: false,
+                shouldDuckAndroid: false, // Restore audio
+                playThroughEarpieceAndroid: false,
+              });
+            } catch (error) {
+              console.log('Audio restore error:', error);
+            }
+          }
+        }
+      });
       
     } catch (error) {
       console.error('Error with music-friendly text-to-speech:', error);
