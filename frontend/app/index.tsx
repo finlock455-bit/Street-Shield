@@ -106,6 +106,14 @@ export default function SafeWalkApp() {
   const [permissionsGranted, setPermissionsGranted] = useState(false);
   const [voiceAlertsEnabled, setVoiceAlertsEnabled] = useState(true);
   const [lastAlertTime, setLastAlertTime] = useState<number>(0);
+  const lastAlertsByType = useRef<{[key: string]: number}>({});
+  const alertCooldowns = {
+    critical: 30000,      // 30 seconds
+    high: 60000,          // 1 minute
+    medium: 120000,       // 2 minutes
+    low: 300000,          // 5 minutes
+    info: 600000          // 10 minutes
+  };
   
   // State to track voice interactions to reduce repetition
   const [hasSeenSetupVoice, setHasSeenSetupVoice] = useState(false);
