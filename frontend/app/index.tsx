@@ -738,32 +738,8 @@ export default function SafeWalkApp() {
       }
     }
 
-    // Check overall safety score and provide intelligent voice guidance
-    const score = analysis.safety_score.overall_score;
-    if (voiceAlertsEnabled && now - lastAlertTime > 60000) { // Voice guidance every minute
-      let voiceGuidance = "";
-      
-      if (score >= 85) {
-        voiceGuidance = "Your current area looks very safe. Continue with confidence.";
-      } else if (score >= 70) {
-        voiceGuidance = `Safety score is ${score}. Stay alert and follow basic safety precautions.`;
-      } else if (score >= 50) {
-        voiceGuidance = `Moderate safety concerns detected. Your safety score is ${score}. Consider increased caution.`;
-      } else if (score >= 30) {
-        voiceGuidance = `Safety score is low at ${score}. Please exercise significant caution and stay aware of your surroundings.`;
-      } else {
-        voiceGuidance = `Critical safety alert! Your score is only ${score}. Consider finding a safer route or location immediately.`;
-      }
-      
-      // Add recommendations if available
-      if (analysis.safety_score.recommendations.length > 0) {
-        const topRecommendation = analysis.safety_score.recommendations[0];
-        voiceGuidance += ` Recommendation: ${topRecommendation}`;
-      }
-
-      await speakAlert(voiceGuidance);
-      setLastAlertTime(now);
-    }
+    // DON'T provide routine safety score updates - only show critical changes
+    // Users can check safety score visually on screen
 
     // Visual notification for low scores
     if (score < 40) {
