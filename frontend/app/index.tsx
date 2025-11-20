@@ -2066,6 +2066,14 @@ export default function SafeWalkApp() {
               </Text>
             </View>
             {isTracking && <View style={styles.activeIndicator} />}
+            {isTracking && (
+              <View style={styles.radarActiveIndicator}>
+                <View style={styles.radarPulse} />
+                <Text style={styles.radarActiveText}>
+                  🛡️ Radar Scanning...
+                </Text>
+              </View>
+            )}
           </TouchableOpacity>
 
           {/* Feature Controls Grid */}
