@@ -1442,8 +1442,10 @@ export default function SafeWalkApp() {
     scheduleNextInfoListening();
   };
 
+  // Voice info demo - shows what the system would do with real speech recognition
   const simulateVoiceInfoRequest = async (query: string) => {
     // For demo/testing purposes - simulate voice input
+    await speakAlert("Voice command received. Processing...", 'low');
     const processed = await processVoiceInfoRequest(query);
     if (!processed) {
       await speakAlert("I didn't recognize that command. Try asking about safety, location, weather, health, threats, time, or contacts.");
