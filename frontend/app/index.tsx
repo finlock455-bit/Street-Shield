@@ -3961,4 +3961,27 @@ const styles = StyleSheet.create({
     color: '#00FF88',
     fontWeight: 'bold',
   },
+  // Radar Active Indicator Styles
+  radarActiveIndicator: {
+    position: 'absolute',
+    bottom: -40,
+    left: 0,
+    right: 0,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  radarPulse: {
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    backgroundColor: '#00FF88',
+    opacity: 0.8,
+    marginBottom: 4,
+  },
+  radarActiveText: {
+    color: '#00FF88',
+    fontSize: 12,
+    fontWeight: '600',
+    textAlign: 'center',
+  },
 });
