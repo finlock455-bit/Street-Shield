@@ -2272,26 +2272,48 @@ export default function SafeWalkApp() {
               </Text>
             </TouchableOpacity>
 
-            {/* Voice Info Demo Button (when active) */}
+            {/* Voice Info System - Demo Buttons */}
             {isVoiceInfoActive && (
-              <TouchableOpacity
-                style={[styles.featureButton, styles.demoButton]}
-                onPress={() => simulateVoiceInfoRequest("street shield what is my safety score")}
-              >
-                <View style={styles.featureIcon}>
-                  <Ionicons 
-                    name="mic" 
-                    size={20} 
-                    color="#FFF" 
-                  />
+              <View style={styles.voiceInfoDemoSection}>
+                <Text style={styles.voiceInfoDemoTitle}>
+                  💬 Voice Info System (Demo Mode)
+                </Text>
+                <Text style={styles.voiceInfoDemoNote}>
+                  Note: Real speech recognition requires native build. Use buttons below to test responses:
+                </Text>
+                
+                <View style={styles.voiceInfoDemoButtons}>
+                  <TouchableOpacity 
+                    style={styles.voiceInfoDemoButton}
+                    onPress={() => simulateVoiceInfoRequest("street shield what is my safety score")}
+                  >
+                    <Ionicons name="shield-checkmark" size={16} color="#00FF88" />
+                    <Text style={styles.voiceInfoDemoButtonText}>
+                      Safety Check
+                    </Text>
+                  </TouchableOpacity>
+
+                  <TouchableOpacity 
+                    style={styles.voiceInfoDemoButton}
+                    onPress={() => simulateVoiceInfoRequest("street shield where am i")}
+                  >
+                    <Ionicons name="location" size={16} color="#00FF88" />
+                    <Text style={styles.voiceInfoDemoButtonText}>
+                      Location
+                    </Text>
+                  </TouchableOpacity>
+
+                  <TouchableOpacity 
+                    style={styles.voiceInfoDemoButton}
+                    onPress={() => simulateVoiceInfoRequest("street shield weather check")}
+                  >
+                    <Ionicons name="cloud" size={16} color="#00FF88" />
+                    <Text style={styles.voiceInfoDemoButtonText}>
+                      Weather
+                    </Text>
+                  </TouchableOpacity>
                 </View>
-                <Text style={styles.featureButtonText}>
-                  Demo: Safety Check
-                </Text>
-                <Text style={styles.featureStatus}>
-                  "STREET SHIELD..."
-                </Text>
-              </TouchableOpacity>
+              </View>
             )}
 
             {/* Manual Voice Trigger (when hands-free is active) */}
