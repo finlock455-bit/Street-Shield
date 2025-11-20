@@ -3197,6 +3197,51 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     borderColor: '#FF5252',
   },
+  // Voice Info Demo Styles
+  voiceInfoDemoSection: {
+    backgroundColor: '#1a1a1a',
+    borderRadius: 12,
+    padding: 16,
+    marginTop: 8,
+    borderWidth: 1,
+    borderColor: '#333',
+  },
+  voiceInfoDemoTitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#00FF88',
+    marginBottom: 8,
+    textAlign: 'center',
+  },
+  voiceInfoDemoNote: {
+    fontSize: 12,
+    color: '#888',
+    marginBottom: 12,
+    textAlign: 'center',
+    fontStyle: 'italic',
+  },
+  voiceInfoDemoButtons: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    flexWrap: 'wrap',
+    gap: 8,
+  },
+  voiceInfoDemoButton: {
+    backgroundColor: '#2a2a2a',
+    borderRadius: 8,
+    padding: 12,
+    alignItems: 'center',
+    minWidth: 80,
+    borderWidth: 1,
+    borderColor: '#444',
+  },
+  voiceInfoDemoButtonText: {
+    color: '#FFF',
+    fontSize: 12,
+    fontWeight: '600',
+    marginTop: 4,
+    textAlign: 'center',
+  },
   // Modal Styles
   modalContainer: {
     flex: 1,
