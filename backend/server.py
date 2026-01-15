@@ -2067,6 +2067,19 @@ async def health_check():
 # Include the router in the main app
 app.include_router(api_router)
 
+# Root-level health check for Kubernetes/deployment systems
+@app.get("/health")
+async def root_health_check():
+    """
+    Health check endpoint at root level for Kubernetes liveness/readiness probes.
+    Returns basic health status without detailed service information.
+    """
+    return {
+        "status": "healthy",
+        "service": "street-shield-backend",
+        "timestamp": datetime.utcnow().isoformat()
+    }
+
 app.add_middleware(
     CORSMiddleware,
     allow_credentials=True,
