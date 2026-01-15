@@ -1103,20 +1103,6 @@ export default function SafeWalkApp() {
     
     // Store interval reference for cleanup
     setTimeout(() => clearInterval(retryInterval), 300000); // Stop after 5 minutes
-  };  
-      for (const contact of emergencyContacts) {
-        console.log(`FALLBACK - Emergency alert to: ${contact} - ${emergencyMessage}`);
-      }
-      
-      if (voiceAlertsEnabled) {
-        await speakAlert("Emergency alert processing failed. Using backup emergency protocol. Your location has been logged for manual dispatch.");
-      }
-      
-      await showNotification(
-        '⚠️ Emergency Alert (Backup)',
-        'Using offline emergency protocol. Location logged for dispatch.'
-      );
-    }
   };
 
   // Removed reportEmergencyToAuthorities - now handled by backend API
