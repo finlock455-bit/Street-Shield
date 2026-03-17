@@ -99,6 +99,10 @@ export default function SafeWalkApp() {
   const [currentLanguage, setCurrentLanguage] = useState(i18n.locale);
   const [showLanguagePicker, setShowLanguagePicker] = useState(false);
   
+  // Voice settings state
+  const [voiceAccent, setVoiceAccent] = useState<'en-US' | 'en-GB' | 'en-AU' | 'en-IN'>('en-US');
+  const [showVoicePicker, setShowVoicePicker] = useState(false);
+  
   const [location, setLocation] = useState<LocationData | null>(null);
   const [safetyAnalysis, setSafetyAnalysis] = useState<SafetyAnalysis | null>(null);
   const [isTracking, setIsTracking] = useState(false);
