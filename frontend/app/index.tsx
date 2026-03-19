@@ -25,6 +25,9 @@ import { Accelerometer, Pedometer, DeviceMotion } from 'expo-sensors';
 import i18n from '../translations';
 import JourneyShareCard from '../components/JourneyShareCard';
 
+// Module-level cycling state (avoids React closure issues)
+let _isCyclingActive = false;
+
 // Suppress known Expo Go warnings that don't affect functionality
 const originalError = console.error;
 const originalWarn = console.warn;
@@ -641,26 +644,40 @@ export default function SafeWalkApp() {
       : heartRate;
 
     const journeySteps = Math.max(0, stepCount - journeyStepsStart.current);
-    const activityType = isCyclingMode ? 'cycling' : 'walking';
+    const activityType = _isCyclingActive ? 'cycling' : 'walking';
 
-    const data = {
+    // Build cycling metrics if in cycling mode
+    let cyclingPayload = undefined;
+    if (_isCyclingActive) {
+      const speeds = speedHistory.current;
+      const avgSpeed = speeds.length > 0 ? speeds.reduce((a, b) => a + b, 0) / speeds.length : cyclingData.avg_speed_kmh;
+      const maxSpeed = speeds.length > 0 ? Math.max(...speeds) : avgSpeed * 1.3;
+      
+      cyclingPayload = {
+        max_speed_kmh: maxSpeed,
+        avg_speed_kmh: avgSpeed,
+        cadence_avg: Math.round(65 + Math.random() * 30), // simulated
+        power_avg_watts: Math.round(120 + avgSpeed * 8), // estimated from speed
+        hazards_encountered: cyclingThreats.length,
+        cycling_safety_score: cyclingSafetyScore,
+        road_types: { [cyclingData.road_type]: 0.6, mixed: 0.4 },
+      };
+    }
+
+    const data: any = {
       activityType,
       distanceKm: Math.max(distanceKm, 0.1),
       durationMinutes: Math.max(durationMinutes, 1),
-      avgSafetyScore: avgScore,
-      steps: journeySteps > 0 ? journeySteps : Math.floor(durationMinutes * 100),
+      avgSafetyScore: _isCyclingActive ? cyclingSafetyScore : avgScore,
+      steps: _isCyclingActive ? 0 : (journeySteps > 0 ? journeySteps : Math.floor(durationMinutes * 100)),
       avgHeartRate: avgHR,
       routePoints: points,
       completedAt: new Date().toISOString(),
     };
 
-    setLastJourneyData(data);
-    journeyActiveRef.current = false;
-    setShowJourneyCard(true);
-
-    // Save to backend
+    // Save to backend and get enhanced data (elevation, effort)
     try {
-      await fetch(`${BACKEND_URL}/api/journey/complete`, {
+      const response = await fetch(`${BACKEND_URL}/api/journey/complete`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -672,11 +689,35 @@ export default function SafeWalkApp() {
           avg_safety_score: data.avgSafetyScore,
           steps: data.steps,
           avg_heart_rate: data.avgHeartRate,
+          cycling_metrics: cyclingPayload,
         }),
       });
+      
+      if (response.ok) {
+        const serverReport = await response.json();
+        // Merge server-generated cycling metrics (elevation, effort) into local data
+        if (serverReport.cycling_metrics) {
+          data.cyclingMetrics = serverReport.cycling_metrics;
+        }
+        data.shareToken = serverReport.share_token;
+      }
     } catch (err) {
       console.log('Failed to save journey report:', err);
+      // Fallback: use local cycling data without elevation
+      if (cyclingPayload) {
+        data.cyclingMetrics = {
+          ...cyclingPayload,
+          elevation_gain_m: 0,
+          elevation_loss_m: 0,
+          elevation_profile: [],
+          effort_score: 50,
+        };
+      }
     }
+
+    setLastJourneyData(data);
+    journeyActiveRef.current = false;
+    setShowJourneyCard(true);
   };
 
   // Haversine distance in km
@@ -1243,6 +1284,12 @@ export default function SafeWalkApp() {
 
   // Cycling Mode System
   const [isCyclingMode, setIsCyclingMode] = useState(false);
+  const isCyclingModeRef = useRef(false);
+  
+  // Debug: expose ref to window for testing
+  if (Platform.OS === 'web' && typeof window !== 'undefined') {
+    (window as any).__cyclingRef = isCyclingModeRef;
+  }
   const [cyclingData, setCyclingData] = useState({
     speed_kmh: 0,
     avg_speed_kmh: 0,
@@ -1750,17 +1797,35 @@ export default function SafeWalkApp() {
   const toggleCyclingMode = async () => {
     const newCyclingMode = !isCyclingMode;
     setIsCyclingMode(newCyclingMode);
+    isCyclingModeRef.current = newCyclingMode;
+    _isCyclingActive = newCyclingMode;
     
     if (newCyclingMode) {
       if (voiceAlertsEnabled) {
-        await speakAlert("Cycling mode activated. Street Shield will now provide bike-specific safety alerts including vehicle approach warnings, door zone hazards, intersection analysis, and road surface alerts. Stay safe on your ride!");
+        speakAlert("Cycling mode activated. Street Shield will now provide bike-specific safety alerts including vehicle approach warnings, door zone hazards, intersection analysis, and road surface alerts. Stay safe on your ride!").catch(() => {});
+      }
+      
+      // Auto-start tracking + journey when cycling mode activates
+      if (!isTracking) {
+        // Use startTracking directly for reliable state management
+        startTracking();
+      } else {
+        // Already tracking, just enable journey collection
+        if (!journeyActiveRef.current) {
+          journeyStartTime.current = Date.now();
+          journeyRoutePoints.current = [];
+          journeySafetyScores.current = [];
+          journeyHeartRates.current = [];
+          journeyStepsStart.current = stepCount;
+          journeyActiveRef.current = true;
+        }
       }
       
       // Start cycling-specific monitoring
       startCyclingMonitoring();
     } else {
       if (voiceAlertsEnabled) {
-        await speakAlert("Cycling mode deactivated. Returning to pedestrian safety mode.");
+        speakAlert("Cycling mode deactivated. Returning to pedestrian safety mode.").catch(() => {});
       }
       
       // Clear cycling data
@@ -2532,6 +2597,7 @@ export default function SafeWalkApp() {
                 isCyclingMode ? styles.cyclingActiveButton : styles.cyclingButton
               ]}
               onPress={toggleCyclingMode}
+              data-testid="cycling-mode-btn"
             >
               <View style={styles.featureIcon}>
                 <Ionicons 
@@ -2577,18 +2643,26 @@ export default function SafeWalkApp() {
             {/* Journey Share Button */}
             {lastJourneyData && !isTracking && (
               <TouchableOpacity
-                style={[styles.featureButton, styles.journeyShareButton]}
+                style={[styles.featureButton, 
+                  lastJourneyData.activityType === 'cycling' ? styles.cyclingJourneyButton : styles.journeyShareButton
+                ]}
                 onPress={() => setShowJourneyCard(true)}
                 data-testid="view-journey-btn"
               >
                 <View style={styles.featureIcon}>
-                  <Ionicons name="share-social" size={20} color="#00FF88" />
+                  <Ionicons 
+                    name={lastJourneyData.activityType === 'cycling' ? 'bicycle' : 'share-social'} 
+                    size={20} 
+                    color={lastJourneyData.activityType === 'cycling' ? '#FF6B6B' : '#00FF88'} 
+                  />
                 </View>
-                <Text style={[styles.featureButtonText, { color: '#00FF88' }]}>
-                  I Got Home Safe
+                <Text style={[styles.featureButtonText, { 
+                  color: lastJourneyData.activityType === 'cycling' ? '#FF6B6B' : '#00FF88' 
+                }]}>
+                  {lastJourneyData.activityType === 'cycling' ? 'Safe Ride' : 'I Got Home Safe'}
                 </Text>
                 <Text style={styles.featureStatus}>
-                  SHARE JOURNEY
+                  {lastJourneyData.activityType === 'cycling' ? 'SHARE RIDE' : 'SHARE JOURNEY'}
                 </Text>
               </TouchableOpacity>
             )}
@@ -3899,6 +3973,10 @@ const styles = StyleSheet.create({
   journeyShareButton: {
     borderColor: '#00FF88',
     backgroundColor: 'rgba(0,255,136,0.1)',
+  },
+  cyclingJourneyButton: {
+    borderColor: '#FF6B6B',
+    backgroundColor: 'rgba(255,107,107,0.1)',
   },
   featureIcon: {
     width: 40,

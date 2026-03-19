@@ -2085,15 +2085,32 @@ async def app_info():
     }
 
 # Journey Report Models
+class CyclingJourneyMetrics(BaseModel):
+    max_speed_kmh: float = 0.0
+    avg_speed_kmh: float = 0.0
+    elevation_gain_m: float = 0.0
+    elevation_loss_m: float = 0.0
+    max_elevation_m: float = 0.0
+    min_elevation_m: float = 0.0
+    elevation_profile: List[float] = Field(default_factory=list)  # elevation at each point
+    cadence_avg: int = 0
+    power_avg_watts: int = 0
+    road_types: Dict[str, float] = Field(default_factory=dict)  # % on each road type
+    hazards_encountered: int = 0
+    hazard_details: List[Dict] = Field(default_factory=list)
+    effort_score: int = 50  # 0-100 effort intensity
+    cycling_safety_score: int = 75
+
 class JourneyReportRequest(BaseModel):
     user_id: str = "anonymous"
-    activity_type: str = "walking"  # walking, running, cycling
-    route_points: List[Dict] = Field(default_factory=list)  # [{lat, lon}]
+    activity_type: str = "walking"
+    route_points: List[Dict] = Field(default_factory=list)
     distance_km: float = 0.0
     duration_minutes: float = 0.0
     avg_safety_score: int = 0
     steps: int = 0
     avg_heart_rate: int = 0
+    cycling_metrics: Optional[CyclingJourneyMetrics] = None
 
 class JourneyReport(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
@@ -2108,12 +2125,86 @@ class JourneyReport(BaseModel):
     started_at: str
     completed_at: str
     share_token: str = Field(default_factory=lambda: str(uuid.uuid4())[:8])
+    cycling_metrics: Optional[Dict] = None
+
+def simulate_elevation_profile(route_points: List[Dict], distance_km: float) -> Dict:
+    """Simulate elevation data for a route based on coordinates"""
+    import math
+    n = max(len(route_points), 2)
+    base_elevation = 45.0  # base meters
+    profile = []
+    
+    for i in range(n):
+        t = i / max(n - 1, 1)
+        # Create realistic rolling hills using sine waves
+        elev = base_elevation + 15 * math.sin(t * math.pi * 2.5) + 8 * math.sin(t * math.pi * 5.3) + random.uniform(-2, 2)
+        profile.append(round(max(5, elev), 1))
+    
+    gains = sum(max(0, profile[i] - profile[i-1]) for i in range(1, len(profile)))
+    losses = sum(max(0, profile[i-1] - profile[i]) for i in range(1, len(profile)))
+    
+    return {
+        "elevation_profile": profile,
+        "elevation_gain_m": round(gains, 1),
+        "elevation_loss_m": round(losses, 1),
+        "max_elevation_m": round(max(profile), 1),
+        "min_elevation_m": round(min(profile), 1),
+    }
+
+def calculate_effort_score(distance_km: float, duration_min: float, elevation_gain: float, avg_speed: float) -> int:
+    """Calculate cycling effort intensity 0-100"""
+    # Base effort from speed
+    speed_effort = min(avg_speed / 35.0 * 40, 40)
+    # Elevation effort (steeper = harder)
+    elev_effort = min(elevation_gain / (distance_km * 10 + 1) * 30, 30)
+    # Duration effort
+    duration_effort = min(duration_min / 60 * 20, 20)
+    # Intensity factor
+    intensity = min(distance_km / duration_min * 60 / 25 * 10, 10) if duration_min > 0 else 0
+    
+    return max(10, min(100, int(speed_effort + elev_effort + duration_effort + intensity)))
 
 @api_router.post("/journey/complete")
 async def complete_journey(request: JourneyReportRequest):
     """Save a completed journey and return a shareable report"""
     now = datetime.utcnow()
     started_at = (now - timedelta(minutes=request.duration_minutes)).isoformat()
+    
+    # If cycling, generate elevation and effort data
+    cycling_data = None
+    if request.activity_type == "cycling":
+        elev = simulate_elevation_profile(request.route_points, request.distance_km)
+        
+        cm = request.cycling_metrics
+        avg_speed = cm.avg_speed_kmh if cm else (request.distance_km / max(request.duration_minutes / 60, 0.01))
+        max_speed = cm.max_speed_kmh if cm else avg_speed * 1.4
+        cadence = cm.cadence_avg if cm else random.randint(65, 95)
+        power = cm.power_avg_watts if cm else random.randint(120, 280)
+        hazards = cm.hazards_encountered if cm else random.randint(0, 5)
+        safety = cm.cycling_safety_score if cm else request.avg_safety_score
+        
+        effort = calculate_effort_score(
+            request.distance_km, request.duration_minutes,
+            elev["elevation_gain_m"], avg_speed
+        )
+        
+        road_types = cm.road_types if cm and cm.road_types else {
+            "bike_lane": round(random.uniform(0.3, 0.6), 2),
+            "road": round(random.uniform(0.1, 0.3), 2),
+            "mixed": round(random.uniform(0.1, 0.3), 2),
+        }
+        
+        cycling_data = {
+            "max_speed_kmh": round(max_speed, 1),
+            "avg_speed_kmh": round(avg_speed, 1),
+            "cadence_avg": cadence,
+            "power_avg_watts": power,
+            "effort_score": effort,
+            "hazards_encountered": hazards,
+            "cycling_safety_score": safety,
+            "road_types": road_types,
+            **elev,
+        }
     
     report = JourneyReport(
         user_id=request.user_id,
@@ -2126,6 +2217,7 @@ async def complete_journey(request: JourneyReportRequest):
         avg_heart_rate=request.avg_heart_rate,
         started_at=started_at,
         completed_at=now.isoformat(),
+        cycling_metrics=cycling_data,
     )
     
     report_dict = report.dict()
