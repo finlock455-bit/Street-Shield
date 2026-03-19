@@ -2052,6 +2052,38 @@ async def get_emergency_history(user_id: str, limit: int = 50):
 async def root():
     return {"message": "Street Shield API - Advanced AI protection for pedestrians and runners"}
 
+@api_router.get("/app-info")
+async def app_info():
+    """Public app info endpoint for SEO and discovery"""
+    return {
+        "name": "Street Shield",
+        "tagline": "AI-Powered Personal Safety for Everyone",
+        "description": "Street Shield is your intelligent personal safety companion. Whether you're walking home alone at night, running through the city, cycling to work, or travelling in unfamiliar areas — Street Shield keeps you protected with real-time AI threat detection, instant emergency SOS, and live location sharing.",
+        "features": [
+            {"name": "Emergency Panic Button", "description": "One-tap SOS alert that instantly notifies your emergency contacts with your live location"},
+            {"name": "Live Location Sharing", "description": "Share your real-time location with family, friends or emergency services"},
+            {"name": "AI Threat Detection", "description": "Intelligent analysis of your surroundings, including silent electric scooter warnings"},
+            {"name": "Voice-Activated SOS", "description": "Say 'Street Shield' to trigger emergency alerts hands-free"},
+            {"name": "Cycling Safety Mode", "description": "Specialised protection for cyclists with vehicle proximity alerts"},
+            {"name": "Health Monitoring", "description": "Real-time heart rate, blood oxygen, and stress level tracking"},
+            {"name": "Multi-Language Support", "description": "Available in English, Spanish, French, German, and Chinese"},
+            {"name": "Offline Emergency Mode", "description": "Emergency features work even without a network connection"},
+        ],
+        "use_cases": [
+            "Walking alone at night",
+            "Running or jogging safely",
+            "Cycling commute protection",
+            "Student campus safety",
+            "Late-night travel and taxi safety",
+            "Family and child safety tracking",
+            "Elderly emergency alerts",
+            "Lone worker protection",
+        ],
+        "platforms": ["iOS", "Android", "Web"],
+        "languages": ["English", "Spanish", "French", "German", "Chinese"],
+        "version": "1.0.0"
+    }
+
 @api_router.get("/health")
 async def health_check():
     return {

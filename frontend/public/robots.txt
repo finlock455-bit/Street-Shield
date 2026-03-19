@@ -1,0 +1,7 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://streetshield.app/sitemap.xml
+
+# Street Shield - Personal Safety App
+# Emergency SOS | Panic Button | Live Location Sharing

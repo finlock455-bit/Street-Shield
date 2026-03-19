@@ -16,7 +16,7 @@
     "production": {
       "autoIncrement": true,
       "env": {
-        "EXPO_PUBLIC_BACKEND_URL": "https://streetshield.preview.emergentagent.com"
+        "EXPO_PUBLIC_BACKEND_URL": "https://urban-safety-radar.preview.emergentagent.com"
       }
     }
   },

@@ -7,7 +7,7 @@ import requests
 import json
 from datetime import datetime
 
-BASE_URL = "https://streetshield.preview.emergentagent.com/api"
+BASE_URL = "https://urban-safety-radar.preview.emergentagent.com/api"
 
 def test_ai_integration_scenarios():
     """Test AI integration with different scenarios"""

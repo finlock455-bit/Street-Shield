@@ -1,10 +1,16 @@
 #!/usr/bin/env python3
 """
 Street Shield Backend API Testing Suite
-Tests the 3 newly implemented high-priority features:
-1. Emergency Contact Management System
-2. Enhanced Health Monitoring with Medical Accuracy  
-3. Cycling Mode Safety System
+Testing specific endpoints requested in review:
+1. GET /api/health - Health check with services info
+2. GET /api/app-info - NEW endpoint with Street Shield info
+3. GET /api/ - Root API endpoint 
+4. GET /health - Root-level health check for Kubernetes
+5. POST /api/analyze - Safety analysis endpoint (expected to be /api/safety/analyze)
+6. GET /api/emergency/contacts?user_id=test_user - Emergency contacts retrieval
+7. POST /api/emergency/contacts - Add emergency contact
+
+Plus comprehensive testing of existing backend features.
 """
 
 import requests
@@ -15,7 +21,7 @@ from typing import Dict, List, Any
 import sys
 
 # Backend URL from frontend/.env
-BASE_URL = "https://streetshield.preview.emergentagent.com/api"
+BASE_URL = "https://urban-safety-radar.preview.emergentagent.com/api"
 
 class BackendTester:
     def __init__(self):
@@ -46,6 +52,160 @@ class BackendTester:
         if not success and response_data:
             print(f"   Response: {response_data}")
         print()
+
+    def test_requested_endpoints(self):
+        """Test the specific endpoints mentioned in the review request"""
+        print("📋 Testing Review Request Endpoints...")
+        
+        # Test 1: GET /api/health - Should return status "healthy" with services info
+        try:
+            response = self.session.get(f"{self.base_url}/health")
+            if response.status_code == 200:
+                data = response.json()
+                has_status = data.get('status') == 'healthy'
+                has_services = 'services' in data
+                self.log_test(
+                    "GET /api/health",
+                    has_status and has_services,
+                    f"Status: {data.get('status')}, Services: {list(data.get('services', {}).keys())}",
+                    data
+                )
+            else:
+                self.log_test("GET /api/health", False, f"Status code: {response.status_code}", response.text)
+        except Exception as e:
+            self.log_test("GET /api/health", False, f"Exception: {e}")
+        
+        # Test 2: GET /api/app-info - NEW endpoint
+        try:
+            response = self.session.get(f"{self.base_url}/app-info")
+            if response.status_code == 200:
+                data = response.json()
+                has_name = data.get('name') == 'Street Shield'
+                has_tagline = 'tagline' in data
+                has_features = isinstance(data.get('features'), list) and len(data.get('features', [])) >= 8
+                has_use_cases = isinstance(data.get('use_cases'), list) and len(data.get('use_cases', [])) >= 8
+                has_platforms = isinstance(data.get('platforms'), list)
+                has_languages = isinstance(data.get('languages'), list)
+                
+                all_checks = has_name and has_tagline and has_features and has_use_cases and has_platforms and has_languages
+                self.log_test(
+                    "GET /api/app-info",
+                    all_checks,
+                    f"Name: {data.get('name')}, Features: {len(data.get('features', []))}, Use cases: {len(data.get('use_cases', []))}",
+                    data
+                )
+            else:
+                self.log_test("GET /api/app-info", False, f"Status code: {response.status_code}", response.text)
+        except Exception as e:
+            self.log_test("GET /api/app-info", False, f"Exception: {e}")
+        
+        # Test 3: GET /api/ - Root API endpoint
+        try:
+            response = self.session.get(f"{self.base_url}/")
+            if response.status_code == 200:
+                data = response.json()
+                has_message = 'message' in data
+                self.log_test(
+                    "GET /api/",
+                    has_message,
+                    f"Message: {data.get('message', '')}",
+                    data
+                )
+            else:
+                self.log_test("GET /api/", False, f"Status code: {response.status_code}", response.text)
+        except Exception as e:
+            self.log_test("GET /api/", False, f"Exception: {e}")
+        
+        # Test 4: GET /health - Root-level health check for Kubernetes
+        try:
+            base_url_without_api = self.base_url.replace('/api', '')
+            response = self.session.get(f"{base_url_without_api}/health")
+            if response.status_code == 200:
+                data = response.json()
+                has_status = data.get('status') == 'healthy'
+                has_service = 'service' in data
+                self.log_test(
+                    "GET /health (root-level)",
+                    has_status and has_service,
+                    f"Status: {data.get('status')}, Service: {data.get('service')}",
+                    data
+                )
+            else:
+                self.log_test("GET /health (root-level)", False, f"Status code: {response.status_code}", response.text)
+        except Exception as e:
+            self.log_test("GET /health (root-level)", False, f"Exception: {e}")
+        
+        # Test 5: POST /api/analyze - Safety analysis endpoint (checking both /api/analyze and /api/safety/analyze)
+        analyze_data = {
+            "location": {
+                "latitude": 51.5074,
+                "longitude": -0.1278,
+                "timestamp": "2026-03-19T12:00:00"
+            },
+            "user_context": {
+                "activity_type": "walking"
+            }
+        }
+        
+        # Test 5a: POST /api/analyze (may not exist)
+        try:
+            response = self.session.post(f"{self.base_url}/analyze", json=analyze_data)
+            if response.status_code == 200:
+                data = response.json()
+                self.log_test("POST /api/analyze", True, "Analysis completed", data)
+            else:
+                self.log_test("POST /api/analyze", False, f"Status code: {response.status_code} - endpoint may not exist", response.text)
+        except Exception as e:
+            self.log_test("POST /api/analyze", False, f"Exception: {e}")
+        
+        # Test 5b: POST /api/safety/analyze (actual endpoint)
+        try:
+            response = self.session.post(f"{self.base_url}/safety/analyze", json=analyze_data)
+            if response.status_code == 200:
+                data = response.json()
+                has_location = 'location' in data
+                has_safety_score = 'safety_score' in data
+                has_weather = 'weather' in data
+                
+                all_checks = has_location and has_safety_score and has_weather
+                self.log_test(
+                    "POST /api/safety/analyze (actual endpoint)",
+                    all_checks,
+                    f"Safety score: {data.get('safety_score', {}).get('overall_score', 'N/A')}, Weather: {data.get('weather', {}).get('weather_condition', 'N/A')}",
+                    data
+                )
+            else:
+                self.log_test("POST /api/safety/analyze", False, f"Status code: {response.status_code}", response.text)
+        except Exception as e:
+            self.log_test("POST /api/safety/analyze", False, f"Exception: {e}")
+        
+        # Test 6: GET /api/emergency/contacts?user_id=test_user - May not exist
+        try:
+            response = self.session.get(f"{self.base_url}/emergency/contacts", params={"user_id": "test_user"})
+            if response.status_code == 200:
+                data = response.json()
+                self.log_test("GET /api/emergency/contacts", True, "Contacts retrieved", data)
+            else:
+                self.log_test("GET /api/emergency/contacts", False, f"Status code: {response.status_code} - endpoint may not exist", response.text)
+        except Exception as e:
+            self.log_test("GET /api/emergency/contacts", False, f"Exception: {e}")
+        
+        # Test 7: POST /api/emergency/contacts - May not exist
+        contact_data = {
+            "user_id": "test_user",
+            "name": "Test Contact",
+            "phone_number": "+44123456789", 
+            "relationship": "family"
+        }
+        try:
+            response = self.session.post(f"{self.base_url}/emergency/contacts", json=contact_data)
+            if response.status_code == 200 or response.status_code == 201:
+                data = response.json()
+                self.log_test("POST /api/emergency/contacts", True, "Contact created", data)
+            else:
+                self.log_test("POST /api/emergency/contacts", False, f"Status code: {response.status_code} - endpoint may not exist", response.text)
+        except Exception as e:
+            self.log_test("POST /api/emergency/contacts", False, f"Exception: {e}")
 
     def test_emergency_contact_management(self):
         """Test Emergency Contact Management System"""
@@ -635,6 +795,9 @@ class BackendTester:
         print("🧪 Starting Street Shield Backend API Tests...")
         print(f"Testing against: {self.base_url}")
         print("=" * 60)
+        
+        # Test review request endpoints FIRST
+        self.test_requested_endpoints()
         
         # Test all three high-priority features
         self.test_emergency_contact_management()
