@@ -212,9 +212,10 @@ export default function SafeWalkApp() {
 
   const requestPermissions = async () => {
     try {
-      // Provide voice guidance about permissions
-      if (voiceAlertsEnabled) {
-        await speakAlert("Welcome to Street Shield! I need to request some permissions to keep you safe.");
+      // On web, permissions often fail or are limited - auto-grant demo mode
+      if (Platform.OS === 'web') {
+        setPermissionsGranted(true);
+        return;
       }
 
       // Request location permissions
@@ -229,45 +230,21 @@ export default function SafeWalkApp() {
       
       if (hasLocationPermission || hasNotificationPermission) {
         setPermissionsGranted(true);
-        
-        // Voice feedback based on permissions
-        if (voiceAlertsEnabled) {
-          if (hasLocationPermission && hasNotificationPermission) {
-            await speakAlert("Perfect! All permissions granted. Street Shield is ready to protect you.");
-          } else if (hasLocationPermission) {
-            await speakAlert("Location permission granted. I can track your safety, but notifications are limited.");
-          } else if (hasNotificationPermission) {
-            await speakAlert("Notification permission granted. I'll use demo mode for safety features.");
-          }
-        }
       } else {
         // Still allow demo mode even without permissions
-        if (Platform.OS === 'web') {
-          setPermissionsGranted(true);
-          if (voiceAlertsEnabled) {
-            await speakAlert("Running in demo mode. SafeWalk features will be simulated for your safety.");
-          }
-        } else {
-          Alert.alert(
-            'Permissions Needed for Full Protection',
-            'SafeWalk works best with location and notification permissions. You can still use demo mode or try again.',
-            [
-              { text: 'Demo Mode', onPress: () => {
-                setPermissionsGranted(true);
-                speakAlert("Demo mode activated. Street Shield will simulate safety features.");
-              }},
-              { text: 'Try Again', onPress: () => requestPermissions() }
-            ]
-          );
-        }
+        Alert.alert(
+          'Permissions Needed for Full Protection',
+          'Street Shield works best with location and notification permissions. You can still use demo mode or try again.',
+          [
+            { text: 'Demo Mode', onPress: () => setPermissionsGranted(true) },
+            { text: 'Try Again', onPress: () => requestPermissions() }
+          ]
+        );
       }
     } catch (error) {
       console.error('Error requesting permissions:', error);
       // Fallback to demo mode on error
       setPermissionsGranted(true);
-      if (voiceAlertsEnabled) {
-        await speakAlert("Permission request failed. Running in demo mode for your safety.");
-      }
     }
   };
 
@@ -2216,9 +2193,9 @@ export default function SafeWalkApp() {
       <SafeAreaView style={styles.container}>
         <View style={styles.permissionContainer}>
           <Ionicons name="shield-outline" size={80} color="#666" />
-          <Text style={styles.permissionTitle}>SafeWalk Needs Permissions</Text>
+          <Text style={styles.permissionTitle}>Street Shield Needs Permissions</Text>
           <Text style={styles.permissionText}>
-            To keep you safe, SafeWalk needs access to your location and the ability to send notifications.
+            To keep you safe, Street Shield needs access to your location and the ability to send notifications.
           </Text>
           <TouchableOpacity style={styles.primaryButton} onPress={requestPermissions}>
             <Text style={styles.buttonText}>Grant Permissions</Text>
