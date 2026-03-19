@@ -32,6 +32,7 @@ const originalWarn = console.warn;
 console.error = (...args) => {
   if (args[0]?.includes?.('React.Fragment')) return;
   if (args[0]?.includes?.('expo-router')) return;
+  if (args[0]?.includes?.('Unexpected text node')) return;
   originalError(...args);
 };
 
@@ -108,7 +109,7 @@ export default function SafeWalkApp() {
   const [safetyAnalysis, setSafetyAnalysis] = useState<SafetyAnalysis | null>(null);
   const [isTracking, setIsTracking] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [permissionsGranted, setPermissionsGranted] = useState(false);
+  const [permissionsGranted, setPermissionsGranted] = useState(Platform.OS === 'web');
   const [voiceAlertsEnabled, setVoiceAlertsEnabled] = useState(true);
   const [lastAlertTime, setLastAlertTime] = useState<number>(0);
   const lastAlertsByType = useRef<{[key: string]: number}>({});
@@ -163,13 +164,13 @@ export default function SafeWalkApp() {
   const emergencyModeStartTime = useRef<number>(0);
 
   // Journey tracking state
-  const [journeyActive, setJourneyActive] = useState(false);
   const [showJourneyCard, setShowJourneyCard] = useState(false);
   const journeyStartTime = useRef<number>(0);
   const journeyRoutePoints = useRef<{ latitude: number; longitude: number }[]>([]);
   const journeySafetyScores = useRef<number[]>([]);
   const journeyHeartRates = useRef<number[]>([]);
   const journeyStepsStart = useRef<number>(0);
+  const journeyActiveRef = useRef(false);
   const [lastJourneyData, setLastJourneyData] = useState<any>(null);
 
   useEffect(() => {
@@ -294,11 +295,11 @@ export default function SafeWalkApp() {
       journeySafetyScores.current = [];
       journeyHeartRates.current = [];
       journeyStepsStart.current = stepCount;
-      setJourneyActive(true);
+      journeyActiveRef.current = true;
       
-      // Voice prompt for starting
+      // Voice prompt for starting (non-blocking on web)
       if (voiceAlertsEnabled) {
-        await speakAlert("Street Shield protection is now active. I'm monitoring your safety and surroundings.");
+        speakAlert("Street Shield protection is now active. I'm monitoring your safety and surroundings.").catch(() => {});
       }
 
       // Try to get real location, fallback to demo if needed
@@ -324,7 +325,7 @@ export default function SafeWalkApp() {
               setLocation(locationData);
               
               // Collect journey route points
-              if (journeyActive) {
+              if (journeyActiveRef.current) {
                 journeyRoutePoints.current.push({
                   latitude: locationData.latitude,
                   longitude: locationData.longitude,
@@ -400,7 +401,7 @@ export default function SafeWalkApp() {
       setLocation(updatedDemo);
       
       // Collect journey route points in demo mode
-      if (journeyActive) {
+      if (journeyActiveRef.current) {
         journeyRoutePoints.current.push({
           latitude: updatedDemo.latitude,
           longitude: updatedDemo.longitude,
@@ -504,7 +505,7 @@ export default function SafeWalkApp() {
       setStepCount(simulatedBiometrics.step_count);
 
       // Collect heart rates for journey
-      if (journeyActive) {
+      if (journeyActiveRef.current) {
         journeyHeartRates.current.push(simulatedBiometrics.heart_rate);
       }
 
@@ -612,7 +613,7 @@ export default function SafeWalkApp() {
     }
 
     // Complete journey and show share card
-    if (journeyActive) {
+    if (journeyActiveRef.current) {
       completeJourney();
     }
   };
@@ -654,7 +655,7 @@ export default function SafeWalkApp() {
     };
 
     setLastJourneyData(data);
-    setJourneyActive(false);
+    journeyActiveRef.current = false;
     setShowJourneyCard(true);
 
     // Save to backend
@@ -716,7 +717,7 @@ export default function SafeWalkApp() {
       setSafetyAnalysis(analysis);
       
       // Collect safety scores for journey
-      if (journeyActive && analysis.safety_score) {
+      if (journeyActiveRef.current && analysis.safety_score) {
         journeySafetyScores.current.push(analysis.safety_score.overall_score);
       }
       

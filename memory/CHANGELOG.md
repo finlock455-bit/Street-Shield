@@ -1,42 +1,50 @@
 # Street Shield - Changelog
 
-## 2026-03-19 - SEO/ASO Discoverability & Bug Fix
+## 2026-03-19 - Session 2: Journey Share Card + SEO
 
-### Added
+### Added - "I Got Home Safe" Shareable Journey Card
+- **`components/JourneyShareCard.tsx`**: New component with:
+  - Beautiful card layout with "I GOT HOME SAFE" ribbon
+  - SVG route map rendered from GPS coordinate points
+  - Safety score grade display (A+/B/C/D with color coding)
+  - Stats grid: Distance, Duration, Steps, Avg Heart Rate
+  - Light/dark theme toggle
+  - Share button using Web Share API / React Native Share
+  - Street Shield branding footer with date/time
+  - Social hashtags (#IGotHomeSafe #StreetShield)
+
+- **Journey tracking integration in `index.tsx`**:
+  - Uses refs (not state) for callback-safe journey data collection
+  - Collects route points, safety scores, heart rates during tracking
+  - Calculates distance via Haversine formula
+  - Auto-opens share card when shield is stopped
+  - "I Got Home Safe" button in feature grid after journey completion
+
+- **Backend `POST /api/journey/complete`**: Saves journey with share_token
+- **Backend `GET /api/journey/report/{share_token}`**: Retrieves shareable report
+- **`react-native-svg`**: Installed for SVG route map rendering
+
+### Added - SEO/ASO Discoverability
 - **`app/+html.tsx`**: Comprehensive web HTML shell with:
-  - SEO title tag ("Street Shield - Personal Safety App | Emergency SOS, Live Location Sharing & Panic Button")
-  - Meta description covering 50+ safety-related search intents
-  - Keywords meta tag with comprehensive ASO terms
-  - Open Graph tags (og:title, og:description, og:site_name, og:locale)
-  - Twitter Card tags (summary_large_image)
-  - Schema.org JSON-LD SoftwareApplication structured data
-  - Schema.org FAQPage structured data for panic-intent searches
-  - Geo targeting meta for UK
-  - Apple/Android mobile web app meta tags
-  - Theme color configuration
-
-- **Updated `app.json`**: Rich ASO metadata including:
-  - Descriptive app name: "Street Shield - Personal Safety & Emergency SOS"
-  - 250+ word description covering all user scenarios
-  - iOS info plist descriptions for permissions
-  - Web-specific meta (name, shortName, description, themeColor)
-  - Updated backgroundColor to #0a0a1a
-
-- **`public/robots.txt`**: Search engine crawling directives
-- **`public/sitemap.xml`**: Basic sitemap structure
-- **`GET /api/app-info`**: Public API endpoint for app discovery info (8 features, 8 use cases, platform/language data)
+  - SEO title, meta description, keywords (50+ safety search terms)
+  - Open Graph tags, Twitter Card tags
+  - Schema.org JSON-LD (SoftwareApplication + FAQPage)
+  - Geo targeting, mobile web app meta, theme color
+- **Updated `app.json`**: Rich ASO description and metadata
+- **`public/robots.txt`** and **`public/sitemap.xml`**
+- **`GET /api/app-info`**: Public discovery endpoint
 
 ### Fixed
-- **Pre-existing "Element type is invalid" rendering error**: Fixed by reinstalling `@expo/vector-icons` and `ws` packages, resolving the undefined component crash that prevented the app from loading on web.
+- Pre-existing "Element type is invalid" crash (reinstalled @expo/vector-icons + ws)
+- Permission screen blocking web users (auto-bypass on Platform.OS === 'web')
+- "SafeWalk" branding → "Street Shield" on permission screen
+- React closure trap: Changed `journeyActive` from useState to useRef for callback safety
+- Made voice alert on tracking start non-blocking to prevent UI freeze
+- Suppressed "Unexpected text node" console error
 
-## Prior Work (Before this session)
-- Emergency contact system with voice trigger
-- Safety analysis with AI (Gemini) scoring
-- Cycling safety mode
-- Simulated health monitoring with (DEMO) label
-- Haptic feedback for alerts
+## 2026-03-19 - Session 1: Initial Features
+- Emergency contact system, cycling mode, safety analysis core
+- Haptic feedback, throttled voice alerts, audio ducking
 - i18n infrastructure (translations + language picker)
-- Voice alerts with throttling and audio ducking
 - Simulated offline emergency mode
-- Test emergency button
 - Root /health endpoint for Kubernetes

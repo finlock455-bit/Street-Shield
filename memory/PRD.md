@@ -1,7 +1,7 @@
 # Street Shield - Product Requirements Document
 
 ## Problem Statement
-Street Shield is a mobile safety app for pedestrians, runners, and cyclists. It provides AI-powered spatial awareness, emergency support, health monitoring, and real-time threat detection. The app targets anyone who wants to stay safe walking alone, running, cycling, or travelling.
+Street Shield is a mobile safety app for pedestrians, runners, and cyclists. It provides AI-powered spatial awareness, emergency support, health monitoring, and real-time threat detection.
 
 ## User Personas
 - Pedestrians walking alone at night
@@ -22,14 +22,14 @@ Street Shield is a mobile safety app for pedestrians, runners, and cyclists. It 
 7. Multi-language support (EN, ES, FR, DE, ZH)
 8. Offline/satellite emergency mode
 9. Custom AI voice selection
-10. SEO/ASO discoverability for app store and web search
+10. SEO/ASO discoverability
+11. "I Got Home Safe" shareable journey reports
 
 ## Architecture
 - **Frontend**: Expo (React Native) with expo-router, running on web (port 3000)
 - **Backend**: FastAPI (Python) on port 8001
 - **Database**: MongoDB
 - **AI**: Google Gemini via Emergent LLM Key
-- **Deployment**: Kubernetes with Emergent Platform
 
 ## Key API Endpoints
 - `POST /api/safety/analyze` - Main safety analysis
@@ -37,6 +37,8 @@ Street Shield is a mobile safety app for pedestrians, runners, and cyclists. It 
 - `GET/POST /api/emergency/settings` - Emergency config
 - `POST /api/cycling/threats` - Cycling safety
 - `POST /api/health/biometric-analysis` - Health monitoring
+- `POST /api/journey/complete` - Save completed journey
+- `GET /api/journey/report/{share_token}` - Get shareable journey
 - `GET /api/app-info` - Public SEO/discovery info
 - `GET /api/health` - Health check
 
@@ -47,9 +49,18 @@ Street Shield is a mobile safety app for pedestrians, runners, and cyclists. It 
 - Simulated health monitoring
 - Haptic feedback for alerts
 - i18n infrastructure (translations + language picker)
-- SEO/ASO optimization (meta tags, Schema.org, Open Graph, Twitter Cards)
+- SEO/ASO optimization (meta tags, Schema.org, Open Graph, Twitter Cards, FAQ schema)
 - Voice alerts with throttling
 - Offline emergency simulation
+- **"I Got Home Safe" shareable journey card** with:
+  - Journey tracking (route points, stats collection)
+  - SVG route map visualization
+  - Light/dark theme toggle
+  - Share functionality (Web Share API + React Native Share)
+  - Safety score grade display
+  - Stats grid (distance, duration, steps, heart rate)
+  - Social hashtags (#IGotHomeSafe #StreetShield)
+  - Backend persistence via MongoDB
 
 ## What's Simulated/Mocked
 - Voice recognition (button-based, needs native build)
@@ -61,7 +72,7 @@ Street Shield is a mobile safety app for pedestrians, runners, and cyclists. It 
 
 ## Pending/Backlog
 - P1: Complete UI translation (i18n.t() for all strings)
-- P1: Radar visual feedback
+- P1: Radar visual feedback animation
 - P2: Voice cloning (ElevenLabs - needs API key)
 - P2: OpenWeatherMap integration (needs API key)
 - P2: Native development builds for real sensors
@@ -71,6 +82,3 @@ Street Shield is a mobile safety app for pedestrians, runners, and cyclists. It 
 - **Google Gemini**: Active via Emergent LLM Key
 - **OpenWeatherMap**: Pending user API key
 - **ElevenLabs**: Planned for voice cloning
-
-## SEO/ASO Keywords
-personal safety app, emergency SOS, panic button, live location sharing, walking safety, running safety, cycling safety, student safety, family tracker, UK safety app, headphone safety, e-scooter warning, silent alarm, lone worker safety, travel safety
