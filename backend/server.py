@@ -2084,6 +2084,67 @@ async def app_info():
         "version": "1.0.0"
     }
 
+# Journey Report Models
+class JourneyReportRequest(BaseModel):
+    user_id: str = "anonymous"
+    activity_type: str = "walking"  # walking, running, cycling
+    route_points: List[Dict] = Field(default_factory=list)  # [{lat, lon}]
+    distance_km: float = 0.0
+    duration_minutes: float = 0.0
+    avg_safety_score: int = 0
+    steps: int = 0
+    avg_heart_rate: int = 0
+
+class JourneyReport(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    user_id: str
+    activity_type: str
+    route_points: List[Dict]
+    distance_km: float
+    duration_minutes: float
+    avg_safety_score: int
+    steps: int
+    avg_heart_rate: int
+    started_at: str
+    completed_at: str
+    share_token: str = Field(default_factory=lambda: str(uuid.uuid4())[:8])
+
+@api_router.post("/journey/complete")
+async def complete_journey(request: JourneyReportRequest):
+    """Save a completed journey and return a shareable report"""
+    now = datetime.utcnow()
+    started_at = (now - timedelta(minutes=request.duration_minutes)).isoformat()
+    
+    report = JourneyReport(
+        user_id=request.user_id,
+        activity_type=request.activity_type,
+        route_points=request.route_points,
+        distance_km=round(request.distance_km, 2),
+        duration_minutes=round(request.duration_minutes, 1),
+        avg_safety_score=request.avg_safety_score,
+        steps=request.steps,
+        avg_heart_rate=request.avg_heart_rate,
+        started_at=started_at,
+        completed_at=now.isoformat(),
+    )
+    
+    report_dict = report.dict()
+    await db.journey_reports.insert_one(report_dict)
+    report_dict.pop('_id', None)
+    
+    return report_dict
+
+@api_router.get("/journey/report/{share_token}")
+async def get_journey_report(share_token: str):
+    """Get a journey report by share token"""
+    report = await db.journey_reports.find_one(
+        {"share_token": share_token},
+        {"_id": 0}
+    )
+    if not report:
+        raise HTTPException(status_code=404, detail="Journey report not found")
+    return report
+
 @api_router.get("/health")
 async def health_check():
     return {

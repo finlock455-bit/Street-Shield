@@ -23,6 +23,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { Audio } from 'expo-av';
 import { Accelerometer, Pedometer, DeviceMotion } from 'expo-sensors';
 import i18n from '../translations';
+import JourneyShareCard from '../components/JourneyShareCard';
 
 // Suppress known Expo Go warnings that don't affect functionality
 const originalError = console.error;
@@ -160,6 +161,16 @@ export default function SafeWalkApp() {
   const analysisInterval = useRef<NodeJS.Timeout | null>(null);
   const audioRecording = useRef<Audio.Recording | null>(null);
   const emergencyModeStartTime = useRef<number>(0);
+
+  // Journey tracking state
+  const [journeyActive, setJourneyActive] = useState(false);
+  const [showJourneyCard, setShowJourneyCard] = useState(false);
+  const journeyStartTime = useRef<number>(0);
+  const journeyRoutePoints = useRef<{ latitude: number; longitude: number }[]>([]);
+  const journeySafetyScores = useRef<number[]>([]);
+  const journeyHeartRates = useRef<number[]>([]);
+  const journeyStepsStart = useRef<number>(0);
+  const [lastJourneyData, setLastJourneyData] = useState<any>(null);
 
   useEffect(() => {
     initializeApp();
@@ -300,6 +311,14 @@ export default function SafeWalkApp() {
     try {
       setIsTracking(true);
       
+      // Start journey tracking
+      journeyStartTime.current = Date.now();
+      journeyRoutePoints.current = [];
+      journeySafetyScores.current = [];
+      journeyHeartRates.current = [];
+      journeyStepsStart.current = stepCount;
+      setJourneyActive(true);
+      
       // Voice prompt for starting
       if (voiceAlertsEnabled) {
         await speakAlert("Street Shield protection is now active. I'm monitoring your safety and surroundings.");
@@ -326,6 +345,14 @@ export default function SafeWalkApp() {
                 timestamp: new Date().toISOString(),
               };
               setLocation(locationData);
+              
+              // Collect journey route points
+              if (journeyActive) {
+                journeyRoutePoints.current.push({
+                  latitude: locationData.latitude,
+                  longitude: locationData.longitude,
+                });
+              }
               
               // Update movement history (keep last 10 locations for proximity analysis)
               setMovementHistory(prev => {
@@ -394,6 +421,14 @@ export default function SafeWalkApp() {
         timestamp: new Date().toISOString(),
       };
       setLocation(updatedDemo);
+      
+      // Collect journey route points in demo mode
+      if (journeyActive) {
+        journeyRoutePoints.current.push({
+          latitude: updatedDemo.latitude,
+          longitude: updatedDemo.longitude,
+        });
+      }
     }, 8000); // Update every 8 seconds
 
     // Store demo interval reference (reuse locationSubscription for cleanup)
@@ -490,6 +525,11 @@ export default function SafeWalkApp() {
       setHeartRate(simulatedBiometrics.heart_rate);
       setStressLevel(simulatedBiometrics.stress_level);
       setStepCount(simulatedBiometrics.step_count);
+
+      // Collect heart rates for journey
+      if (journeyActive) {
+        journeyHeartRates.current.push(simulatedBiometrics.heart_rate);
+      }
 
       // Analyze biometric data
       await analyzeBiometricData(simulatedBiometrics);
@@ -593,6 +633,81 @@ export default function SafeWalkApp() {
       clearInterval(analysisInterval.current);
       analysisInterval.current = null;
     }
+
+    // Complete journey and show share card
+    if (journeyActive) {
+      completeJourney();
+    }
+  };
+
+  const completeJourney = async () => {
+    const durationMs = Date.now() - journeyStartTime.current;
+    const durationMinutes = durationMs / 60000;
+    const points = journeyRoutePoints.current;
+    
+    // Calculate distance from route points
+    let distanceKm = 0;
+    for (let i = 1; i < points.length; i++) {
+      distanceKm += haversineDistance(
+        points[i - 1].latitude, points[i - 1].longitude,
+        points[i].latitude, points[i].longitude
+      );
+    }
+
+    const avgScore = journeySafetyScores.current.length > 0
+      ? Math.round(journeySafetyScores.current.reduce((a, b) => a + b, 0) / journeySafetyScores.current.length)
+      : 75;
+
+    const avgHR = journeyHeartRates.current.length > 0
+      ? Math.round(journeyHeartRates.current.reduce((a, b) => a + b, 0) / journeyHeartRates.current.length)
+      : heartRate;
+
+    const journeySteps = Math.max(0, stepCount - journeyStepsStart.current);
+    const activityType = isCyclingMode ? 'cycling' : 'walking';
+
+    const data = {
+      activityType,
+      distanceKm: Math.max(distanceKm, 0.1),
+      durationMinutes: Math.max(durationMinutes, 1),
+      avgSafetyScore: avgScore,
+      steps: journeySteps > 0 ? journeySteps : Math.floor(durationMinutes * 100),
+      avgHeartRate: avgHR,
+      routePoints: points,
+      completedAt: new Date().toISOString(),
+    };
+
+    setLastJourneyData(data);
+    setJourneyActive(false);
+    setShowJourneyCard(true);
+
+    // Save to backend
+    try {
+      await fetch(`${BACKEND_URL}/api/journey/complete`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          user_id: 'demo_user',
+          activity_type: activityType,
+          route_points: points.map(p => ({ lat: p.latitude, lon: p.longitude })),
+          distance_km: data.distanceKm,
+          duration_minutes: data.durationMinutes,
+          avg_safety_score: data.avgSafetyScore,
+          steps: data.steps,
+          avg_heart_rate: data.avgHeartRate,
+        }),
+      });
+    } catch (err) {
+      console.log('Failed to save journey report:', err);
+    }
+  };
+
+  // Haversine distance in km
+  const haversineDistance = (lat1: number, lon1: number, lat2: number, lon2: number): number => {
+    const R = 6371;
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLon = (lon2 - lon1) * Math.PI / 180;
+    const a = Math.sin(dLat / 2) ** 2 + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon / 2) ** 2;
+    return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
   };
 
   const performSafetyAnalysis = async (locationData: LocationData) => {
@@ -622,6 +737,11 @@ export default function SafeWalkApp() {
 
       const analysis: SafetyAnalysis = await response.json();
       setSafetyAnalysis(analysis);
+      
+      // Collect safety scores for journey
+      if (journeyActive && analysis.safety_score) {
+        journeySafetyScores.current.push(analysis.safety_score.overall_score);
+      }
       
       // Process alerts and notifications
       await processAlerts(analysis);
@@ -2476,6 +2596,25 @@ export default function SafeWalkApp() {
               </Text>
             </TouchableOpacity>
 
+            {/* Journey Share Button */}
+            {lastJourneyData && !isTracking && (
+              <TouchableOpacity
+                style={[styles.featureButton, styles.journeyShareButton]}
+                onPress={() => setShowJourneyCard(true)}
+                data-testid="view-journey-btn"
+              >
+                <View style={styles.featureIcon}>
+                  <Ionicons name="share-social" size={20} color="#00FF88" />
+                </View>
+                <Text style={[styles.featureButtonText, { color: '#00FF88' }]}>
+                  I Got Home Safe
+                </Text>
+                <Text style={styles.featureStatus}>
+                  SHARE JOURNEY
+                </Text>
+              </TouchableOpacity>
+            )}
+
             {/* Voice Info System - Demo Buttons */}
             {isVoiceInfoActive && (
               <View style={styles.voiceInfoDemoSection}>
@@ -3071,6 +3210,15 @@ export default function SafeWalkApp() {
           </View>
         </SafeAreaView>
       </Modal>
+
+      {/* Journey Share Card Modal */}
+      {lastJourneyData && (
+        <JourneyShareCard
+          visible={showJourneyCard}
+          onClose={() => setShowJourneyCard(false)}
+          journeyData={lastJourneyData}
+        />
+      )}
     </SafeAreaView>
   );
 }
@@ -3769,6 +3917,10 @@ const styles = StyleSheet.create({
   emergencyTestButton: {
     borderColor: '#FFA726',
     backgroundColor: 'rgba(255,167,38,0.1)',
+  },
+  journeyShareButton: {
+    borderColor: '#00FF88',
+    backgroundColor: 'rgba(0,255,136,0.1)',
   },
   featureIcon: {
     width: 40,

@@ -790,13 +790,193 @@ class BackendTester:
                 f"Exception occurred: {str(e)}"
             )
 
+    def test_journey_report_feature(self):
+        """Test NEW Journey Report Feature as requested in review"""
+        print("🗺️ Testing Journey Report Feature...")
+        
+        # Test 1: POST /api/journey/complete with walking activity
+        walking_journey_data = {
+            "user_id": "test_user",
+            "activity_type": "walking",
+            "route_points": [
+                {"lat": 51.5074, "lon": -0.1278}, 
+                {"lat": 51.508, "lon": -0.127}, 
+                {"lat": 51.5085, "lon": -0.1265}
+            ],
+            "distance_km": 1.2,
+            "duration_minutes": 15.5,
+            "avg_safety_score": 82,
+            "steps": 1850,
+            "avg_heart_rate": 78
+        }
+        
+        share_token = None  # Will store for later retrieval test
+        
+        try:
+            response = self.session.post(f"{self.base_url}/journey/complete", json=walking_journey_data)
+            if response.status_code == 200:
+                journey_response = response.json()
+                
+                # Verify required fields in response
+                required_fields = ['id', 'share_token', 'user_id', 'activity_type', 'route_points', 
+                                 'distance_km', 'duration_minutes', 'avg_safety_score', 'steps', 
+                                 'avg_heart_rate', 'started_at', 'completed_at']
+                
+                missing_fields = [field for field in required_fields if field not in journey_response]
+                has_all_fields = len(missing_fields) == 0
+                
+                if has_all_fields:
+                    share_token = journey_response.get('share_token')
+                    self.log_test(
+                        "POST /api/journey/complete - Walking journey",
+                        True,
+                        f"Journey completed, share_token: {share_token}, distance: {journey_response.get('distance_km')}km",
+                        {k: v for k, v in journey_response.items() if k not in ['route_points']}
+                    )
+                else:
+                    self.log_test(
+                        "POST /api/journey/complete - Walking journey",
+                        False,
+                        f"Missing required fields: {missing_fields}",
+                        journey_response
+                    )
+            else:
+                self.log_test(
+                    "POST /api/journey/complete - Walking journey",
+                    False,
+                    f"Expected 200, got {response.status_code}",
+                    response.text
+                )
+        except Exception as e:
+            self.log_test("POST /api/journey/complete - Walking journey", False, f"Exception: {e}")
+        
+        # Test 2: GET /api/journey/report/{share_token} - Use share_token from step 1
+        if share_token:
+            try:
+                response = self.session.get(f"{self.base_url}/journey/report/{share_token}")
+                if response.status_code == 200:
+                    report_response = response.json()
+                    
+                    # Verify we get the same data back
+                    matches_original = (
+                        report_response.get('user_id') == walking_journey_data['user_id'] and
+                        report_response.get('activity_type') == walking_journey_data['activity_type'] and
+                        report_response.get('distance_km') == walking_journey_data['distance_km'] and
+                        report_response.get('avg_safety_score') == walking_journey_data['avg_safety_score'] and
+                        report_response.get('share_token') == share_token
+                    )
+                    
+                    self.log_test(
+                        f"GET /api/journey/report/{share_token} - Retrieve report",
+                        matches_original,
+                        f"Retrieved journey report for {report_response.get('activity_type')} activity",
+                        {k: v for k, v in report_response.items() if k not in ['route_points']}
+                    )
+                else:
+                    self.log_test(
+                        f"GET /api/journey/report/{share_token} - Retrieve report",
+                        False,
+                        f"Expected 200, got {response.status_code}",
+                        response.text
+                    )
+            except Exception as e:
+                self.log_test(f"GET /api/journey/report/{share_token} - Retrieve report", False, f"Exception: {e}")
+        else:
+            self.log_test("GET /api/journey/report/{share_token} - Retrieve report", False, "No share_token from previous test")
+        
+        # Test 3: GET /api/journey/report/nonexistent - Should return 404
+        try:
+            response = self.session.get(f"{self.base_url}/journey/report/nonexistent")
+            expected_404 = response.status_code == 404
+            
+            self.log_test(
+                "GET /api/journey/report/nonexistent - Non-existent report",
+                expected_404,
+                f"Status code: {response.status_code} (expected 404)",
+                response.text if not expected_404 else "Correctly returned 404"
+            )
+        except Exception as e:
+            self.log_test("GET /api/journey/report/nonexistent - Non-existent report", False, f"Exception: {e}")
+        
+        # Test 4: POST /api/journey/complete with cycling activity
+        cycling_journey_data = {
+            "user_id": "cyclist_user",
+            "activity_type": "cycling",
+            "route_points": [
+                {"lat": 51.5, "lon": -0.12}, 
+                {"lat": 51.51, "lon": -0.11}, 
+                {"lat": 51.52, "lon": -0.10}
+            ],
+            "distance_km": 5.5,
+            "duration_minutes": 22.0,
+            "avg_safety_score": 65,
+            "steps": 0,
+            "avg_heart_rate": 120
+        }
+        
+        try:
+            response = self.session.post(f"{self.base_url}/journey/complete", json=cycling_journey_data)
+            if response.status_code == 200:
+                cycling_response = response.json()
+                
+                # Verify cycling-specific data
+                is_cycling = (
+                    cycling_response.get('activity_type') == 'cycling' and
+                    cycling_response.get('steps') == 0 and  # Cycling should have 0 steps
+                    cycling_response.get('avg_heart_rate') == 120 and
+                    cycling_response.get('distance_km') == 5.5
+                )
+                
+                cycling_share_token = cycling_response.get('share_token')
+                self.log_test(
+                    "POST /api/journey/complete - Cycling journey",
+                    is_cycling,
+                    f"Cycling journey completed, share_token: {cycling_share_token}, distance: {cycling_response.get('distance_km')}km, HR: {cycling_response.get('avg_heart_rate')}",
+                    {k: v for k, v in cycling_response.items() if k not in ['route_points']}
+                )
+                
+                # Test retrieving the cycling report
+                if cycling_share_token:
+                    try:
+                        response = self.session.get(f"{self.base_url}/journey/report/{cycling_share_token}")
+                        if response.status_code == 200:
+                            cycling_report = response.json()
+                            self.log_test(
+                                f"GET /api/journey/report/{cycling_share_token} - Cycling report retrieval",
+                                cycling_report.get('activity_type') == 'cycling',
+                                f"Retrieved cycling report successfully",
+                                {"activity_type": cycling_report.get('activity_type'), "distance_km": cycling_report.get('distance_km')}
+                            )
+                        else:
+                            self.log_test(
+                                f"GET /api/journey/report/{cycling_share_token} - Cycling report retrieval",
+                                False,
+                                f"Expected 200, got {response.status_code}",
+                                response.text
+                            )
+                    except Exception as e:
+                        self.log_test(f"GET /api/journey/report/{cycling_share_token} - Cycling report retrieval", False, f"Exception: {e}")
+                
+            else:
+                self.log_test(
+                    "POST /api/journey/complete - Cycling journey",
+                    False,
+                    f"Expected 200, got {response.status_code}",
+                    response.text
+                )
+        except Exception as e:
+            self.log_test("POST /api/journey/complete - Cycling journey", False, f"Exception: {e}")
+
     def run_all_tests(self):
         """Run all backend tests"""
         print("🧪 Starting Street Shield Backend API Tests...")
         print(f"Testing against: {self.base_url}")
         print("=" * 60)
         
-        # Test review request endpoints FIRST
+        # Test NEW Journey Report Feature FIRST (as requested in review)
+        self.test_journey_report_feature()
+        
+        # Test review request endpoints 
         self.test_requested_endpoints()
         
         # Test all three high-priority features
