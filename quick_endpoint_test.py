@@ -6,7 +6,7 @@ Quick endpoint test for the review request
 import requests
 import json
 
-BASE_URL = "https://urban-safety-radar.preview.emergentagent.com"
+BASE_URL = "https://street-shield-demo.preview.emergentagent.com"
 
 def test_endpoint(method, url, data=None):
     try:

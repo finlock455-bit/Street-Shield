@@ -9,7 +9,7 @@ import json
 from datetime import datetime
 
 # Backend URL
-BASE_URL = "https://urban-safety-radar.preview.emergentagent.com/api"
+BASE_URL = "https://street-shield-demo.preview.emergentagent.com/api"
 
 def test_journey_endpoints():
     """Test the specific journey endpoints requested"""
