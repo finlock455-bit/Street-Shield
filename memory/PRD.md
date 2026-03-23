@@ -81,4 +81,10 @@ Street Shield is a mobile safety app for pedestrians, runners, and cyclists. It 
 ## 3rd Party Integrations
 - **Google Gemini**: Active via Emergent LLM Key
 - **OpenWeatherMap**: Pending user API key
-- **ElevenLabs**: Planned for voice cloning
+- **ElevenLabs**: Planned for voice cloning (removed from deps until ready)
+
+## Deployment Notes (2026-03-23)
+- Fixed .gitignore blocking .env files (lines 82-104 removed)
+- Removed package-lock.json (mixed package manager conflict with yarn.lock)
+- Removed unused @elevenlabs/react-native (unmet peer deps)
+- Deployment agent verified: 100% ready for Kubernetes deployment
