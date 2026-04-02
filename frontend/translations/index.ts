@@ -20,22 +20,22 @@ const i18n = new I18n({
     high: 'High Risk',
     critical: 'Critical Risk',
     
-    // Emergency
-    emergency: 'Emergency',
-    emergencySetup: 'Emergency Setup',
-    emergencyContacts: 'Emergency Contacts',
+    // Quick Alert (formerly Emergency)
+    emergency: 'Quick Alert',
+    emergencySetup: 'Safety Alert Setup',
+    emergencyContacts: 'Trusted Contacts',
     triggerWord: 'Trigger Word',
-    setupEmergency: 'Setup Emergency',
-    testEmergency: 'Test Emergency',
+    setupEmergency: 'Setup Alert',
+    testEmergency: 'Test Alert',
     demoTrigger: 'DEMO TRIGGER',
-    emergencyActive: 'EMERGENCY ACTIVE',
+    emergencyActive: 'ALERT ACTIVE',
     contactsAlerted: 'CONTACTS ALERTED',
     saveContacts: 'Save Contacts',
     cancel: 'Cancel',
     
-    // Emergency Messages
-    emergencySetupComplete: 'Emergency setup complete. Trigger word: {{word}}. {{count}} contact(s) added.',
-    emergencyActivated: 'Emergency activated. Alerting contacts now.',
+    // Alert Messages (formerly Emergency Messages)
+    emergencySetupComplete: 'Safety alert setup complete. Trigger word: {{word}}. {{count}} contact(s) added.',
+    emergencyActivated: 'Alert activated. Notifying contacts now.',
     handsFreeActive: 'Hands-free mode active. Listening for {{word}}.',
     
     // Features
@@ -60,11 +60,11 @@ const i18n = new I18n({
     traffic: 'Traffic',
     experience: 'Experience',
     
-    // Health
-    healthMonitoring: 'Health Monitoring',
-    heartRate: 'Heart Rate',
-    bloodOxygen: 'Blood Oxygen',
-    stressLevel: 'Stress Level',
+    // Activity Insights (formerly Health)
+    healthMonitoring: 'Activity Insights',
+    heartRate: 'Rhythm',
+    bloodOxygen: 'Energy',
+    stressLevel: 'Alertness',
     
     // Alerts
     eScooterWarning: 'E-Scooter Warning',
@@ -92,15 +92,18 @@ const i18n = new I18n({
     notificationPermissionDenied: 'Notification permission denied',
     gettingLocation: 'Getting your location...',
     
-    // Emergency Status Panel
-    emergencyModeActive: 'EMERGENCY MODE ACTIVE',
-    emergencyContactsNotified: '{{count}} Emergency Contact(s) Alerted',
+    // Alert Status Panel (formerly Emergency Status Panel)
+    emergencyModeActive: 'ALERT MODE ACTIVE',
+    emergencyContactsNotified: '{{count}} Trusted Contact(s) Notified',
     liveLocationShared: 'Live location shared: {{coords}}',
-    authoritiesNotified: 'Local authorities notified (simulated)',
+    authoritiesNotified: 'Location data captured',
     enhancedMonitoring: 'Enhanced monitoring every 5 seconds',
     contactsNotified: 'Contacts Notified:',
-    deactivateEmergency: 'Deactivate Emergency',
-    productionNote: 'Note: In production, contacts would receive SMS/push notifications with your real-time location and emergency details.',
+    deactivateEmergency: 'Deactivate Alert',
+    productionNote: 'Note: In production, contacts would receive SMS/push notifications with your real-time location.',
+
+    // Disclaimers
+    disclaimer: 'This is a safety awareness tool, not a replacement for professional services. In a real crisis, always call your local authorities directly.',
   },
   
   es: { // Spanish
@@ -117,20 +120,20 @@ const i18n = new I18n({
     high: 'Riesgo Alto',
     critical: 'Riesgo Crítico',
     
-    emergency: 'Emergencia',
-    emergencySetup: 'Configuración de Emergencia',
-    emergencyContacts: 'Contactos de Emergencia',
+    emergency: 'Alerta Rápida',
+    emergencySetup: 'Configuración de Alerta',
+    emergencyContacts: 'Contactos de Confianza',
     triggerWord: 'Palabra de Activación',
-    setupEmergency: 'Configurar Emergencia',
-    testEmergency: 'Probar Emergencia',
+    setupEmergency: 'Configurar Alerta',
+    testEmergency: 'Probar Alerta',
     demoTrigger: 'PRUEBA',
-    emergencyActive: 'EMERGENCIA ACTIVA',
+    emergencyActive: 'ALERTA ACTIVA',
     contactsAlerted: 'CONTACTOS ALERTADOS',
     saveContacts: 'Guardar Contactos',
     cancel: 'Cancelar',
     
-    emergencySetupComplete: 'Configuración de emergencia completa. Palabra clave: {{word}}. {{count}} contacto(s) agregado(s).',
-    emergencyActivated: 'Emergencia activada. Alertando contactos ahora.',
+    emergencySetupComplete: 'Configuración de alerta completa. Palabra clave: {{word}}. {{count}} contacto(s) agregado(s).',
+    emergencyActivated: 'Alerta activada. Notificando contactos ahora.',
     handsFreeActive: 'Modo manos libres activo. Escuchando {{word}}.',
     
     handsFreeMode: 'Modo Manos Libres',
@@ -153,10 +156,10 @@ const i18n = new I18n({
     traffic: 'Tráfico',
     experience: 'Experiencia',
     
-    healthMonitoring: 'Monitoreo de Salud',
-    heartRate: 'Frecuencia Cardíaca',
-    bloodOxygen: 'Oxígeno en Sangre',
-    stressLevel: 'Nivel de Estrés',
+    healthMonitoring: 'Información de Actividad',
+    heartRate: 'Ritmo',
+    bloodOxygen: 'Energía',
+    stressLevel: 'Alerta',
     
     eScooterWarning: 'Advertencia E-Scooter',
     proximityAlert: 'Alerta de Proximidad',
@@ -170,14 +173,15 @@ const i18n = new I18n({
     enabled: 'Activado',
     disabled: 'Desactivado',
     
-    emergencyModeActive: 'MODO EMERGENCIA ACTIVO',
-    emergencyContactsNotified: '{{count}} Contacto(s) de Emergencia Alertados',
+    emergencyModeActive: 'MODO ALERTA ACTIVO',
+    emergencyContactsNotified: '{{count}} Contacto(s) de Confianza Notificados',
     liveLocationShared: 'Ubicación compartida: {{coords}}',
-    authoritiesNotified: 'Autoridades locales notificadas (simulado)',
+    authoritiesNotified: 'Datos de ubicación capturados',
     enhancedMonitoring: 'Monitoreo mejorado cada 5 segundos',
     contactsNotified: 'Contactos Notificados:',
-    deactivateEmergency: 'Desactivar Emergencia',
+    deactivateEmergency: 'Desactivar Alerta',
     productionNote: 'Nota: En producción, los contactos recibirían SMS/notificaciones con tu ubicación en tiempo real.',
+    disclaimer: 'Esta es una herramienta de conciencia de seguridad, no un reemplazo de servicios profesionales. En una crisis real, siempre llame a las autoridades locales directamente.',
   },
   
   fr: { // French
@@ -194,20 +198,20 @@ const i18n = new I18n({
     high: 'Risque Élevé',
     critical: 'Risque Critique',
     
-    emergency: 'Urgence',
-    emergencySetup: 'Configuration Urgence',
-    emergencyContacts: 'Contacts d\'Urgence',
+    emergency: 'Alerte Rapide',
+    emergencySetup: 'Configuration Alerte',
+    emergencyContacts: 'Contacts de Confiance',
     triggerWord: 'Mot Déclencheur',
-    setupEmergency: 'Configurer Urgence',
-    testEmergency: 'Tester Urgence',
+    setupEmergency: 'Configurer Alerte',
+    testEmergency: 'Tester Alerte',
     demoTrigger: 'DÉMO',
-    emergencyActive: 'URGENCE ACTIVE',
+    emergencyActive: 'ALERTE ACTIVE',
     contactsAlerted: 'CONTACTS ALERTÉS',
     saveContacts: 'Enregistrer Contacts',
     cancel: 'Annuler',
     
-    emergencySetupComplete: 'Configuration d\'urgence terminée. Mot déclencheur: {{word}}. {{count}} contact(s) ajouté(s).',
-    emergencyActivated: 'Urgence activée. Alerte des contacts maintenant.',
+    emergencySetupComplete: 'Configuration d\'alerte terminée. Mot déclencheur: {{word}}. {{count}} contact(s) ajouté(s).',
+    emergencyActivated: 'Alerte activée. Notification des contacts maintenant.',
     handsFreeActive: 'Mode mains libres actif. Écoute de {{word}}.',
     
     handsFreeMode: 'Mode Mains Libres',
@@ -230,10 +234,10 @@ const i18n = new I18n({
     traffic: 'Trafic',
     experience: 'Expérience',
     
-    healthMonitoring: 'Surveillance Santé',
-    heartRate: 'Fréquence Cardiaque',
-    bloodOxygen: 'Oxygène Sanguin',
-    stressLevel: 'Niveau de Stress',
+    healthMonitoring: 'Aperçu d\'Activité',
+    heartRate: 'Rythme',
+    bloodOxygen: 'Énergie',
+    stressLevel: 'Vigilance',
     
     eScooterWarning: 'Avertissement E-Scooter',
     proximityAlert: 'Alerte de Proximité',
@@ -247,14 +251,15 @@ const i18n = new I18n({
     enabled: 'Activé',
     disabled: 'Désactivé',
     
-    emergencyModeActive: 'MODE URGENCE ACTIF',
-    emergencyContactsNotified: '{{count}} Contact(s) d\'Urgence Alertés',
+    emergencyModeActive: 'MODE ALERTE ACTIF',
+    emergencyContactsNotified: '{{count}} Contact(s) de Confiance Alertés',
     liveLocationShared: 'Position partagée: {{coords}}',
-    authoritiesNotified: 'Autorités locales notifiées (simulé)',
+    authoritiesNotified: 'Données de localisation capturées',
     enhancedMonitoring: 'Surveillance renforcée toutes les 5 secondes',
     contactsNotified: 'Contacts Notifiés:',
-    deactivateEmergency: 'Désactiver Urgence',
+    deactivateEmergency: 'Désactiver Alerte',
     productionNote: 'Note: En production, les contacts recevraient des SMS/notifications avec votre position en temps réel.',
+    disclaimer: 'Ceci est un outil de sensibilisation à la sécurité, pas un remplacement des services professionnels. En cas de crise réelle, appelez toujours les autorités locales directement.',
   },
   
   de: { // German
@@ -271,20 +276,20 @@ const i18n = new I18n({
     high: 'Hohes Risiko',
     critical: 'Kritisches Risiko',
     
-    emergency: 'Notfall',
-    emergencySetup: 'Notfall-Einrichtung',
-    emergencyContacts: 'Notfallkontakte',
+    emergency: 'Schnellalarm',
+    emergencySetup: 'Alarm-Einrichtung',
+    emergencyContacts: 'Vertrauenspersonen',
     triggerWord: 'Auslösewort',
-    setupEmergency: 'Notfall Einrichten',
-    testEmergency: 'Notfall Testen',
+    setupEmergency: 'Alarm Einrichten',
+    testEmergency: 'Alarm Testen',
     demoTrigger: 'DEMO',
-    emergencyActive: 'NOTFALL AKTIV',
+    emergencyActive: 'ALARM AKTIV',
     contactsAlerted: 'KONTAKTE BENACHRICHTIGT',
     saveContacts: 'Kontakte Speichern',
     cancel: 'Abbrechen',
     
-    emergencySetupComplete: 'Notfall-Einrichtung abgeschlossen. Auslösewort: {{word}}. {{count}} Kontakt(e) hinzugefügt.',
-    emergencyActivated: 'Notfall aktiviert. Kontakte werden jetzt benachrichtigt.',
+    emergencySetupComplete: 'Alarm-Einrichtung abgeschlossen. Auslösewort: {{word}}. {{count}} Kontakt(e) hinzugefügt.',
+    emergencyActivated: 'Alarm aktiviert. Kontakte werden jetzt benachrichtigt.',
     handsFreeActive: 'Freisprechmodus aktiv. Warte auf {{word}}.',
     
     handsFreeMode: 'Freisprechmodus',
@@ -307,10 +312,10 @@ const i18n = new I18n({
     traffic: 'Verkehr',
     experience: 'Erfahrung',
     
-    healthMonitoring: 'Gesundheitsüberwachung',
-    heartRate: 'Herzfrequenz',
-    bloodOxygen: 'Blutsauerstoff',
-    stressLevel: 'Stressniveau',
+    healthMonitoring: 'Aktivitätseinblicke',
+    heartRate: 'Rhythmus',
+    bloodOxygen: 'Energie',
+    stressLevel: 'Wachsamkeit',
     
     eScooterWarning: 'E-Scooter Warnung',
     proximityAlert: 'Näherungsalarm',
@@ -324,14 +329,15 @@ const i18n = new I18n({
     enabled: 'Aktiviert',
     disabled: 'Deaktiviert',
     
-    emergencyModeActive: 'NOTFALLMODUS AKTIV',
-    emergencyContactsNotified: '{{count}} Notfallkontakt(e) Benachrichtigt',
+    emergencyModeActive: 'ALARMMODUS AKTIV',
+    emergencyContactsNotified: '{{count}} Vertrauensperson(en) Benachrichtigt',
     liveLocationShared: 'Live-Standort geteilt: {{coords}}',
-    authoritiesNotified: 'Lokale Behörden benachrichtigt (simuliert)',
+    authoritiesNotified: 'Standortdaten erfasst',
     enhancedMonitoring: 'Erweiterte Überwachung alle 5 Sekunden',
     contactsNotified: 'Kontakte Benachrichtigt:',
-    deactivateEmergency: 'Notfall Deaktivieren',
+    deactivateEmergency: 'Alarm Deaktivieren',
     productionNote: 'Hinweis: In der Produktion würden Kontakte SMS/Push-Benachrichtigungen mit Ihrem Echtzeit-Standort erhalten.',
+    disclaimer: 'Dies ist ein Sicherheitsbewusstseinstool, kein Ersatz für professionelle Dienste. Rufen Sie im Notfall immer direkt die örtlichen Behörden an.',
   },
   
   zh: { // Chinese (Simplified)
@@ -348,20 +354,20 @@ const i18n = new I18n({
     high: '风险高',
     critical: '风险危急',
     
-    emergency: '紧急情况',
-    emergencySetup: '紧急设置',
-    emergencyContacts: '紧急联系人',
+    emergency: '快速提醒',
+    emergencySetup: '安全提醒设置',
+    emergencyContacts: '信任联系人',
     triggerWord: '触发词',
-    setupEmergency: '设置紧急',
-    testEmergency: '测试紧急',
+    setupEmergency: '设置提醒',
+    testEmergency: '测试提醒',
     demoTrigger: '演示',
-    emergencyActive: '紧急状态激活',
+    emergencyActive: '提醒已激活',
     contactsAlerted: '联系人已通知',
     saveContacts: '保存联系人',
     cancel: '取消',
     
-    emergencySetupComplete: '紧急设置完成。触发词：{{word}}。已添加{{count}}个联系人。',
-    emergencyActivated: '紧急状态已激活。正在通知联系人。',
+    emergencySetupComplete: '安全提醒设置完成。触发词：{{word}}。已添加{{count}}个联系人。',
+    emergencyActivated: '提醒已激活。正在通知联系人。',
     handsFreeActive: '免提模式已激活。正在监听{{word}}。',
     
     handsFreeMode: '免提模式',
@@ -384,10 +390,10 @@ const i18n = new I18n({
     traffic: '交通',
     experience: '经验',
     
-    healthMonitoring: '健康监测',
-    heartRate: '心率',
-    bloodOxygen: '血氧',
-    stressLevel: '压力水平',
+    healthMonitoring: '活动洞察',
+    heartRate: '节奏',
+    bloodOxygen: '能量',
+    stressLevel: '警觉度',
     
     eScooterWarning: '电动滑板车警告',
     proximityAlert: '邻近警报',
@@ -401,14 +407,15 @@ const i18n = new I18n({
     enabled: '已启用',
     disabled: '已禁用',
     
-    emergencyModeActive: '紧急模式激活',
-    emergencyContactsNotified: '{{count}}个紧急联系人已通知',
+    emergencyModeActive: '提醒模式激活',
+    emergencyContactsNotified: '{{count}}个信任联系人已通知',
     liveLocationShared: '实时位置已共享：{{coords}}',
-    authoritiesNotified: '地方当局已通知（模拟）',
+    authoritiesNotified: '位置数据已记录',
     enhancedMonitoring: '每5秒增强监测',
     contactsNotified: '已通知的联系人：',
-    deactivateEmergency: '停用紧急',
+    deactivateEmergency: '停用提醒',
     productionNote: '注意：在生产环境中，联系人将收到包含您实时位置的短信/推送通知。',
+    disclaimer: '这是一个安全意识工具，不能替代专业服务。在真正的危机中，请直接拨打当地紧急服务电话。',
   },
 });
 

@@ -578,7 +578,7 @@ export default function SafeWalkApp() {
     }
 
     // Health-specific voice guidance
-    let healthMessage = `Health Alert: ${alert.message}`;
+    let healthMessage = `Activity Alert: ${alert.message}`;
     if (alert.recommended_action) {
       healthMessage += ` ${alert.recommended_action}`;
     }
@@ -587,7 +587,7 @@ export default function SafeWalkApp() {
     
     // Show notification
     await showNotification(
-      `🏥 Health Alert - ${alert.alert_type}`, 
+      `Activity Alert - ${alert.alert_type}`, 
       alert.message
     );
   };
@@ -596,7 +596,7 @@ export default function SafeWalkApp() {
     const criticalAlert = alerts.find(alert => alert.auto_emergency);
     if (criticalAlert && voiceAlertsEnabled) {
       await speakAlert(
-        "Medical emergency detected! I'm alerting your emergency contacts and local authorities. Stay calm, help is on the way.",
+        "Safety concern detected. Notifying your trusted contacts. Consider resting and checking in with someone nearby.",
         'critical'
       );
     }
@@ -900,11 +900,11 @@ export default function SafeWalkApp() {
     
     // Voice guidance for emergency setup
     if (voiceAlertsEnabled) {
-      await speakAlert("Welcome to Emergency Setup. I'll guide you through configuring your personal safety system. This could save your life in a dangerous situation.");
+      await speakAlert("Welcome to Safety Alert Setup. I'll guide you through configuring your personal safety notification system.");
       
       // Provide initial guidance after a brief pause
       setTimeout(async () => {
-        await speakAlert("First, you'll choose a secret trigger word. This should be a unique word you can say clearly during an emergency. Avoid common words you might say accidentally.");
+        await speakAlert("First, you'll choose a secret trigger word. This should be a unique word you can say clearly when you feel unsafe. Avoid common words you might say accidentally.");
       }, 3000);
     }
   };
@@ -958,12 +958,12 @@ export default function SafeWalkApp() {
       setIsEmergencySetupOpen(false);
       
       if (voiceAlertsEnabled) {
-        await speakAlert(`Emergency setup complete. Trigger word: ${triggerWord}. ${validContacts.length} contact${validContacts.length > 1 ? 's' : ''} added.`, 'low');
+        await speakAlert(`Safety alert setup complete. Trigger word: ${triggerWord}. ${validContacts.length} contact${validContacts.length > 1 ? 's' : ''} added.`, 'low');
       }
     } catch (error) {
       console.error('Error saving emergency settings:', error);
       if (voiceAlertsEnabled) {
-        await speakAlert("There was an error saving your emergency settings to the cloud, but they are saved locally. Please check your internet connection and try again.");
+        await speakAlert("There was an error saving your alert settings to the cloud, but they are saved locally. Please check your internet connection and try again.");
       }
     }
   };
@@ -975,11 +975,11 @@ export default function SafeWalkApp() {
     emergencyModeStartTime.current = Date.now();
     
     // Immediate emergency response
-    await showNotification('🚨 EMERGENCY ACTIVATED', 'Emergency mode activated! Notifying contacts and authorities.');
+    await showNotification('ALERT ACTIVATED', 'Alert mode activated! Notifying your trusted contacts.');
     
     if (voiceAlertsEnabled) {
       Speech.stop();
-      await speakAlert("Emergency activated. Alerting contacts now.", 'critical');
+      await speakAlert("Alert activated. Notifying contacts now.", 'critical');
     }
 
     // Send emergency alerts via backend
@@ -2390,7 +2390,7 @@ export default function SafeWalkApp() {
           <View style={styles.emergencyBanner}>
             <Ionicons name="warning" size={24} color="#fff" />
             <Text style={styles.emergencyBannerText}>
-              🚨 EMERGENCY MODE ACTIVE 🚨
+              ALERT MODE ACTIVE
             </Text>
             <TouchableOpacity 
               style={styles.deactivateButton}
@@ -2463,7 +2463,7 @@ export default function SafeWalkApp() {
               <View style={styles.featureIcon}>
                 <Ionicons name="warning" size={20} color="#FF6B6B" />
               </View>
-              <Text style={styles.featureButtonText}>Emergency</Text>
+              <Text style={styles.featureButtonText}>Quick Alert</Text>
               <Text style={styles.featureStatus}>
                 {emergencyTriggerWord ? 'READY' : 'SETUP'}
               </Text>
@@ -2506,9 +2506,9 @@ export default function SafeWalkApp() {
               <View style={styles.featureIcon}>
                 <Ionicons name="heart" size={20} color={heartRate > 0 ? "#E91E63" : "#666"} />
               </View>
-              <Text style={styles.featureButtonText}>Health</Text>
+              <Text style={styles.featureButtonText}>Activity</Text>
               <Text style={styles.featureStatus}>
-                {heartRate > 0 ? `${heartRate} BPM` : 'MONITORING'}
+                {heartRate > 0 ? `${heartRate} BPM` : 'INSIGHTS'}
               </Text>
             </TouchableOpacity>
 
@@ -2551,7 +2551,7 @@ export default function SafeWalkApp() {
               <TouchableOpacity
                 style={[styles.featureButton, styles.testEmergencyButton]}
                 onPress={async () => {
-                  await speakAlert(`Testing emergency trigger: ${emergencyTriggerWord}`, 'high');
+              await speakAlert(`Testing alert trigger: ${emergencyTriggerWord}`, 'high');
                   setTimeout(() => triggerEmergencyMode(), 1000);
                 }}
               >
@@ -2563,7 +2563,7 @@ export default function SafeWalkApp() {
                   />
                 </View>
                 <Text style={styles.featureButtonText}>
-                  Test Emergency
+                  Test Alert
                 </Text>
                 <Text style={styles.featureStatus}>
                   DEMO TRIGGER
@@ -2582,10 +2582,10 @@ export default function SafeWalkApp() {
                   />
                 </View>
                 <Text style={styles.featureButtonText}>
-                  🚨 EMERGENCY ACTIVE
+                  ALERT ACTIVE
                 </Text>
                 <Text style={styles.featureStatus}>
-                  CONTACTS ALERTED
+                  CONTACTS NOTIFIED
                 </Text>
               </View>
             )}
@@ -2789,7 +2789,7 @@ export default function SafeWalkApp() {
           <View style={[styles.statusCard, styles.emergencyStatusCard]}>
             <View style={styles.emergencyHeader}>
               <Ionicons name="warning" size={24} color="#F44336" />
-              <Text style={styles.emergencyStatusTitle}>🚨 EMERGENCY MODE ACTIVE</Text>
+              <Text style={styles.emergencyStatusTitle}>ALERT MODE ACTIVE</Text>
               <View style={[styles.pulsingDot, { backgroundColor: '#F44336' }]} />
             </View>
             
@@ -2797,7 +2797,7 @@ export default function SafeWalkApp() {
               <View style={styles.emergencyDetailItem}>
                 <Ionicons name="people" size={18} color="#F44336" />
                 <Text style={styles.emergencyDetailText}>
-                  {emergencyContacts.length} Emergency Contact{emergencyContacts.length !== 1 ? 's' : ''} Alerted
+                  {emergencyContacts.length} Trusted Contact{emergencyContacts.length !== 1 ? 's' : ''} Notified
                 </Text>
               </View>
               
@@ -2811,7 +2811,7 @@ export default function SafeWalkApp() {
               <View style={styles.emergencyDetailItem}>
                 <Ionicons name="shield-checkmark" size={18} color="#F44336" />
                 <Text style={styles.emergencyDetailText}>
-                  Local authorities notified (simulated)
+                  Location data captured
                 </Text>
               </View>
               
@@ -2836,11 +2836,11 @@ export default function SafeWalkApp() {
               style={styles.deactivateEmergencyButton}
               onPress={deactivateEmergencyMode}
             >
-              <Text style={styles.deactivateEmergencyText}>Deactivate Emergency</Text>
+              <Text style={styles.deactivateEmergencyText}>Deactivate Alert</Text>
             </TouchableOpacity>
             
             <Text style={styles.emergencyNote}>
-              Note: In production, contacts would receive SMS/push notifications with your real-time location and emergency details.
+              Note: In production, contacts would receive SMS/push notifications with your real-time location.
             </Text>
           </View>
         )}
@@ -3050,7 +3050,7 @@ export default function SafeWalkApp() {
         {/* Biometric Monitoring */}
         {biometricData && (
           <View style={styles.infoCard}>
-            <Text style={styles.cardTitle}>💗 Health Monitoring</Text>
+            <Text style={styles.cardTitle}>Activity Insights</Text>
             <View style={styles.biometricGrid}>
               <View style={styles.biometricItem}>
                 <Text style={styles.biometricValue}>{heartRate}</Text>
@@ -3062,18 +3062,18 @@ export default function SafeWalkApp() {
               </View>
               <View style={styles.biometricItem}>
                 <Text style={styles.biometricValue}>{Math.round(stressLevel * 100)}%</Text>
-                <Text style={styles.biometricLabel}>Stress</Text>
+                <Text style={styles.biometricLabel}>Alertness</Text>
               </View>
               {biometricData.blood_oxygen && (
                 <View style={styles.biometricItem}>
                   <Text style={styles.biometricValue}>{biometricData.blood_oxygen}%</Text>
-                  <Text style={styles.biometricLabel}>O₂</Text>
+                  <Text style={styles.biometricLabel}>Energy</Text>
                 </View>
               )}
             </View>
             {healthAlerts.length > 0 && (
               <Text style={styles.warningText}>
-                ⚠️ {healthAlerts.length} health alert{healthAlerts.length > 1 ? 's' : ''} active
+                ⚠️ {healthAlerts.length} activity alert{healthAlerts.length > 1 ? 's' : ''} active
               </Text>
             )}
           </View>
@@ -3088,7 +3088,7 @@ export default function SafeWalkApp() {
       >
         <SafeAreaView style={styles.modalContainer}>
           <View style={styles.modalHeader}>
-            <Text style={styles.modalTitle}>Emergency Setup</Text>
+            <Text style={styles.modalTitle}>Safety Alert Setup</Text>
             <TouchableOpacity onPress={() => {
               Speech.stop(); // Stop any ongoing voice prompts
               setIsEmergencySetupOpen(false);
@@ -3107,30 +3107,30 @@ export default function SafeWalkApp() {
 
           <ScrollView style={styles.modalContent}>
             <Text style={styles.modalDescription}>
-              Set up a voice trigger word that will immediately alert emergency contacts and authorities if you're in danger.
+              Set up a voice trigger word that will immediately notify your trusted contacts with your location if you feel unsafe.
             </Text>
 
             <View style={styles.inputGroup}>
               <View style={styles.labelWithVoice}>
-                <Text style={styles.inputLabel}>Emergency Trigger Word</Text>
+                <Text style={styles.inputLabel}>Alert Trigger Word</Text>
                 <TouchableOpacity 
                   style={styles.voiceHelpButton}
                   onPress={async () => {
-                    await speakAlert("Choose a unique trigger word that you can say clearly in an emergency. Good examples are Red Alert, Safe Word 9 1 1, or Help Now. Avoid common words you might say accidentally.");
+                    await speakAlert("Choose a unique trigger word that you can say clearly when you feel unsafe. Good examples are Red Alert, Safe Word, or Help Now. Avoid common words you might say accidentally.");
                   }}
                 >
                   <Ionicons name="volume-high" size={16} color="#2196F3" />
                 </TouchableOpacity>
               </View>
               <Text style={styles.inputHint}>
-                Choose a unique word you can say clearly in an emergency (e.g., "RedAlert", "SafeWord911", "HelpNow")
+                Choose a unique word you can say clearly when you feel unsafe (e.g., "RedAlert", "SafeWord", "HelpNow")
               </Text>
               <TextInput
                 style={styles.textInput}
                 value={emergencyTriggerWord}
                 onFocus={async () => {
                   if (voiceAlertsEnabled && !voiceInteractionState.triggerWordExplained) {
-                    await speakAlert("Enter your emergency trigger word. Make it memorable but unique.");
+                    await speakAlert("Enter your alert trigger word. Make it memorable but unique.");
                     setVoiceInteractionState(prev => ({ ...prev, triggerWordExplained: true }));
                   }
                 }}
@@ -3153,18 +3153,18 @@ export default function SafeWalkApp() {
 
             <View style={styles.inputGroup}>
               <View style={styles.labelWithVoice}>
-                <Text style={styles.inputLabel}>Emergency Contacts</Text>
+                <Text style={styles.inputLabel}>Trusted Contacts</Text>
                 <TouchableOpacity 
                   style={styles.voiceHelpButton}
                   onPress={async () => {
-                    await speakAlert("Now add your emergency contacts. These people will receive immediate alerts with your location during an emergency. Add at least two trusted contacts like family members, close friends, or roommates.");
+                    await speakAlert("Now add your trusted contacts. These people will receive immediate notifications with your location when you trigger an alert. Add at least two trusted contacts like family members, close friends, or roommates.");
                   }}
                 >
                   <Ionicons name="volume-high" size={16} color="#2196F3" />
                 </TouchableOpacity>
               </View>
               <Text style={styles.inputHint}>
-                Enter phone numbers that will be notified immediately. In a real emergency, authorities will also be contacted.
+                Enter phone numbers that will be notified with your location. This is not a replacement for calling authorities directly.
               </Text>
               {emergencyContacts.map((contact, index) => (
                 <View key={index} style={styles.contactRow}>
@@ -3177,7 +3177,7 @@ export default function SafeWalkApp() {
                     onFocus={async () => {
                       if (voiceAlertsEnabled && !voiceInteractionState.contactsExplained) {
                         if (index === 0) {
-                          await speakAlert("Add emergency contacts. Use full phone numbers including area code.");
+                          await speakAlert("Add trusted contacts. Use full phone numbers including area code.");
                         }
                         setVoiceInteractionState(prev => ({ ...prev, contactsExplained: true }));
                       }
@@ -3215,7 +3215,7 @@ export default function SafeWalkApp() {
                 onPress={async () => {
                   setEmergencyContacts([...emergencyContacts, '']);
                   if (voiceAlertsEnabled) {
-                    await speakAlert(`Adding a new emergency contact. The more contacts you have, the better your safety coverage.`);
+                    await speakAlert(`Adding a new trusted contact. The more contacts you have, the better your safety coverage.`);
                   }
                 }}
               >
@@ -3227,7 +3227,7 @@ export default function SafeWalkApp() {
             <View style={styles.warningBox}>
               <Ionicons name="warning" size={24} color="#FF9800" />
               <Text style={styles.warningText}>
-                Important: This is a safety demonstration. In a real emergency, always call your local emergency number (911, 112, etc.) directly.
+                Important: This is a safety awareness tool. It does not replace professional services. In a real crisis, always call your local authorities directly.
               </Text>
             </View>
           </ScrollView>
@@ -3249,7 +3249,7 @@ export default function SafeWalkApp() {
                 const validContacts = emergencyContacts.filter(c => c.length > 0);
                 if (!emergencyTriggerWord || validContacts.length === 0) {
                   if (voiceAlertsEnabled) {
-                    await speakAlert("Please complete both your trigger word and at least one emergency contact before saving.");
+                    await speakAlert("Please complete both your trigger word and at least one trusted contact before saving.");
                   }
                   return;
                 }
@@ -3257,7 +3257,7 @@ export default function SafeWalkApp() {
               }}
               disabled={!emergencyTriggerWord || emergencyContacts.filter(c => c.length > 0).length === 0}
             >
-              <Text style={styles.saveButtonText}>Save Emergency Settings</Text>
+              <Text style={styles.saveButtonText}>Save Alert Settings</Text>
             </TouchableOpacity>
           </View>
         </SafeAreaView>

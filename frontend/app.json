@@ -1,23 +1,23 @@
 {
   "expo": {
-    "name": "Street Shield - Personal Safety & Emergency SOS",
+    "name": "Street Shield - Personal Safety & Awareness",
     "slug": "street-shield",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "street-shield",
     "userInterfaceStyle": "automatic",
-    "description": "Street Shield is your AI-powered personal safety companion for walking, running, cycling, and travelling. Features include: instant emergency panic button, live location sharing with contacts, voice-activated SOS alerts, real-time AI threat detection, electric scooter proximity warnings, cycling safety mode, health monitoring, multi-language support, and offline emergency mode. Designed for pedestrians, runners, students, families, and anyone who wants to stay safe. Trusted across the UK and worldwide. Whether you feel unsafe walking home at night, need to share your live location while jogging, or want a silent alarm for danger situations — Street Shield keeps you protected.",
+    "description": "Street Shield is your AI-powered personal safety awareness companion for walking, running, cycling, and travelling. Features include: quick alert notifications to trusted contacts, live location sharing, voice-activated safety commands, real-time AI awareness scoring, electric scooter proximity warnings, cycling safety mode, activity insights, multi-language support, and offline safety mode. Designed for pedestrians, runners, students, families, and anyone who wants to stay aware and connected. Trusted across the UK and worldwide. Whether you feel uneasy walking home at night, want to share your live location while jogging, or need discreet alerts for uncertain situations — Street Shield keeps you informed and connected.",
     "privacy": "public",
     "platforms": ["ios", "android", "web"],
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.streetshield.app",
       "infoPlist": {
-        "NSLocationWhenInUseUsageDescription": "Street Shield needs your location to monitor your safety, share it with emergency contacts, and detect nearby threats.",
-        "NSLocationAlwaysAndWhenInUseUsageDescription": "Street Shield uses background location to keep monitoring your safety even when the app is in the background.",
-        "NSMicrophoneUsageDescription": "Street Shield uses the microphone for voice-activated emergency commands and the 'Street Shield' trigger word.",
-        "NSMotionUsageDescription": "Street Shield monitors motion sensors to detect falls, track activity, and enhance health safety monitoring."
+        "NSLocationWhenInUseUsageDescription": "Street Shield uses your location to provide safety awareness scores, share it with trusted contacts, and detect nearby environmental factors.",
+        "NSLocationAlwaysAndWhenInUseUsageDescription": "Street Shield uses background location to continue providing safety awareness even when the app is in the background.",
+        "NSMicrophoneUsageDescription": "Street Shield uses the microphone for voice-activated commands and the 'Street Shield' trigger word for hands-free use.",
+        "NSMotionUsageDescription": "Street Shield monitors motion sensors to detect activity changes, track steps, and enhance safety awareness insights."
       }
     },
     "android": {
@@ -40,9 +40,9 @@
       "bundler": "metro",
       "output": "static",
       "favicon": "./assets/images/favicon.png",
-      "name": "Street Shield - Personal Safety App",
+      "name": "Street Shield - Personal Safety Awareness App",
       "shortName": "Street Shield",
-      "description": "AI-powered personal safety app with emergency SOS, panic button, live location sharing & threat detection. Stay safe walking, running or cycling.",
+      "description": "AI-powered personal safety awareness app with quick alerts, live location sharing & real-time threat awareness. Stay informed walking, running or cycling.",
       "lang": "en",
       "themeColor": "#0a0a1a",
       "backgroundColor": "#0a0a1a"

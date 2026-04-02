@@ -618,9 +618,9 @@ async def analyze_biometric_data(biometric_data: BiometricData, location: Locati
                 alerts.append(HealthAlert(
                     alert_type="heart_rate_critical",
                     severity="critical",
-                    message=f"CRITICAL: Heart rate {hr} BPM exceeds safe limits for age {age}. Immediate medical attention required.",
+                    message=f"CRITICAL: Heart rate {hr} BPM exceeds safe limits for age {age}. Consider stopping activity immediately and resting.",
                     biometric_data=biometric_data,
-                    recommended_action="STOP ALL ACTIVITY. Call emergency services immediately. Sit down and rest.",
+                    recommended_action="STOP ALL ACTIVITY. Sit down and rest. If you feel unwell, call your local authorities.",
                     auto_emergency=True
                 ))
             elif hr > target_hr_high + 20:  # Very high but not critical
@@ -637,7 +637,7 @@ async def analyze_biometric_data(biometric_data: BiometricData, location: Locati
                     severity="medium",
                     message=f"Elevated resting heart rate: {hr} BPM. This may indicate stress, illness, or overtraining.",
                     biometric_data=biometric_data,
-                    recommended_action="Monitor closely. Consider medical consultation if persistent."
+                    recommended_action="Monitor closely. Consider taking a break if persistent."
                 ))
             elif hr < 40 and "bradycardia" not in medical_conditions:
                 severity = "high" if hr < 35 else "medium"
@@ -646,7 +646,7 @@ async def analyze_biometric_data(biometric_data: BiometricData, location: Locati
                     severity=severity,
                     message=f"Unusually low heart rate: {hr} BPM. May indicate heart rhythm issues.",
                     biometric_data=biometric_data,
-                    recommended_action="Seek medical evaluation. Monitor for dizziness or fatigue." if severity == "high" else "Monitor symptoms and consider medical consultation."
+                    recommended_action="Take a break and monitor for dizziness or fatigue." if severity == "high" else "Monitor symptoms and take it easy."
                 ))
         
         # HEART RATE VARIABILITY ANALYSIS (Advanced metric)
@@ -672,9 +672,9 @@ async def analyze_biometric_data(biometric_data: BiometricData, location: Locati
                 alerts.append(HealthAlert(
                     alert_type="blood_pressure_crisis",
                     severity="critical",
-                    message=f"HYPERTENSIVE CRISIS: BP {systolic}/{diastolic} mmHg. Immediate medical attention required.",
+                    message=f"CRITICAL: BP {systolic}/{diastolic} mmHg. Consider stopping activity and resting immediately.",
                     biometric_data=biometric_data,
-                    recommended_action="Call emergency services immediately. Do not delay.",
+                    recommended_action="Stop activity and rest. If you feel unwell, call your local authorities.",
                     auto_emergency=True
                 ))
             # Stage 2 hypertension
@@ -682,7 +682,7 @@ async def analyze_biometric_data(biometric_data: BiometricData, location: Locati
                 alerts.append(HealthAlert(
                     alert_type="blood_pressure_high",
                     severity="high",
-                    message=f"High blood pressure: {systolic}/{diastolic} mmHg. Seek medical attention.",
+                    message=f"High blood pressure: {systolic}/{diastolic} mmHg. Consider taking a break.",
                     biometric_data=biometric_data,
                     recommended_action="Rest immediately. Avoid strenuous activity. Consult healthcare provider."
                 ))
@@ -712,7 +712,7 @@ async def analyze_biometric_data(biometric_data: BiometricData, location: Locati
                     severity="critical",
                     message=f"CRITICAL: Blood oxygen {spo2}% is dangerously low{' (altitude adjusted)' if altitude > 1500 else ''}.",
                     biometric_data=biometric_data,
-                    recommended_action="Seek immediate medical attention. Consider oxygen therapy.",
+                    recommended_action="Stop activity and rest. Consider getting fresh air.",
                     auto_emergency=True
                 ))
             elif spo2 < normal_threshold:
@@ -1699,11 +1699,11 @@ async def analyze_biometrics(
             # Trigger emergency protocols if needed
             if alert.auto_emergency:
                 emergency_alert = EmergencyAlert(
-                    alert_type="medical_emergency",
+                    alert_type="safety_concern",
                     location=location,
                     radius=500,
                     severity="critical",
-                    message=f"Medical emergency detected: {alert.message}",
+                    message=f"Safety concern detected: {alert.message}",
                     expires_at=datetime.utcnow() + timedelta(hours=1)
                 )
                 await db.emergency_alerts.insert_one(emergency_alert.dict())
@@ -1949,7 +1949,7 @@ async def get_emergency_settings(user_id: str):
 
 @api_router.post("/emergency/trigger")
 async def trigger_emergency(event: EmergencyEvent):
-    """Trigger emergency protocol - notify contacts and authorities"""
+    """Trigger alert protocol - notify trusted contacts"""
     try:
         # Get user's emergency settings
         settings = await db.emergency_settings.find_one({"user_id": event.user_id})
@@ -2050,35 +2050,36 @@ async def get_emergency_history(user_id: str, limit: int = 50):
 
 @api_router.get("/")
 async def root():
-    return {"message": "Street Shield API - Advanced AI protection for pedestrians and runners"}
+    return {"message": "Street Shield API - AI-powered safety awareness for pedestrians, runners and cyclists"}
 
 @api_router.get("/app-info")
 async def app_info():
     """Public app info endpoint for SEO and discovery"""
     return {
         "name": "Street Shield",
-        "tagline": "AI-Powered Personal Safety for Everyone",
-        "description": "Street Shield is your intelligent personal safety companion. Whether you're walking home alone at night, running through the city, cycling to work, or travelling in unfamiliar areas — Street Shield keeps you protected with real-time AI threat detection, instant emergency SOS, and live location sharing.",
+        "tagline": "AI-Powered Personal Safety Awareness for Everyone",
+        "description": "Street Shield is your intelligent personal safety awareness companion. Whether you're walking home alone at night, running through the city, cycling to work, or travelling in unfamiliar areas — Street Shield keeps you informed and connected with real-time AI awareness scoring, quick alerts to trusted contacts, and live location sharing. This is a safety awareness tool, not a replacement for professional services.",
         "features": [
-            {"name": "Emergency Panic Button", "description": "One-tap SOS alert that instantly notifies your emergency contacts with your live location"},
-            {"name": "Live Location Sharing", "description": "Share your real-time location with family, friends or emergency services"},
-            {"name": "AI Threat Detection", "description": "Intelligent analysis of your surroundings, including silent electric scooter warnings"},
-            {"name": "Voice-Activated SOS", "description": "Say 'Street Shield' to trigger emergency alerts hands-free"},
-            {"name": "Cycling Safety Mode", "description": "Specialised protection for cyclists with vehicle proximity alerts"},
-            {"name": "Health Monitoring", "description": "Real-time heart rate, blood oxygen, and stress level tracking"},
+            {"name": "Quick Alert Button", "description": "One-tap alert that instantly notifies your trusted contacts with your live location"},
+            {"name": "Live Location Sharing", "description": "Share your real-time location with family and friends"},
+            {"name": "AI Awareness Scoring", "description": "Intelligent analysis of your surroundings, including silent electric scooter warnings"},
+            {"name": "Voice-Activated Alerts", "description": "Say 'Street Shield' to send alerts to your trusted contacts hands-free"},
+            {"name": "Cycling Safety Mode", "description": "Specialised awareness for cyclists with vehicle proximity alerts"},
+            {"name": "Activity Insights", "description": "Real-time activity rhythm, energy, and alertness tracking"},
             {"name": "Multi-Language Support", "description": "Available in English, Spanish, French, German, and Chinese"},
-            {"name": "Offline Emergency Mode", "description": "Emergency features work even without a network connection"},
+            {"name": "Offline Safety Mode", "description": "Core features work even without a network connection"},
         ],
         "use_cases": [
             "Walking alone at night",
             "Running or jogging safely",
-            "Cycling commute protection",
+            "Cycling commute awareness",
             "Student campus safety",
             "Late-night travel and taxi safety",
             "Family and child safety tracking",
-            "Elderly emergency alerts",
-            "Lone worker protection",
+            "Elderly check-in alerts",
+            "Lone worker awareness",
         ],
+        "disclaimer": "Street Shield is a safety awareness tool. It does not replace professional services. In a real crisis, always call your local authorities directly.",
         "platforms": ["iOS", "Android", "Web"],
         "languages": ["English", "Spanish", "French", "German", "Chinese"],
         "version": "1.0.0"

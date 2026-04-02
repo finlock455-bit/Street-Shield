@@ -10,14 +10,14 @@ export default function Root({ children }: PropsWithChildren) {
         <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
 
         {/* Primary SEO Meta Tags */}
-        <title>Street Shield - Personal Safety App | Emergency SOS, Live Location Sharing & Panic Button</title>
+        <title>Street Shield - Personal Safety Awareness App | Live Location Sharing & Smart Alerts</title>
         <meta
           name="description"
-          content="Street Shield is your AI-powered personal safety companion. Instant panic button, live location sharing, emergency SOS alerts, and real-time threat detection. Stay safe walking alone, running at night, or travelling. Trusted by pedestrians, runners, cyclists, students, and families across the UK and worldwide."
+          content="Street Shield is your AI-powered personal safety awareness companion. Quick alerts to trusted contacts, live location sharing, and real-time environmental awareness. Stay informed and connected walking alone, running at night, or travelling. Trusted by pedestrians, runners, cyclists, students, and families across the UK and worldwide."
         />
         <meta
           name="keywords"
-          content="personal safety app, emergency SOS app, panic button app, live location sharing, safety tracker, walking safety, running safety app, pedestrian safety, cycling safety, student safety app, campus safety, family safety tracker, lone worker safety, travel safety app, UK safety app, night safety, women safety app, personal alarm app, silent alarm, emergency alert, share location for safety, real-time tracking, threat detection, e-scooter warning, headphone safety, Street Shield"
+          content="personal safety app, safety awareness app, live location sharing, safety tracker, walking safety, running safety app, pedestrian safety, cycling safety, student safety app, campus safety, family safety tracker, lone worker safety, travel safety app, UK safety app, night safety, women safety app, personal alert app, silent alert, share location for safety, real-time tracking, awareness scoring, e-scooter warning, headphone safety, Street Shield"
         />
         <meta name="author" content="Street Shield" />
         <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
@@ -26,10 +26,10 @@ export default function Root({ children }: PropsWithChildren) {
         {/* Open Graph / Facebook */}
         <meta property="og:type" content="website" />
         <meta property="og:url" content="https://streetshield.app" />
-        <meta property="og:title" content="Street Shield - AI Personal Safety & Emergency SOS App" />
+        <meta property="og:title" content="Street Shield - AI Personal Safety Awareness App" />
         <meta
           property="og:description"
-          content="Feel unsafe? Street Shield has your back. Instant panic button, live location sharing, voice-activated SOS, and AI threat detection. The personal safety app for walking, running, cycling & travelling. Download free."
+          content="Feel uneasy? Street Shield has your back. Quick alerts to trusted contacts, live location sharing, voice-activated commands, and AI awareness scoring. The personal safety app for walking, running, cycling & travelling. Download free."
         />
         <meta property="og:site_name" content="Street Shield" />
         <meta property="og:locale" content="en_GB" />
@@ -41,10 +41,10 @@ export default function Root({ children }: PropsWithChildren) {
 
         {/* Twitter Card */}
         <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content="Street Shield - Personal Safety App | Emergency SOS & Panic Button" />
+        <meta name="twitter:title" content="Street Shield - Personal Safety Awareness | Smart Alerts & Live Sharing" />
         <meta
           name="twitter:description"
-          content="AI-powered personal safety for pedestrians, runners & cyclists. Instant SOS, live tracking, threat detection. Stay safe walking alone at night."
+          content="AI-powered safety awareness for pedestrians, runners & cyclists. Quick alerts, live tracking, environmental awareness. Stay informed walking alone at night."
         />
 
         {/* App-Specific Meta */}
@@ -72,7 +72,7 @@ export default function Root({ children }: PropsWithChildren) {
               applicationSubCategory: 'Personal Safety',
               operatingSystem: 'iOS, Android, Web',
               description:
-                'AI-powered personal safety app with emergency SOS, panic button, live location sharing, real-time threat detection, cycling safety mode, and voice-activated alerts. Designed for pedestrians, runners, cyclists, students, and families.',
+                'AI-powered personal safety awareness app with quick alerts to trusted contacts, live location sharing, real-time environmental awareness, cycling safety mode, and voice-activated commands. Designed for pedestrians, runners, cyclists, students, and families.',
               offers: {
                 '@type': 'Offer',
                 price: '0',
@@ -86,19 +86,19 @@ export default function Root({ children }: PropsWithChildren) {
                 worstRating: '1',
               },
               featureList: [
-                'Emergency SOS panic button',
+                'Quick alert notifications to trusted contacts',
                 'Live location sharing with contacts',
-                'AI-powered threat detection',
+                'AI-powered environmental awareness',
                 'Electric scooter proximity warnings',
                 'Voice-activated safety commands',
                 'Cycling safety mode',
-                'Health monitoring',
+                'Activity insights and movement tracking',
                 'Multi-language support',
-                'Offline emergency mode',
+                'Offline safety mode',
                 'Haptic feedback alerts',
               ],
               keywords:
-                'personal safety, emergency SOS, panic button, live location, walking safety, running safety, cycling safety, student safety, family tracker, UK safety app',
+                'personal safety, safety awareness, quick alerts, live location, walking safety, running safety, cycling safety, student safety, family tracker, UK safety app',
               inLanguage: ['en', 'es', 'fr', 'de', 'zh'],
               author: {
                 '@type': 'Organization',
@@ -108,7 +108,7 @@ export default function Root({ children }: PropsWithChildren) {
           }}
         />
 
-        {/* FAQ Schema for Panic-Intent Searches */}
+        {/* FAQ Schema for Safety-Intent Searches */}
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
@@ -121,7 +121,7 @@ export default function Root({ children }: PropsWithChildren) {
                   name: 'What should I do if someone is following me?',
                   acceptedAnswer: {
                     '@type': 'Answer',
-                    text: 'Open Street Shield and tap the emergency panic button. Your live location will be instantly shared with your emergency contacts, and authorities can be alerted. The app also provides voice-activated SOS so you can call for help hands-free.',
+                    text: 'Open Street Shield and tap the quick alert button. Your live location will be instantly shared with your trusted contacts. The app also provides voice-activated commands so you can send alerts hands-free. For immediate danger, always call your local authorities directly.',
                   },
                 },
                 {
@@ -129,7 +129,7 @@ export default function Root({ children }: PropsWithChildren) {
                   name: 'What is the best personal safety app for walking alone at night?',
                   acceptedAnswer: {
                     '@type': 'Answer',
-                    text: 'Street Shield is designed specifically for pedestrian safety. It provides real-time AI threat detection, proximity alerts for silent electric scooters, emergency SOS with one tap, live location sharing, and voice-activated commands — all designed to keep you safe while walking alone.',
+                    text: 'Street Shield is designed specifically for pedestrian safety awareness. It provides real-time AI environmental scoring, proximity alerts for silent electric scooters, quick alerts to trusted contacts with one tap, live location sharing, and voice-activated commands — all designed to keep you aware and connected while walking alone.',
                   },
                 },
                 {
@@ -137,15 +137,15 @@ export default function Root({ children }: PropsWithChildren) {
                   name: 'How can I share my live location for safety while running?',
                   acceptedAnswer: {
                     '@type': 'Answer',
-                    text: 'Street Shield automatically shares your live location with your chosen emergency contacts when you activate the safety monitor. It tracks your route in real-time and will alert contacts if you stop moving unexpectedly.',
+                    text: 'Street Shield automatically shares your live location with your chosen trusted contacts when you activate the safety monitor. It tracks your route in real-time and will notify contacts if you stop moving unexpectedly.',
                   },
                 },
                 {
                   '@type': 'Question',
-                  name: 'Is there an emergency alert app that works without making a phone call?',
+                  name: 'Is there a safety alert app that works without making a phone call?',
                   acceptedAnswer: {
                     '@type': 'Answer',
-                    text: 'Yes — Street Shield sends silent emergency alerts to your contacts via SMS and push notifications. You can trigger an SOS with a panic button, voice command, or the app can auto-detect emergencies through health monitoring.',
+                    text: 'Yes — Street Shield sends silent notifications to your trusted contacts. You can trigger a quick alert with a button tap, voice command, or the app can notify contacts based on activity patterns. This is not a replacement for calling authorities in a real crisis.',
                   },
                 },
                 {
@@ -153,7 +153,7 @@ export default function Root({ children }: PropsWithChildren) {
                   name: 'What app alerts my contacts if I stop moving?',
                   acceptedAnswer: {
                     '@type': 'Answer',
-                    text: 'Street Shield monitors your movement and biometric data. If it detects that you have stopped unexpectedly or shows signs of distress, it can automatically alert your emergency contacts with your exact location.',
+                    text: 'Street Shield monitors your movement and activity data. If it detects that you have stopped unexpectedly or shows unusual activity patterns, it can automatically notify your trusted contacts with your location. Note: This is an awareness tool, not a substitute for professional services.',
                   },
                 },
               ],
