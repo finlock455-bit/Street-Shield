@@ -173,6 +173,14 @@ export default function SafeWalkApp() {
   const rotateAnim = useRef(new Animated.Value(0)).current;
   const glowAnim = useRef(new Animated.Value(0.3)).current;
 
+  // Radar pulse animation refs
+  const radarRing1 = useRef(new Animated.Value(0)).current;
+  const radarRing2 = useRef(new Animated.Value(0)).current;
+  const radarRing3 = useRef(new Animated.Value(0)).current;
+
+  // Privacy Policy state
+  const [showPrivacyPolicy, setShowPrivacyPolicy] = useState(false);
+
   // Start score ring animations
   useEffect(() => {
     // Pulse animation (breathe effect)
@@ -198,6 +206,31 @@ export default function SafeWalkApp() {
     glowLoop.start();
     return () => { pulseLoop.stop(); rotateLoop.stop(); glowLoop.stop(); };
   }, []);
+
+  // Radar pulse concentric ring animations
+  useEffect(() => {
+    if (!isTracking) {
+      radarRing1.setValue(0);
+      radarRing2.setValue(0);
+      radarRing3.setValue(0);
+      return;
+    }
+    const createRadarRing = (anim: Animated.Value, delay: number) =>
+      Animated.loop(
+        Animated.sequence([
+          Animated.delay(delay),
+          Animated.parallel([
+            Animated.timing(anim, { toValue: 1, duration: 2000, easing: Easing.out(Easing.ease), useNativeDriver: false }),
+          ]),
+          Animated.timing(anim, { toValue: 0, duration: 0, useNativeDriver: false }),
+        ])
+      );
+    const r1 = createRadarRing(radarRing1, 0);
+    const r2 = createRadarRing(radarRing2, 600);
+    const r3 = createRadarRing(radarRing3, 1200);
+    r1.start(); r2.start(); r3.start();
+    return () => { r1.stop(); r2.stop(); r3.stop(); };
+  }, [isTracking]);
 
   // Journey tracking state
   const [showJourneyCard, setShowJourneyCard] = useState(false);
@@ -2463,10 +2496,22 @@ export default function SafeWalkApp() {
             {isTracking && <View style={styles.activeIndicator} />}
             {isTracking && (
               <View style={styles.radarActiveIndicator}>
-                <View style={styles.radarPulse} />
-                <Text style={styles.radarActiveText}>
-                  🛡️ Radar Scanning...
-                </Text>
+                <View style={styles.radarContainer}>
+                  <Animated.View style={[styles.radarRingAnimated, {
+                    transform: [{ scale: radarRing1.interpolate({ inputRange: [0, 1], outputRange: [0.3, 1.6] }) }],
+                    opacity: radarRing1.interpolate({ inputRange: [0, 0.5, 1], outputRange: [0.8, 0.4, 0] }),
+                  }]} />
+                  <Animated.View style={[styles.radarRingAnimated, {
+                    transform: [{ scale: radarRing2.interpolate({ inputRange: [0, 1], outputRange: [0.3, 1.6] }) }],
+                    opacity: radarRing2.interpolate({ inputRange: [0, 0.5, 1], outputRange: [0.8, 0.4, 0] }),
+                  }]} />
+                  <Animated.View style={[styles.radarRingAnimated, {
+                    transform: [{ scale: radarRing3.interpolate({ inputRange: [0, 1], outputRange: [0.3, 1.6] }) }],
+                    opacity: radarRing3.interpolate({ inputRange: [0, 0.5, 1], outputRange: [0.8, 0.4, 0] }),
+                  }]} />
+                  <View style={styles.radarCenterDot} />
+                </View>
+                <Text style={styles.radarActiveText}>RADAR SCANNING</Text>
               </View>
             )}
           </TouchableOpacity>
@@ -2778,10 +2823,10 @@ export default function SafeWalkApp() {
         {isHandsFreeMode && (
           <View style={[styles.statusCard, styles.handsFreeCard]}>
             <View style={styles.handsFreeIndicator}>
-              <Ionicons name="shield-checkmark" size={20} color="#2196F3" />
-              <View style={[styles.pulsingDot, { backgroundColor: '#2196F3' }]} />
-              {ambientListeningActive && <Ionicons name="mic" size={16} color="#4CAF50" style={{ marginLeft: 8 }} />}
-              {isVoiceInfoActive && <Ionicons name="information-circle" size={16} color="#9C27B0" style={{ marginLeft: 8 }} />}
+              <Ionicons name="shield-checkmark" size={20} color="#00ffff" />
+              <View style={[styles.pulsingDot, { backgroundColor: '#00ffff' }]} />
+              {ambientListeningActive && <Ionicons name="mic" size={16} color="#00ffcc" style={{ marginLeft: 8 }} />}
+              {isVoiceInfoActive && <Ionicons name="information-circle" size={16} color="#cc00ff" style={{ marginLeft: 8 }} />}
             </View>
             <Text style={styles.handsFreeTitle}>
               🛡️ HANDS-FREE PROTECTION ACTIVE
@@ -3114,6 +3159,18 @@ export default function SafeWalkApp() {
             )}
           </View>
         )}
+
+        {/* Footer */}
+        <View style={styles.footer}>
+          <View style={styles.footerDivider} />
+          <TouchableOpacity onPress={() => setShowPrivacyPolicy(true)} data-testid="privacy-policy-link">
+            <Text style={styles.footerLink}>Privacy Policy</Text>
+          </TouchableOpacity>
+          <Text style={styles.footerVersion}>Street Shield v1.0.0</Text>
+          <Text style={styles.footerDisclaimer}>
+            Safety awareness tool for informational purposes only.
+          </Text>
+        </View>
       </ScrollView>
 
       {/* Emergency Setup Modal */}
@@ -3137,7 +3194,7 @@ export default function SafeWalkApp() {
                 lastTriggerWord: ''
               });
             }}>
-              <Ionicons name="close" size={24} color="#333" />
+              <Ionicons name="close" size={24} color="#00ffff" />
             </TouchableOpacity>
           </View>
 
@@ -3307,6 +3364,75 @@ export default function SafeWalkApp() {
           journeyData={lastJourneyData}
         />
       )}
+
+      {/* Privacy Policy Modal */}
+      <Modal
+        visible={showPrivacyPolicy}
+        animationType="slide"
+        presentationStyle="pageSheet"
+      >
+        <SafeAreaView style={styles.modalContainer}>
+          <View style={styles.modalHeader}>
+            <Text style={styles.modalTitle}>Privacy Policy</Text>
+            <TouchableOpacity onPress={() => setShowPrivacyPolicy(false)} data-testid="close-privacy-modal">
+              <Ionicons name="close" size={24} color="#00ffff" />
+            </TouchableOpacity>
+          </View>
+          <ScrollView style={styles.modalContent}>
+            <Text style={styles.privacyHeading}>Street Shield Privacy Policy</Text>
+            <Text style={styles.privacyDate}>Last updated: April 2, 2026</Text>
+
+            <Text style={styles.privacySectionTitle}>1. Information We Collect</Text>
+            <Text style={styles.privacyText}>
+              Street Shield collects location data (GPS coordinates) only while the app is actively in use and the shield is activated. We also collect device sensor data (accelerometer, pedometer) for activity insights. All data is processed locally on your device or via our secure servers.
+            </Text>
+
+            <Text style={styles.privacySectionTitle}>2. How We Use Your Information</Text>
+            <Text style={styles.privacyText}>
+              Your location data is used solely to provide real-time safety analysis and environmental awareness. Activity data (steps, motion) is used to provide personalized activity insights. We do not sell, share, or distribute your personal data to third parties.
+            </Text>
+
+            <Text style={styles.privacySectionTitle}>3. Data Storage &amp; Security</Text>
+            <Text style={styles.privacyText}>
+              Safety analysis data is stored temporarily on our encrypted servers and automatically deleted after 24 hours. Trusted contact information is stored locally on your device using encrypted storage. We use industry-standard encryption for all data transmissions.
+            </Text>
+
+            <Text style={styles.privacySectionTitle}>4. Trusted Contacts</Text>
+            <Text style={styles.privacyText}>
+              Phone numbers you provide as trusted contacts are stored locally on your device. When a quick alert is triggered, your location is shared only with those contacts. We do not retain or access your contacts list.
+            </Text>
+
+            <Text style={styles.privacySectionTitle}>5. Third-Party Services</Text>
+            <Text style={styles.privacyText}>
+              Street Shield uses AI services for safety analysis and weather APIs for environmental data. These services receive anonymized location data only. No personally identifiable information is shared with these providers.
+            </Text>
+
+            <Text style={styles.privacySectionTitle}>6. Your Rights</Text>
+            <Text style={styles.privacyText}>
+              You can delete all locally stored data at any time by clearing the app data. You can revoke location permissions through your device settings. You may request deletion of any server-side data by contacting us.
+            </Text>
+
+            <Text style={styles.privacySectionTitle}>7. Children's Privacy</Text>
+            <Text style={styles.privacyText}>
+              Street Shield is designed for users aged 13 and above. We do not knowingly collect data from children under 13.
+            </Text>
+
+            <Text style={styles.privacySectionTitle}>8. Changes to This Policy</Text>
+            <Text style={styles.privacyText}>
+              We may update this privacy policy from time to time. Users will be notified of significant changes through in-app notifications.
+            </Text>
+
+            <Text style={styles.privacySectionTitle}>9. Disclaimer</Text>
+            <Text style={styles.privacyText}>
+              Street Shield is a safety awareness tool for informational purposes only. It is not a replacement for professional safety services, medical devices, or calling local authorities. Always prioritize your safety and call the appropriate services in a real situation.
+            </Text>
+
+            <Text style={[styles.privacyText, { marginTop: 20, marginBottom: 40, textAlign: 'center', color: '#555' }]}>
+              Contact: support@streetshield.app
+            </Text>
+          </ScrollView>
+        </SafeAreaView>
+      </Modal>
     </SafeAreaView>
   );
 }
@@ -3776,53 +3902,7 @@ const styles = StyleSheet.create({
     borderColor: '#ff0066',
     backgroundColor: 'rgba(255, 0, 102, 0.05)',
   },
-  // Voice Trigger Status Styles
-  statusCard: {
-    backgroundColor: '#1A1A2E',
-    borderRadius: 15,
-    padding: 15,
-    marginHorizontal: 20,
-    marginBottom: 15,
-    borderWidth: 1,
-    borderColor: '#333',
-  },
-  listeningCard: {
-    backgroundColor: 'rgba(76, 175, 80, 0.1)',
-    borderColor: '#4CAF50',
-    borderWidth: 2,
-  },
-  listeningIndicator: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 10,
-  },
-  pulsingDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: '#4CAF50',
-    marginLeft: 8,
-    opacity: 0.8,
-  },
-  listeningText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '600',
-    textAlign: 'center',
-    marginBottom: 15,
-  },
-  stopListeningButton: {
-    backgroundColor: '#FF5722',
-    paddingHorizontal: 20,
-    paddingVertical: 10,
-    borderRadius: 20,
-    alignSelf: 'center',
-  },
-  stopListeningText: {
-    color: '#fff',
-    fontSize: 14,
-    fontWeight: '600',
-  },
+  // (Voice Trigger Status Styles moved to bottom of stylesheet)
   contactRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -3922,10 +4002,10 @@ const styles = StyleSheet.create({
   },
   voiceHelpButton: {
     padding: 8,
-    borderRadius: 20,
-    backgroundColor: '#E3F2FD',
+    borderRadius: 4,
+    backgroundColor: 'rgba(0, 255, 255, 0.08)',
     borderWidth: 1,
-    borderColor: '#2196F3',
+    borderColor: 'rgba(0, 255, 255, 0.3)',
     marginLeft: 10,
   },
   // Flashy Dynamic Styles
@@ -4499,12 +4579,30 @@ const styles = StyleSheet.create({
   },
   // Radar Active Indicator Styles
   radarActiveIndicator: {
-    position: 'absolute',
-    bottom: -40,
-    left: 0,
-    right: 0,
+    marginTop: 10,
     alignItems: 'center',
     justifyContent: 'center',
+    paddingVertical: 8,
+  },
+  radarContainer: {
+    width: 50,
+    height: 50,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  radarRingAnimated: {
+    position: 'absolute',
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    borderWidth: 1.5,
+    borderColor: '#00ffff',
+  },
+  radarCenterDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: '#00ffff',
   },
   radarPulse: {
     width: 20,
@@ -4516,10 +4614,75 @@ const styles = StyleSheet.create({
   },
   radarActiveText: {
     color: '#00ffff',
-    fontSize: 10,
+    fontSize: 9,
     fontWeight: '700',
     textAlign: 'center',
     letterSpacing: 2,
     textTransform: 'uppercase',
+    marginTop: 4,
+  },
+  // Privacy Policy Styles
+  privacyHeading: {
+    fontSize: 20,
+    fontWeight: '900',
+    color: '#00ffff',
+    marginBottom: 8,
+    letterSpacing: 2,
+    textTransform: 'uppercase',
+  },
+  privacyDate: {
+    fontSize: 12,
+    color: '#555',
+    marginBottom: 25,
+    letterSpacing: 1,
+  },
+  privacySectionTitle: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#ff0066',
+    marginTop: 20,
+    marginBottom: 8,
+    letterSpacing: 1,
+    textTransform: 'uppercase',
+  },
+  privacyText: {
+    fontSize: 13,
+    color: '#8a8a9a',
+    lineHeight: 22,
+    marginBottom: 5,
+  },
+  // Footer Styles
+  footer: {
+    alignItems: 'center',
+    paddingVertical: 30,
+    paddingHorizontal: 20,
+    marginTop: 20,
+  },
+  footerDivider: {
+    width: '60%',
+    height: 1,
+    backgroundColor: 'rgba(0, 255, 255, 0.1)',
+    marginBottom: 20,
+  },
+  footerLink: {
+    color: '#00ffff',
+    fontSize: 12,
+    fontWeight: '700',
+    letterSpacing: 2,
+    textTransform: 'uppercase',
+    marginBottom: 10,
+  },
+  footerVersion: {
+    color: '#333',
+    fontSize: 10,
+    letterSpacing: 1,
+    marginBottom: 6,
+  },
+  footerDisclaimer: {
+    color: '#333',
+    fontSize: 9,
+    textAlign: 'center',
+    letterSpacing: 0.5,
+    lineHeight: 14,
   },
 });

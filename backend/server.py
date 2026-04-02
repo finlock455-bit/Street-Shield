@@ -2250,6 +2250,25 @@ async def health_check():
         }
     }
 
+@api_router.get("/privacy-policy")
+async def get_privacy_policy():
+    """Serve privacy policy as structured data for store compliance."""
+    return {
+        "title": "Street Shield Privacy Policy",
+        "last_updated": "2026-04-02",
+        "sections": [
+            {"heading": "Information We Collect", "content": "Street Shield collects location data (GPS coordinates) only while the app is actively in use and the shield is activated. We also collect device sensor data (accelerometer, pedometer) for activity insights. All data is processed locally on your device or via our secure servers."},
+            {"heading": "How We Use Your Information", "content": "Your location data is used solely to provide real-time safety analysis and environmental awareness. Activity data (steps, motion) is used to provide personalized activity insights. We do not sell, share, or distribute your personal data to third parties."},
+            {"heading": "Data Storage & Security", "content": "Safety analysis data is stored temporarily on our encrypted servers and automatically deleted after 24 hours. Trusted contact information is stored locally on your device using encrypted storage. We use industry-standard encryption for all data transmissions."},
+            {"heading": "Trusted Contacts", "content": "Phone numbers you provide as trusted contacts are stored locally on your device. When a quick alert is triggered, your location is shared only with those contacts. We do not retain or access your contacts list."},
+            {"heading": "Third-Party Services", "content": "Street Shield uses AI services for safety analysis and weather APIs for environmental data. These services receive anonymized location data only. No personally identifiable information is shared with these providers."},
+            {"heading": "Your Rights", "content": "You can delete all locally stored data at any time by clearing the app data. You can revoke location permissions through your device settings. You may request deletion of any server-side data by contacting us."},
+            {"heading": "Children's Privacy", "content": "Street Shield is designed for users aged 13 and above. We do not knowingly collect data from children under 13."},
+            {"heading": "Disclaimer", "content": "Street Shield is a safety awareness tool for informational purposes only. It is not a replacement for professional safety services, medical devices, or calling local authorities."},
+        ],
+        "contact": "support@streetshield.app"
+    }
+
 # Include the router in the main app
 app.include_router(api_router)
 
