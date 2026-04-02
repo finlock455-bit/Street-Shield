@@ -2364,7 +2364,7 @@ export default function SafeWalkApp() {
                       {getLanguageName(lang)}
                     </Text>
                     {currentLanguage === lang && (
-                      <Ionicons name="checkmark-circle" size={24} color="#00FF88" />
+                      <Ionicons name="checkmark-circle" size={24} color="#00ffcc" />
                     )}
                   </TouchableOpacity>
                 ))}
@@ -2481,7 +2481,7 @@ export default function SafeWalkApp() {
                 <Ionicons
                   name={voiceAlertsEnabled ? "volume-high" : "volume-mute"}
                   size={20}
-                  color={voiceAlertsEnabled ? "#00FF88" : "#666"}
+                  color={voiceAlertsEnabled ? "#00ffcc" : "#666"}
                 />
               </View>
               <Text style={[styles.featureButtonText, voiceAlertsEnabled && styles.featureButtonTextActive]}>
@@ -2497,7 +2497,7 @@ export default function SafeWalkApp() {
               onPress={setupEmergencyTrigger}
             >
               <View style={styles.featureIcon}>
-                <Ionicons name="warning" size={20} color="#FF6B6B" />
+                <Ionicons name="warning" size={20} color="#ff0066" />
               </View>
               <Text style={styles.featureButtonText}>Quick Alert</Text>
               <Text style={styles.featureStatus}>
@@ -2510,7 +2510,7 @@ export default function SafeWalkApp() {
               onPress={() => setProximityAlertsEnabled(!proximityAlertsEnabled)}
             >
               <View style={styles.featureIcon}>
-                <Ionicons name="locate" size={20} color={proximityAlertsEnabled ? "#4ECDC4" : "#666"} />
+                <Ionicons name="locate" size={20} color={proximityAlertsEnabled ? "#00ffcc" : "#666"} />
               </View>
               <Text style={[styles.featureButtonText, proximityAlertsEnabled && styles.featureButtonTextActive]}>
                 Radar
@@ -2525,7 +2525,7 @@ export default function SafeWalkApp() {
               onPress={() => setNoiseCancellationEnabled(!noiseCancellationEnabled)}
             >
               <View style={styles.featureIcon}>
-                <Ionicons name="headset" size={20} color={noiseCancellationEnabled ? "#9C27B0" : "#666"} />
+                <Ionicons name="headset" size={20} color={noiseCancellationEnabled ? "#cc00ff" : "#666"} />
               </View>
               <Text style={[styles.featureButtonText, noiseCancellationEnabled && styles.featureButtonTextActive]}>
                 AI Audio
@@ -2689,11 +2689,11 @@ export default function SafeWalkApp() {
                   <Ionicons 
                     name={lastJourneyData.activityType === 'cycling' ? 'bicycle' : 'share-social'} 
                     size={20} 
-                    color={lastJourneyData.activityType === 'cycling' ? '#FF6B6B' : '#00FF88'} 
+                    color={lastJourneyData.activityType === 'cycling' ? '#ff0066' : '#00ffcc'} 
                   />
                 </View>
                 <Text style={[styles.featureButtonText, { 
-                  color: lastJourneyData.activityType === 'cycling' ? '#FF6B6B' : '#00FF88' 
+                  color: lastJourneyData.activityType === 'cycling' ? '#ff0066' : '#00ffcc' 
                 }]}>
                   {lastJourneyData.activityType === 'cycling' ? 'Safe Ride' : 'I Got Home Safe'}
                 </Text>
@@ -2718,7 +2718,7 @@ export default function SafeWalkApp() {
                     style={styles.voiceInfoDemoButton}
                     onPress={() => simulateVoiceInfoRequest("street shield what is my safety score")}
                   >
-                    <Ionicons name="shield-checkmark" size={16} color="#00FF88" />
+                    <Ionicons name="shield-checkmark" size={16} color="#00ffcc" />
                     <Text style={styles.voiceInfoDemoButtonText}>
                       Safety Check
                     </Text>
@@ -2728,7 +2728,7 @@ export default function SafeWalkApp() {
                     style={styles.voiceInfoDemoButton}
                     onPress={() => simulateVoiceInfoRequest("street shield where am i")}
                   >
-                    <Ionicons name="location" size={16} color="#00FF88" />
+                    <Ionicons name="location" size={16} color="#00ffcc" />
                     <Text style={styles.voiceInfoDemoButtonText}>
                       Location
                     </Text>
@@ -2738,7 +2738,7 @@ export default function SafeWalkApp() {
                     style={styles.voiceInfoDemoButton}
                     onPress={() => simulateVoiceInfoRequest("street shield weather check")}
                   >
-                    <Ionicons name="cloud" size={16} color="#00FF88" />
+                    <Ionicons name="cloud" size={16} color="#00ffcc" />
                     <Text style={styles.voiceInfoDemoButtonText}>
                       Weather
                     </Text>
@@ -2802,8 +2802,8 @@ export default function SafeWalkApp() {
         {!isHandsFreeMode && isVoiceInfoActive && (
           <View style={[styles.statusCard, styles.voiceInfoCard]}>
             <View style={styles.listeningIndicator}>
-              <Ionicons name="information-circle" size={20} color="#9C27B0" />
-              <View style={[styles.pulsingDot, { backgroundColor: '#9C27B0' }]} />
+              <Ionicons name="information-circle" size={20} color="#cc00ff" />
+              <View style={[styles.pulsingDot, { backgroundColor: '#cc00ff' }]} />
             </View>
             <Text style={styles.voiceInfoTitle}>
               💬 VOICE INFO SYSTEM ACTIVE
@@ -2885,7 +2885,7 @@ export default function SafeWalkApp() {
         {!isHandsFreeMode && isListeningForTrigger && (
           <View style={[styles.statusCard, styles.listeningCard]}>
             <View style={styles.listeningIndicator}>
-              <Ionicons name="mic" size={20} color="#4CAF50" />
+              <Ionicons name="mic" size={20} color="#00ffcc" />
               <View style={styles.pulsingDot} />
             </View>
             <Text style={styles.listeningText}>
@@ -2903,7 +2903,7 @@ export default function SafeWalkApp() {
         {/* Loading Indicator */}
         {isLoading && (
           <View style={styles.loadingContainer}>
-            <ActivityIndicator size="large" color="#2196F3" />
+            <ActivityIndicator size="large" color="#00ffff" />
             <Text style={styles.loadingText}>Analyzing Safety...</Text>
           </View>
         )}
@@ -3046,7 +3046,7 @@ export default function SafeWalkApp() {
                 <Text style={styles.cyclingLabel}>Safety Score</Text>
                 <Text style={[
                   styles.cyclingValue,
-                  { color: cyclingSafetyScore > 70 ? '#4CAF50' : cyclingSafetyScore > 50 ? '#FF9800' : '#F44336' }
+                  { color: cyclingSafetyScore > 70 ? '#00ffcc' : cyclingSafetyScore > 50 ? '#ff0066' : '#ff0033' }
                 ]}>
                   {cyclingSafetyScore}/100
                 </Text>
@@ -3066,7 +3066,7 @@ export default function SafeWalkApp() {
                     <Text style={[
                       styles.cyclingThreatSeverity,
                       { color: threat.severity === 'critical' ? '#F44336' : 
-                               threat.severity === 'high' ? '#FF9800' : '#FFC107' }
+                               threat.severity === 'high' ? '#ff0066' : '#ff0066' }
                     ]}>
                       {threat.severity.toUpperCase()}
                     </Text>
@@ -3155,7 +3155,7 @@ export default function SafeWalkApp() {
                     await speakAlert("Choose a unique trigger word that you can say clearly when you feel unsafe. Good examples are Red Alert, Safe Word, or Help Now. Avoid common words you might say accidentally.");
                   }}
                 >
-                  <Ionicons name="volume-high" size={16} color="#2196F3" />
+                  <Ionicons name="volume-high" size={16} color="#00ffff" />
                 </TouchableOpacity>
               </View>
               <Text style={styles.inputHint}>
@@ -3196,7 +3196,7 @@ export default function SafeWalkApp() {
                     await speakAlert("Now add your trusted contacts. These people will receive immediate notifications with your location when you trigger an alert. Add at least two trusted contacts like family members, close friends, or roommates.");
                   }}
                 >
-                  <Ionicons name="volume-high" size={16} color="#2196F3" />
+                  <Ionicons name="volume-high" size={16} color="#00ffff" />
                 </TouchableOpacity>
               </View>
               <Text style={styles.inputHint}>
@@ -3255,13 +3255,13 @@ export default function SafeWalkApp() {
                   }
                 }}
               >
-                <Ionicons name="add" size={20} color="#2196F3" />
+                <Ionicons name="add" size={20} color="#00ffff" />
                 <Text style={styles.addContactText}>Add Contact</Text>
               </TouchableOpacity>
             </View>
 
             <View style={styles.warningBox}>
-              <Ionicons name="warning" size={24} color="#FF9800" />
+              <Ionicons name="warning" size={24} color="#ff0066" />
               <Text style={styles.warningText}>
                 Important: This is a safety awareness tool for informational purposes only. It does not replace or connect to professional services.
               </Text>
