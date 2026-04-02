@@ -12,6 +12,8 @@ import {
   Dimensions,
   TextInput,
   Modal,
+  Animated,
+  Easing,
 } from 'react-native';
 import * as Location from 'expo-location';
 import * as Speech from 'expo-speech';
@@ -165,6 +167,37 @@ export default function SafeWalkApp() {
   const analysisInterval = useRef<NodeJS.Timeout | null>(null);
   const audioRecording = useRef<Audio.Recording | null>(null);
   const emergencyModeStartTime = useRef<number>(0);
+
+  // Animated score ring refs
+  const pulseAnim = useRef(new Animated.Value(0.6)).current;
+  const rotateAnim = useRef(new Animated.Value(0)).current;
+  const glowAnim = useRef(new Animated.Value(0.3)).current;
+
+  // Start score ring animations
+  useEffect(() => {
+    // Pulse animation (breathe effect)
+    const pulseLoop = Animated.loop(
+      Animated.sequence([
+        Animated.timing(pulseAnim, { toValue: 1, duration: 2000, easing: Easing.inOut(Easing.ease), useNativeDriver: false }),
+        Animated.timing(pulseAnim, { toValue: 0.6, duration: 2000, easing: Easing.inOut(Easing.ease), useNativeDriver: false }),
+      ])
+    );
+    // Rotation animation (slow spin)
+    const rotateLoop = Animated.loop(
+      Animated.timing(rotateAnim, { toValue: 1, duration: 8000, easing: Easing.linear, useNativeDriver: false })
+    );
+    // Glow animation
+    const glowLoop = Animated.loop(
+      Animated.sequence([
+        Animated.timing(glowAnim, { toValue: 0.8, duration: 1500, easing: Easing.inOut(Easing.ease), useNativeDriver: false }),
+        Animated.timing(glowAnim, { toValue: 0.3, duration: 1500, easing: Easing.inOut(Easing.ease), useNativeDriver: false }),
+      ])
+    );
+    pulseLoop.start();
+    rotateLoop.start();
+    glowLoop.start();
+    return () => { pulseLoop.stop(); rotateLoop.stop(); glowLoop.stop(); };
+  }, []);
 
   // Journey tracking state
   const [showJourneyCard, setShowJourneyCard] = useState(false);
@@ -2344,26 +2377,29 @@ export default function SafeWalkApp() {
         {safetyAnalysis && (
           <View style={styles.safetyScoreContainer}>
             <View style={styles.safetyScoreWrapper}>
-              <View style={styles.pulseRing}>
+              {/* Outer rotating ring */}
+              <Animated.View style={[styles.pulseRing, {
+                opacity: pulseAnim,
+                transform: [{ rotate: rotateAnim.interpolate({ inputRange: [0, 1], outputRange: ['0deg', '360deg'] }) }],
+              }]}>
                 <View style={[styles.pulseRingInner, { borderColor: getSafetyColor(safetyAnalysis.safety_score.overall_score) }]} />
-              </View>
+              </Animated.View>
+              {/* Inner glow ring */}
+              <Animated.View style={[styles.scoreGlowRing, {
+                opacity: glowAnim,
+                borderColor: getSafetyColor(safetyAnalysis.safety_score.overall_score),
+              }]} />
+              {/* Main score circle */}
               <View style={[
                 styles.safetyScoreCircle,
-                { 
-                  backgroundColor: getSafetyColor(safetyAnalysis.safety_score.overall_score),
-                  shadowColor: getSafetyColor(safetyAnalysis.safety_score.overall_score)
-                }
+                { borderColor: getSafetyColor(safetyAnalysis.safety_score.overall_score) }
               ]}>
-                <View style={styles.scoreGlow} />
-                <Text style={styles.safetyScoreNumber}>
+                <Text style={[styles.safetyScoreNumber, { color: getSafetyColor(safetyAnalysis.safety_score.overall_score) }]}>
                   {safetyAnalysis.safety_score.overall_score}
                 </Text>
-                <Text style={styles.safetyScoreLabel}>
+                <Text style={[styles.safetyScoreLabel, { color: getSafetyColor(safetyAnalysis.safety_score.overall_score) }]}>
                   {getSafetyLabel(safetyAnalysis.safety_score.overall_score)}
                 </Text>
-                <View style={styles.shieldOverlay}>
-                  <Ionicons name="shield-checkmark" size={24} color="rgba(255,255,255,0.3)" />
-                </View>
               </View>
             </View>
             
@@ -3374,7 +3410,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 2,
-    borderColor: 'rgba(0, 255, 255, 0.3)',
+    borderColor: '#00ffff',
+    backgroundColor: 'rgba(0, 255, 255, 0.04)',
   },
   safetyScoreNumber: {
     fontSize: 36,
@@ -3916,6 +3953,15 @@ const styles = StyleSheet.create({
     borderRadius: 60,
     backgroundColor: 'rgba(0, 255, 255, 0.05)',
     opacity: 0.5,
+  },
+  scoreGlowRing: {
+    position: 'absolute',
+    width: 140,
+    height: 140,
+    borderRadius: 70,
+    borderWidth: 1,
+    borderColor: '#00ffff',
+    backgroundColor: 'transparent',
   },
   shieldOverlay: {
     position: 'absolute',
