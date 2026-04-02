@@ -13,6 +13,7 @@ Street Shield is a mobile safety awareness app for pedestrians, runners, and cyc
 ## What's Implemented
 - Full safety analysis core with AI scoring
 - **Animated safety score ring** (pulse, rotate, glow via Animated API)
+- **Animated Radar Pulse** (3 concentric rings expanding outward when shield active)
 - Trusted contact system with voice trigger word
 - Cycling safety mode
 - Activity insights (rhythm, energy, alertness)
@@ -25,6 +26,9 @@ Street Shield is a mobile safety awareness app for pedestrians, runners, and cyc
 - **Store compliance rebrand** (no medical/emergency terms)
 - **Cyberpunk UI theme** (dark, neon cyan/pink, sharp edges, uppercase)
 - **Complete store listing guide** (/app/STORE_LISTING.md)
+- **Privacy Policy** (in-app modal + backend API endpoint GET /api/privacy-policy)
+- **App Footer** (privacy link, version, disclaimer)
+- All legacy non-theme colors removed (#4CAF50, #2196F3, #FF9800, etc.)
 
 ## Key Files
 - `/app/frontend/app/index.tsx` - Main app component
@@ -34,6 +38,16 @@ Street Shield is a mobile safety awareness app for pedestrians, runners, and cyc
 - `/app/backend/server.py` - FastAPI backend
 - `/app/STORE_LISTING.md` - Play Store + App Store listing content
 
+## Key API Endpoints
+- `GET /api/health` - Health check
+- `GET /api/app-info` - App metadata
+- `GET /api/privacy-policy` - Privacy policy (8 sections, JSON)
+- `POST /api/safety/analyze` - AI safety analysis
+- `POST /api/health/biometric-analysis` - Activity insights
+- `POST /api/cycling/safety-score` - Cycling safety score
+- `POST /api/emergency/settings` - Save alert settings
+- `POST /api/journey/complete` - Complete journey data
+
 ## Store Submission Status
 - [x] Google Play description (4000 chars, ASO-optimized)
 - [x] Apple App Store description + keywords
@@ -41,13 +55,12 @@ Street Shield is a mobile safety awareness app for pedestrians, runners, and cyc
 - [x] Review notes for app reviewers
 - [x] Compliance checklist (no medical/emergency claims)
 - [x] Category: Lifestyle > Personal Safety
-- [ ] Privacy policy page (needs hosting)
+- [x] Privacy policy (in-app modal + API endpoint)
 - [ ] Screenshots (need native builds)
 
 ## Pending/Backlog
 - P1: Complete i18n (i18n.t() for remaining hardcoded strings)
-- P1: Radar visual feedback animation
-- P2: Voice cloning (ElevenLabs)
-- P2: OpenWeatherMap integration
+- P2: Voice cloning (ElevenLabs) - needs user API key
+- P2: OpenWeatherMap integration - needs user API key
 - P2: Native builds for real sensors
-- P3: Refactor index.tsx (4400+ lines)
+- P3: Refactor index.tsx (~4600 lines -> components/hooks/styles)
