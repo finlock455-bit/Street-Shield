@@ -3227,7 +3227,7 @@ export default function SafeWalkApp() {
             <View style={styles.warningBox}>
               <Ionicons name="warning" size={24} color="#FF9800" />
               <Text style={styles.warningText}>
-                Important: This is a safety awareness tool. It does not replace professional services. In a real crisis, always call your local authorities directly.
+                Important: This is a safety awareness tool for informational purposes only. It does not replace or connect to professional services.
               </Text>
             </View>
           </ScrollView>

@@ -620,7 +620,7 @@ async def analyze_biometric_data(biometric_data: BiometricData, location: Locati
                     severity="critical",
                     message=f"CRITICAL: Heart rate {hr} BPM exceeds safe limits for age {age}. Consider stopping activity immediately and resting.",
                     biometric_data=biometric_data,
-                    recommended_action="STOP ALL ACTIVITY. Sit down and rest. If you feel unwell, call your local authorities.",
+                    recommended_action="STOP ALL ACTIVITY. Sit down and rest. Seek appropriate help if you feel unwell.",
                     auto_emergency=True
                 ))
             elif hr > target_hr_high + 20:  # Very high but not critical
@@ -674,7 +674,7 @@ async def analyze_biometric_data(biometric_data: BiometricData, location: Locati
                     severity="critical",
                     message=f"CRITICAL: BP {systolic}/{diastolic} mmHg. Consider stopping activity and resting immediately.",
                     biometric_data=biometric_data,
-                    recommended_action="Stop activity and rest. If you feel unwell, call your local authorities.",
+                    recommended_action="Stop activity and rest. Seek appropriate help if you feel unwell.",
                     auto_emergency=True
                 ))
             # Stage 2 hypertension
@@ -2079,7 +2079,7 @@ async def app_info():
             "Elderly check-in alerts",
             "Lone worker awareness",
         ],
-        "disclaimer": "Street Shield is a safety awareness tool. It does not replace professional services. In a real crisis, always call your local authorities directly.",
+        "disclaimer": "Street Shield is a safety awareness tool for informational purposes only. It does not replace or connect to professional services.",
         "platforms": ["iOS", "Android", "Web"],
         "languages": ["English", "Spanish", "French", "German", "Chinese"],
         "version": "1.0.0"

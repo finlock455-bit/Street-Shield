@@ -121,7 +121,7 @@ export default function Root({ children }: PropsWithChildren) {
                   name: 'What should I do if someone is following me?',
                   acceptedAnswer: {
                     '@type': 'Answer',
-                    text: 'Open Street Shield and tap the quick alert button. Your live location will be instantly shared with your trusted contacts. The app also provides voice-activated commands so you can send alerts hands-free. For immediate danger, always call your local authorities directly.',
+                    text: 'Open Street Shield and tap the quick alert button. Your live location will be instantly shared with your trusted contacts. The app also provides voice-activated commands so you can send alerts hands-free.',
                   },
                 },
                 {
@@ -145,7 +145,7 @@ export default function Root({ children }: PropsWithChildren) {
                   name: 'Is there a safety alert app that works without making a phone call?',
                   acceptedAnswer: {
                     '@type': 'Answer',
-                    text: 'Yes — Street Shield sends silent notifications to your trusted contacts. You can trigger a quick alert with a button tap, voice command, or the app can notify contacts based on activity patterns. This is not a replacement for calling authorities in a real crisis.',
+                    text: 'Yes — Street Shield sends silent notifications to your trusted contacts. You can trigger a quick alert with a button tap, voice command, or the app can notify contacts based on activity patterns.',
                   },
                 },
                 {

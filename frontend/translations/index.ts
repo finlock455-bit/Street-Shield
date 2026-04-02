@@ -103,7 +103,7 @@ const i18n = new I18n({
     productionNote: 'Note: In production, contacts would receive SMS/push notifications with your real-time location.',
 
     // Disclaimers
-    disclaimer: 'This is a safety awareness tool, not a replacement for professional services. In a real crisis, always call your local authorities directly.',
+    disclaimer: 'This is a safety awareness tool for informational purposes only. It does not replace or connect to professional services.',
   },
   
   es: { // Spanish
@@ -181,7 +181,7 @@ const i18n = new I18n({
     contactsNotified: 'Contactos Notificados:',
     deactivateEmergency: 'Desactivar Alerta',
     productionNote: 'Nota: En producción, los contactos recibirían SMS/notificaciones con tu ubicación en tiempo real.',
-    disclaimer: 'Esta es una herramienta de conciencia de seguridad, no un reemplazo de servicios profesionales. En una crisis real, siempre llame a las autoridades locales directamente.',
+    disclaimer: 'Esta es una herramienta de conciencia de seguridad solo con fines informativos. No reemplaza ni se conecta a servicios profesionales.',
   },
   
   fr: { // French
@@ -259,7 +259,7 @@ const i18n = new I18n({
     contactsNotified: 'Contacts Notifiés:',
     deactivateEmergency: 'Désactiver Alerte',
     productionNote: 'Note: En production, les contacts recevraient des SMS/notifications avec votre position en temps réel.',
-    disclaimer: 'Ceci est un outil de sensibilisation à la sécurité, pas un remplacement des services professionnels. En cas de crise réelle, appelez toujours les autorités locales directement.',
+    disclaimer: 'Ceci est un outil de sensibilisation à la sécurité à titre informatif uniquement. Il ne remplace pas et ne se connecte pas aux services professionnels.',
   },
   
   de: { // German
@@ -337,7 +337,7 @@ const i18n = new I18n({
     contactsNotified: 'Kontakte Benachrichtigt:',
     deactivateEmergency: 'Alarm Deaktivieren',
     productionNote: 'Hinweis: In der Produktion würden Kontakte SMS/Push-Benachrichtigungen mit Ihrem Echtzeit-Standort erhalten.',
-    disclaimer: 'Dies ist ein Sicherheitsbewusstseinstool, kein Ersatz für professionelle Dienste. Rufen Sie im Notfall immer direkt die örtlichen Behörden an.',
+    disclaimer: 'Dies ist ein Sicherheitsbewusstseinstool nur zu Informationszwecken. Es ersetzt keine professionellen Dienste und ist nicht mit ihnen verbunden.',
   },
   
   zh: { // Chinese (Simplified)
@@ -415,7 +415,7 @@ const i18n = new I18n({
     contactsNotified: '已通知的联系人：',
     deactivateEmergency: '停用提醒',
     productionNote: '注意：在生产环境中，联系人将收到包含您实时位置的短信/推送通知。',
-    disclaimer: '这是一个安全意识工具，不能替代专业服务。在真正的危机中，请直接拨打当地紧急服务电话。',
+    disclaimer: '这是一个安全意识工具，仅供参考。它不能替代或连接专业服务。',
   },
 });
 
