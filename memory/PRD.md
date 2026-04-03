@@ -26,6 +26,7 @@ Street Shield is a mobile safety awareness app for pedestrians, runners, and cyc
 - **Store compliance rebrand** (no medical/emergency terms)
 - **Cyberpunk UI theme** (dark, neon cyan/pink, sharp edges, uppercase)
 - **Complete store listing guide** (/app/STORE_LISTING.md)
+- **OpenWeatherMap integration** (live weather, key added, activating — 2-10hr delay for new keys)
 - **Privacy Policy** (in-app modal + backend API endpoint GET /api/privacy-policy)
 - **App Footer** (privacy link, version, disclaimer)
 - All legacy non-theme colors removed (#4CAF50, #2196F3, #FF9800, etc.)
@@ -61,6 +62,5 @@ Street Shield is a mobile safety awareness app for pedestrians, runners, and cyc
 ## Pending/Backlog
 - P1: Complete i18n (i18n.t() for remaining hardcoded strings)
 - P2: Voice cloning (ElevenLabs) - needs user API key
-- P2: OpenWeatherMap integration - needs user API key
 - P2: Native builds for real sensors
 - P3: Refactor index.tsx (~4600 lines -> components/hooks/styles)
