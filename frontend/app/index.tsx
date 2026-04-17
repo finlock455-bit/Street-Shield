@@ -1346,6 +1346,8 @@ export default function SafeWalkApp() {
   // Voice Information Request System
   const [isVoiceInfoActive, setIsVoiceInfoActive] = useState(false);
   const [lastInfoRequest, setLastInfoRequest] = useState<number>(0);
+  const [voiceInfoResponse, setVoiceInfoResponse] = useState<string>('');
+  const [voiceInfoLoading, setVoiceInfoLoading] = useState(false);
   const voiceInfoTimeout = useRef<NodeJS.Timeout | null>(null);
 
   // Cycling Mode System
@@ -1607,13 +1609,16 @@ export default function SafeWalkApp() {
     
     console.log('📝 Command after trigger removal:', command);
     
-    // Remove common connecting words more comprehensively
-    command = command
-      .replace(/^(what|how|where|when|is|are|my|the|current|can|you|do|tell|me|about)\s+/gi, '')
-      .replace(/\s+(is|are|the|my|current)\s+/gi, ' ')
+    // Keep original command for pattern matching (before stripping)
+    const originalCommand = command;
+    
+    // Remove common connecting words for fuzzy matching fallback
+    const strippedCommand = command
+      .replace(/^(what|how|when|is|are|the|current|can|you|do|tell|me|about)\s+/gi, '')
+      .replace(/\s+(is|are|the|current)\s+/gi, ' ')
       .trim();
     
-    console.log('✨ Final command:', command);
+    console.log('✨ Final command:', strippedCommand);
     
     // Voice command patterns (now without trigger word)
     const commands = {
@@ -1662,10 +1667,10 @@ export default function SafeWalkApp() {
       }
     }
     
-    // Match command to category
+    // Match command to category - try original command first, then stripped
     let matchedCategory = null;
     for (const [category, patterns] of Object.entries(commands)) {
-      if (patterns.some(pattern => command.includes(pattern))) {
+      if (patterns.some(pattern => originalCommand.includes(pattern) || strippedCommand.includes(pattern))) {
         matchedCategory = category;
         console.log(`✅ Matched category: ${category}`);
         break;
@@ -1779,7 +1784,8 @@ export default function SafeWalkApp() {
           response = "I didn't understand that request. Try asking about safety, location, weather, health, threats, time, or contacts.";
       }
       
-      // Provide audio response
+      // Provide audio + visual response
+      setVoiceInfoResponse(response);
       await processVoiceAlert(response, 'info_request', { 
         priority: 'low',
         interruptible: true
@@ -1805,6 +1811,8 @@ export default function SafeWalkApp() {
 
   const deactivateVoiceInfoRequest = () => {
     setIsVoiceInfoActive(false);
+    setVoiceInfoResponse('');
+    setVoiceInfoLoading(false);
     
     // Clear any active timeouts
     if (voiceInfoTimeout.current) {
@@ -1851,11 +1859,13 @@ export default function SafeWalkApp() {
 
   // Voice info demo - shows what the system would do with real speech recognition
   const simulateVoiceInfoRequest = async (query: string) => {
-    // For demo/testing purposes - simulate voice input
-    await speakAlert("Voice command received. Processing...", 'low');
+    // For demo/testing purposes - simulate voice input with visual feedback
+    setVoiceInfoLoading(true);
+    setVoiceInfoResponse('');
     const processed = await processVoiceInfoRequest(query);
+    setVoiceInfoLoading(false);
     if (!processed) {
-      await speakAlert("I didn't recognize that command. Try asking about safety, location, weather, health, threats, time, or contacts.");
+      setVoiceInfoResponse("I didn't recognize that command. Try asking about safety, location, weather, health, threats, time, or contacts.");
     }
   };
 
@@ -2223,7 +2233,7 @@ export default function SafeWalkApp() {
     const now = Date.now();
     
     // Smart alert filtering to prevent interruption spam
-    if (now - lastAlertTime < 30000 && alertType !== 'emergency') {
+    if (now - lastAlertTime < 30000 && alertType !== 'emergency' && alertType !== 'info_request') {
       return; // Don't interrupt music too frequently
     }
     
@@ -2760,18 +2770,22 @@ export default function SafeWalkApp() {
                 
                 <View style={styles.voiceInfoDemoButtons}>
                   <TouchableOpacity 
-                    style={styles.voiceInfoDemoButton}
+                    style={[styles.voiceInfoDemoButton, voiceInfoLoading && { opacity: 0.5 }]}
                     onPress={() => simulateVoiceInfoRequest("street shield what is my safety score")}
+                    disabled={voiceInfoLoading}
+                    testID="voice-info-safety-btn"
                   >
                     <Ionicons name="shield-checkmark" size={16} color="#00ffcc" />
                     <Text style={styles.voiceInfoDemoButtonText}>
-                      Safety Check
+                      Safety
                     </Text>
                   </TouchableOpacity>
 
                   <TouchableOpacity 
-                    style={styles.voiceInfoDemoButton}
+                    style={[styles.voiceInfoDemoButton, voiceInfoLoading && { opacity: 0.5 }]}
                     onPress={() => simulateVoiceInfoRequest("street shield where am i")}
+                    disabled={voiceInfoLoading}
+                    testID="voice-info-location-btn"
                   >
                     <Ionicons name="location" size={16} color="#00ffcc" />
                     <Text style={styles.voiceInfoDemoButtonText}>
@@ -2780,15 +2794,70 @@ export default function SafeWalkApp() {
                   </TouchableOpacity>
 
                   <TouchableOpacity 
-                    style={styles.voiceInfoDemoButton}
+                    style={[styles.voiceInfoDemoButton, voiceInfoLoading && { opacity: 0.5 }]}
                     onPress={() => simulateVoiceInfoRequest("street shield weather check")}
+                    disabled={voiceInfoLoading}
+                    testID="voice-info-weather-btn"
                   >
                     <Ionicons name="cloud" size={16} color="#00ffcc" />
                     <Text style={styles.voiceInfoDemoButtonText}>
                       Weather
                     </Text>
                   </TouchableOpacity>
+
+                  <TouchableOpacity 
+                    style={[styles.voiceInfoDemoButton, voiceInfoLoading && { opacity: 0.5 }]}
+                    onPress={() => simulateVoiceInfoRequest("street shield threats nearby")}
+                    disabled={voiceInfoLoading}
+                    testID="voice-info-threats-btn"
+                  >
+                    <Ionicons name="warning" size={16} color="#00ffcc" />
+                    <Text style={styles.voiceInfoDemoButtonText}>
+                      Threats
+                    </Text>
+                  </TouchableOpacity>
+
+                  <TouchableOpacity 
+                    style={[styles.voiceInfoDemoButton, voiceInfoLoading && { opacity: 0.5 }]}
+                    onPress={() => simulateVoiceInfoRequest("street shield time check")}
+                    disabled={voiceInfoLoading}
+                    testID="voice-info-time-btn"
+                  >
+                    <Ionicons name="time" size={16} color="#00ffcc" />
+                    <Text style={styles.voiceInfoDemoButtonText}>
+                      Time
+                    </Text>
+                  </TouchableOpacity>
+
+                  <TouchableOpacity 
+                    style={[styles.voiceInfoDemoButton, voiceInfoLoading && { opacity: 0.5 }]}
+                    onPress={() => simulateVoiceInfoRequest("street shield help")}
+                    disabled={voiceInfoLoading}
+                    testID="voice-info-help-btn"
+                  >
+                    <Ionicons name="help-circle" size={16} color="#00ffcc" />
+                    <Text style={styles.voiceInfoDemoButtonText}>
+                      Help
+                    </Text>
+                  </TouchableOpacity>
                 </View>
+
+                {/* Voice Info Response Card */}
+                {voiceInfoLoading && (
+                  <View style={styles.voiceInfoResponseCard}>
+                    <ActivityIndicator size="small" color="#00ffff" />
+                    <Text style={styles.voiceInfoResponseText}>Processing...</Text>
+                  </View>
+                )}
+                {!voiceInfoLoading && voiceInfoResponse !== '' && (
+                  <View style={styles.voiceInfoResponseCard} data-testid="voice-info-response">
+                    <View style={styles.voiceInfoResponseHeader}>
+                      <Ionicons name="chatbubble" size={14} color="#00ffff" />
+                      <Text style={styles.voiceInfoResponseLabel}>STREET SHIELD</Text>
+                    </View>
+                    <Text style={styles.voiceInfoResponseText}>{voiceInfoResponse}</Text>
+                  </View>
+                )}
               </View>
             )}
 
@@ -3840,6 +3909,31 @@ const styles = StyleSheet.create({
     marginTop: 4,
     textAlign: 'center',
     letterSpacing: 0.5,
+  },
+  voiceInfoResponseCard: {
+    backgroundColor: 'rgba(0, 255, 255, 0.06)',
+    borderRadius: 8,
+    padding: 14,
+    marginTop: 12,
+    borderWidth: 1,
+    borderColor: 'rgba(0, 255, 255, 0.2)',
+  },
+  voiceInfoResponseHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 8,
+    gap: 6,
+  },
+  voiceInfoResponseLabel: {
+    color: '#00ffff',
+    fontSize: 10,
+    fontWeight: '800',
+    letterSpacing: 2,
+  },
+  voiceInfoResponseText: {
+    color: '#c0c0d0',
+    fontSize: 13,
+    lineHeight: 20,
   },
   // Modal Styles
   modalContainer: {
