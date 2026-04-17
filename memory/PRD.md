@@ -28,6 +28,7 @@ Street Shield is a mobile safety awareness app for pedestrians, runners, and cyc
 - **Complete store listing guide** (/app/STORE_LISTING.md)
 - **OpenWeatherMap integration** (live weather, key added, activating — 2-10hr delay for new keys)
 - **Privacy Policy** (in-app modal + backend API endpoint GET /api/privacy-policy)
+- **Voice Info System** — Fixed: visual response cards, command parsing bug, 30s throttle bypass for info requests
 - **App Footer** (privacy link, version, disclaimer)
 - All legacy non-theme colors removed (#4CAF50, #2196F3, #FF9800, etc.)
 
