@@ -2290,6 +2290,64 @@ async def marketing_promo_video():
         )
     raise HTTPException(status_code=404, detail="Promo video not generated yet")
 
+@api_router.get("/marketing", response_class=HTMLResponse)
+async def marketing_landing():
+    """Marketing landing page with embedded video and download links."""
+    video_path = Path('/app/screenshots/marketing/promo_video.mp4')
+    has_video = video_path.exists()
+    return HTMLResponse(content=f"""<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Street Shield - Marketing Assets</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;500;700&display=swap" rel="stylesheet">
+<style>
+*{{margin:0;padding:0;box-sizing:border-box}}
+body{{background:#0a0a0f;color:#fff;font-family:'Rajdhani',sans-serif;padding:40px 20px;max-width:900px;margin:0 auto}}
+h1{{font-family:'Orbitron',sans-serif;color:#00ffff;font-size:28px;letter-spacing:4px;margin-bottom:8px;text-shadow:0 0 20px rgba(0,255,255,0.4)}}
+h2{{font-family:'Orbitron',sans-serif;color:#ff0066;font-size:16px;letter-spacing:6px;margin-bottom:40px}}
+.card{{background:rgba(0,255,255,0.04);border:1px solid rgba(0,255,255,0.15);border-radius:8px;padding:24px;margin-bottom:24px}}
+.card h3{{font-family:'Orbitron',sans-serif;color:#00ffff;font-size:14px;letter-spacing:2px;margin-bottom:12px}}
+.card p{{color:#8a8a9a;font-size:15px;line-height:1.6;margin-bottom:16px}}
+a.btn{{display:inline-block;padding:12px 28px;border:1px solid #ff0066;color:#ff0066;text-decoration:none;font-family:'Orbitron',sans-serif;font-size:12px;letter-spacing:3px;border-radius:4px;margin-right:12px;margin-bottom:8px;transition:all 0.3s}}
+a.btn:hover{{background:rgba(255,0,102,0.15);box-shadow:0 0 20px rgba(255,0,102,0.3)}}
+a.btn.cyan{{border-color:#00ffff;color:#00ffff}}
+a.btn.cyan:hover{{background:rgba(0,255,255,0.1);box-shadow:0 0 20px rgba(0,255,255,0.3)}}
+video{{width:100%;border-radius:8px;border:1px solid rgba(0,255,255,0.15);margin-bottom:16px}}
+.tag{{display:inline-block;padding:4px 10px;background:rgba(0,255,255,0.08);border:1px solid rgba(0,255,255,0.2);border-radius:4px;color:#00ffff;font-size:11px;font-family:'Orbitron',sans-serif;letter-spacing:1px;margin-right:8px;margin-bottom:8px}}
+</style>
+</head>
+<body>
+<h1>STREET SHIELD</h1>
+<h2>MARKETING ASSETS</h2>
+
+<div class="card">
+<h3>AI PROMO VIDEO</h3>
+<p>Cinematic cyberpunk cityscape generated with Sora 2. Use as intro/b-roll for store listings or social ads.</p>
+{'<video controls autoplay muted loop><source src="/api/marketing-video/promo" type="video/mp4"></video>' if has_video else '<p style="color:#ff0066">Video not generated yet.</p>'}
+<span class="tag">1280x720</span><span class="tag">8 SECONDS</span><span class="tag">MP4</span>
+<br><br>
+{'<a href="/api/marketing-video/promo" class="btn" download="street-shield-promo.mp4">DOWNLOAD MP4</a>' if has_video else ''}
+</div>
+
+<div class="card">
+<h3>ANIMATED APP SHOWCASE</h3>
+<p>8-scene auto-playing HTML presentation (32s). Screen-record this for your App Store / Play Store preview video. Shows all USPs with Cyberpunk animations.</p>
+<span class="tag">1080x1920</span><span class="tag">8 SCENES</span><span class="tag">32 SECONDS</span>
+<br><br>
+<a href="/api/marketing-video" class="btn cyan" target="_blank">OPEN SHOWCASE</a>
+</div>
+
+<div class="card">
+<h3>HOW TO USE</h3>
+<p><strong>App Store / Play Store:</strong> Open the showcase in a phone simulator, screen-record it as your app preview video.</p>
+<p><strong>Social Media:</strong> Download the MP4 promo and post directly to TikTok, Reels, or YouTube Shorts.</p>
+<p><strong>Combine Both:</strong> Use the promo video as intro, then cut to the showcase screen recording.</p>
+</div>
+</body>
+</html>""")
+
 # Include the router in the main app
 app.include_router(api_router)
 
