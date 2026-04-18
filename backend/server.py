@@ -2278,10 +2278,20 @@ async def marketing_video():
         return HTMLResponse(content=video_path.read_text())
     raise HTTPException(status_code=404, detail="Marketing video not found")
 
+@api_router.get("/static/{filename}")
+async def serve_static(filename: str):
+    """Serve static files."""
+    file_path = ROOT_DIR / 'static' / filename
+    if file_path.exists():
+        media_types = {'.png': 'image/png', '.jpg': 'image/jpeg', '.mp4': 'video/mp4', '.html': 'text/html'}
+        ext = file_path.suffix
+        return FileResponse(file_path, media_type=media_types.get(ext, 'application/octet-stream'))
+    raise HTTPException(status_code=404)
+
 @api_router.get("/marketing-video/promo")
 async def marketing_promo_video():
     """Download the AI-generated promo video."""
-    video_path = Path('/app/screenshots/marketing/promo_video.mp4')
+    video_path = Path('/app/screenshots/marketing/final_marketing_video.mp4')
     if video_path.exists():
         return FileResponse(
             video_path,

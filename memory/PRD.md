@@ -29,7 +29,7 @@ Street Shield is a mobile safety awareness app for pedestrians, runners, and cyc
 - **OpenWeatherMap integration** (live weather, key added, activating — 2-10hr delay for new keys)
 - **Privacy Policy** (in-app modal + backend API endpoint GET /api/privacy-policy)
 - **Voice Info System** — Fixed: visual response cards, command parsing bug, 30s throttle bypass for info requests
-- **Marketing Video Assets** — 8-scene animated HTML showcase + AI-generated Sora 2 promo video (7.3MB MP4)
+- **Marketing Video Assets** — 10-scene animated HTML showcase (scenarios + USPs + logo) + 3-clip AI Sora 2 promo video stitched with ffmpeg, ends with user's logo
 - **App Footer** (privacy link, version, disclaimer)
 - All legacy non-theme colors removed (#4CAF50, #2196F3, #FF9800, etc.)
 
