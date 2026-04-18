@@ -1,4 +1,5 @@
 from fastapi import FastAPI, APIRouter, HTTPException, BackgroundTasks
+from fastapi.responses import HTMLResponse, FileResponse
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
@@ -2268,6 +2269,26 @@ async def get_privacy_policy():
         ],
         "contact": "support@streetshield.app"
     }
+
+@api_router.get("/marketing-video", response_class=HTMLResponse)
+async def marketing_video():
+    """Serve the marketing video HTML page."""
+    video_path = ROOT_DIR / 'static' / 'marketing-video.html'
+    if video_path.exists():
+        return HTMLResponse(content=video_path.read_text())
+    raise HTTPException(status_code=404, detail="Marketing video not found")
+
+@api_router.get("/marketing-video/promo")
+async def marketing_promo_video():
+    """Download the AI-generated promo video."""
+    video_path = Path('/app/screenshots/marketing/promo_video.mp4')
+    if video_path.exists():
+        return FileResponse(
+            video_path,
+            media_type='video/mp4',
+            filename='street-shield-promo.mp4'
+        )
+    raise HTTPException(status_code=404, detail="Promo video not generated yet")
 
 # Include the router in the main app
 app.include_router(api_router)

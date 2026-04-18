@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=1080, initial-scale=1.0">
+<title>Street Shield - Marketing Video</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;500;700&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  
+  body {
+    width: 1080px;
+    height: 1920px;
+    overflow: hidden;
+    background: #0a0a0f;
+    font-family: 'Rajdhani', sans-serif;
+    color: #fff;
+  }
+
+  .scene {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    animation-fill-mode: forwards;
+    padding: 60px;
+  }
+
+  /* Background grid */
+  .grid-bg {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background-image: 
+      linear-gradient(rgba(0,255,255,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,255,255,0.03) 1px, transparent 1px);
+    background-size: 60px 60px;
+    z-index: 0;
+    pointer-events: none;
+  }
+
+  /* Animated scan line */
+  .scanline {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%;
+    height: 4px;
+    background: linear-gradient(90deg, transparent, #00ffff, transparent);
+    opacity: 0.3;
+    z-index: 999;
+    animation: scanMove 4s linear infinite;
+  }
+  @keyframes scanMove {
+    0% { top: -4px; }
+    100% { top: 1920px; }
+  }
+
+  /* Scene animations */
+  .scene-1 { animation: fadeScene 4s ease 0s forwards; }
+  .scene-2 { animation: fadeScene 4s ease 4s forwards; }
+  .scene-3 { animation: fadeScene 4s ease 8s forwards; }
+  .scene-4 { animation: fadeScene 4s ease 12s forwards; }
+  .scene-5 { animation: fadeScene 4s ease 16s forwards; }
+  .scene-6 { animation: fadeScene 4s ease 20s forwards; }
+  .scene-7 { animation: fadeScene 4s ease 24s forwards; }
+  .scene-8 { animation: fadeScene 3.5s ease 28s forwards; }
+
+  @keyframes fadeScene {
+    0% { opacity: 0; transform: scale(0.95); }
+    15% { opacity: 1; transform: scale(1); }
+    85% { opacity: 1; transform: scale(1); }
+    100% { opacity: 0; transform: scale(1.02); }
+  }
+
+  /* Title styling */
+  .title-main {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 88px;
+    font-weight: 900;
+    color: #00ffff;
+    text-shadow: 0 0 40px rgba(0,255,255,0.6), 0 0 80px rgba(0,255,255,0.3);
+    letter-spacing: 8px;
+    text-align: center;
+    line-height: 1.1;
+  }
+
+  .title-sub {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 28px;
+    color: #ff0066;
+    letter-spacing: 12px;
+    margin-top: 30px;
+    text-transform: uppercase;
+    text-shadow: 0 0 20px rgba(255,0,102,0.5);
+  }
+
+  .usp-title {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 52px;
+    font-weight: 700;
+    color: #00ffff;
+    text-shadow: 0 0 30px rgba(0,255,255,0.5);
+    letter-spacing: 4px;
+    text-align: center;
+    margin-bottom: 40px;
+    text-transform: uppercase;
+  }
+
+  .usp-icon {
+    width: 180px;
+    height: 180px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 50px;
+    position: relative;
+  }
+
+  .usp-icon-inner {
+    font-size: 80px;
+    z-index: 2;
+  }
+
+  .usp-icon.cyan {
+    background: radial-gradient(circle, rgba(0,255,255,0.15), transparent);
+    border: 2px solid rgba(0,255,255,0.4);
+    box-shadow: 0 0 60px rgba(0,255,255,0.2);
+  }
+  .usp-icon.pink {
+    background: radial-gradient(circle, rgba(255,0,102,0.15), transparent);
+    border: 2px solid rgba(255,0,102,0.4);
+    box-shadow: 0 0 60px rgba(255,0,102,0.2);
+  }
+  .usp-icon.purple {
+    background: radial-gradient(circle, rgba(204,0,255,0.15), transparent);
+    border: 2px solid rgba(204,0,255,0.4);
+    box-shadow: 0 0 60px rgba(204,0,255,0.2);
+  }
+
+  .usp-desc {
+    font-size: 36px;
+    color: #8a8a9a;
+    text-align: center;
+    line-height: 1.6;
+    max-width: 800px;
+    font-weight: 300;
+  }
+
+  .usp-desc strong {
+    color: #fff;
+    font-weight: 700;
+  }
+
+  /* Safety Score Ring */
+  .score-ring {
+    width: 300px;
+    height: 300px;
+    border-radius: 50%;
+    border: 6px solid rgba(0,255,255,0.15);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    margin-bottom: 50px;
+  }
+  .score-ring::before {
+    content: '';
+    position: absolute;
+    top: -6px; left: -6px; right: -6px; bottom: -6px;
+    border-radius: 50%;
+    border: 6px solid transparent;
+    border-top-color: #00ffff;
+    animation: ringRotate 2s linear infinite;
+  }
+  @keyframes ringRotate {
+    to { transform: rotate(360deg); }
+  }
+  .score-value {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 96px;
+    font-weight: 900;
+    color: #00ffff;
+    text-shadow: 0 0 30px rgba(0,255,255,0.5);
+  }
+  .score-label {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 22px;
+    color: #ff0066;
+    letter-spacing: 8px;
+    position: absolute;
+    bottom: 60px;
+  }
+
+  /* Radar rings */
+  .radar-container {
+    width: 300px;
+    height: 300px;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 50px;
+  }
+  .radar-ring {
+    position: absolute;
+    border: 2px solid rgba(0,255,255,0.3);
+    border-radius: 50%;
+    animation: radarPulse 2s ease-out infinite;
+  }
+  .radar-ring:nth-child(1) { width: 80px; height: 80px; animation-delay: 0s; }
+  .radar-ring:nth-child(2) { width: 160px; height: 160px; animation-delay: 0.5s; }
+  .radar-ring:nth-child(3) { width: 240px; height: 240px; animation-delay: 1s; }
+  .radar-ring:nth-child(4) { width: 300px; height: 300px; animation-delay: 1.5s; }
+  .radar-dot {
+    width: 20px; height: 20px;
+    background: #00ffff;
+    border-radius: 50%;
+    box-shadow: 0 0 30px #00ffff;
+    z-index: 5;
+  }
+  @keyframes radarPulse {
+    0% { opacity: 0.8; transform: scale(0.8); }
+    100% { opacity: 0; transform: scale(1.3); }
+  }
+
+  /* Feature grid */
+  .feature-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 30px;
+    width: 100%;
+    max-width: 900px;
+    margin-top: 30px;
+  }
+  .feature-card {
+    background: rgba(0,255,255,0.04);
+    border: 1px solid rgba(0,255,255,0.15);
+    border-radius: 12px;
+    padding: 30px;
+    text-align: center;
+  }
+  .feature-card-icon { font-size: 48px; margin-bottom: 12px; }
+  .feature-card-name {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 22px;
+    color: #00ffff;
+    letter-spacing: 2px;
+  }
+
+  /* CTA */
+  .cta-btn {
+    margin-top: 60px;
+    padding: 30px 80px;
+    border: 2px solid #ff0066;
+    border-radius: 4px;
+    background: rgba(255,0,102,0.1);
+    font-family: 'Orbitron', sans-serif;
+    font-size: 36px;
+    font-weight: 700;
+    color: #ff0066;
+    letter-spacing: 6px;
+    text-transform: uppercase;
+    box-shadow: 0 0 40px rgba(255,0,102,0.2);
+    animation: ctaPulse 1.5s ease-in-out infinite alternate;
+  }
+  @keyframes ctaPulse {
+    from { box-shadow: 0 0 20px rgba(255,0,102,0.2); }
+    to { box-shadow: 0 0 60px rgba(255,0,102,0.4); }
+  }
+
+  /* Shield icon */
+  .shield-logo {
+    width: 160px;
+    height: 160px;
+    position: relative;
+    margin-bottom: 40px;
+  }
+  .shield-logo svg {
+    width: 100%;
+    height: 100%;
+    filter: drop-shadow(0 0 30px rgba(0,255,255,0.5));
+  }
+
+  /* Platform badges */
+  .platforms {
+    display: flex;
+    gap: 40px;
+    margin-top: 40px;
+  }
+  .platform-badge {
+    padding: 20px 40px;
+    border: 1px solid rgba(255,255,255,0.2);
+    border-radius: 8px;
+    font-family: 'Orbitron', sans-serif;
+    font-size: 24px;
+    color: #aaa;
+    letter-spacing: 3px;
+  }
+
+  .tagline {
+    font-size: 42px;
+    font-weight: 700;
+    color: #fff;
+    text-align: center;
+    line-height: 1.4;
+    margin-top: 30px;
+    max-width: 800px;
+  }
+  .tagline .accent { color: #00ffff; }
+  .tagline .accent-pink { color: #ff0066; }
+</style>
+</head>
+<body>
+<div class="grid-bg"></div>
+<div class="scanline"></div>
+
+<!-- Scene 1: Title -->
+<div class="scene scene-1">
+  <div class="shield-logo">
+    <svg viewBox="0 0 100 100" fill="none">
+      <path d="M50 5 L90 25 L90 55 C90 75 70 92 50 98 C30 92 10 75 10 55 L10 25 Z" 
+            fill="rgba(0,255,255,0.1)" stroke="#00ffff" stroke-width="2"/>
+      <path d="M35 50 L45 60 L65 40" stroke="#00ffff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+  </div>
+  <div class="title-main">STREET<br>SHIELD</div>
+  <div class="title-sub">Neural Safety Network</div>
+  <p class="tagline" style="margin-top:60px">
+    Your <span class="accent">AI-Powered</span> Guardian<br>for Every Step
+  </p>
+</div>
+
+<!-- Scene 2: AI Safety Score -->
+<div class="scene scene-2">
+  <div class="score-ring">
+    <span class="score-value">87</span>
+    <span class="score-label">SAFETY SCORE</span>
+  </div>
+  <div class="usp-title">AI Safety Analysis</div>
+  <p class="usp-desc">
+    <strong>Real-time AI</strong> analyzes your surroundings,<br>
+    weather, time of day, and location to give you<br>
+    a <strong>live safety score</strong>
+  </p>
+</div>
+
+<!-- Scene 3: Radar -->
+<div class="scene scene-3">
+  <div class="radar-container">
+    <div class="radar-ring"></div>
+    <div class="radar-ring"></div>
+    <div class="radar-ring"></div>
+    <div class="radar-ring"></div>
+    <div class="radar-dot"></div>
+  </div>
+  <div class="usp-title">360° Radar Scanning</div>
+  <p class="usp-desc">
+    <strong>Proximity detection</strong> alerts you to<br>
+    approaching vehicles, silent e-scooters,<br>
+    and potential hazards around you
+  </p>
+</div>
+
+<!-- Scene 4: Voice Commands -->
+<div class="scene scene-4">
+  <div class="usp-icon purple">
+    <span class="usp-icon-inner">&#127908;</span>
+  </div>
+  <div class="usp-title">Voice Commands</div>
+  <p class="usp-desc">
+    Say <strong>"Street Shield"</strong> to ask about<br>
+    safety, weather, location, or threats —<br>
+    <strong>completely hands-free</strong>
+  </p>
+</div>
+
+<!-- Scene 5: Quick Alert -->
+<div class="scene scene-5">
+  <div class="usp-icon pink">
+    <span class="usp-icon-inner">&#128680;</span>
+  </div>
+  <div class="usp-title">Quick Alert System</div>
+  <p class="usp-desc">
+    Set a <strong>secret trigger word</strong> to instantly<br>
+    share your <strong>live location</strong> with<br>
+    trusted contacts
+  </p>
+</div>
+
+<!-- Scene 6: Cycling Mode -->
+<div class="scene scene-6">
+  <div class="usp-icon cyan">
+    <span class="usp-icon-inner">&#128690;</span>
+  </div>
+  <div class="usp-title">Cycling Safety Mode</div>
+  <p class="usp-desc">
+    Specialized alerts for <strong>cyclists</strong>:<br>
+    door zone warnings, intersection analysis,<br>
+    vehicle approach detection
+  </p>
+</div>
+
+<!-- Scene 7: All Features -->
+<div class="scene scene-7">
+  <div class="usp-title" style="font-size:42px;margin-bottom:50px">Packed With Features</div>
+  <div class="feature-grid">
+    <div class="feature-card">
+      <div class="feature-card-icon">&#129302;</div>
+      <div class="feature-card-name">AI Analysis</div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-card-icon">&#128225;</div>
+      <div class="feature-card-name">Quick Alert</div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-card-icon">&#127908;</div>
+      <div class="feature-card-name">Voice AI</div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-card-icon">&#128690;</div>
+      <div class="feature-card-name">Cycling Mode</div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-card-icon">&#127782;</div>
+      <div class="feature-card-name">Live Weather</div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-card-icon">&#128274;</div>
+      <div class="feature-card-name">Privacy First</div>
+    </div>
+  </div>
+</div>
+
+<!-- Scene 8: CTA -->
+<div class="scene scene-8">
+  <div class="shield-logo">
+    <svg viewBox="0 0 100 100" fill="none">
+      <path d="M50 5 L90 25 L90 55 C90 75 70 92 50 98 C30 92 10 75 10 55 L10 25 Z" 
+            fill="rgba(0,255,255,0.1)" stroke="#00ffff" stroke-width="2"/>
+      <path d="M35 50 L45 60 L65 40" stroke="#00ffff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+  </div>
+  <div class="title-main" style="font-size:72px">STREET<br>SHIELD</div>
+  <p class="tagline">
+    Walk <span class="accent">Safer</span>. Ride <span class="accent-pink">Smarter</span>.
+  </p>
+  <div class="cta-btn">Download Free</div>
+  <div class="platforms">
+    <div class="platform-badge">App Store</div>
+    <div class="platform-badge">Google Play</div>
+  </div>
+</div>
+
+</body>
+</html>
