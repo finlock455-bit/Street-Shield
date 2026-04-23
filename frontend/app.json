@@ -15,7 +15,6 @@
       "bundleIdentifier": "com.streetshield.app",
       "infoPlist": {
         "NSLocationWhenInUseUsageDescription": "Street Shield uses your location to provide safety awareness scores, share it with trusted contacts, and detect nearby environmental factors.",
-        "NSLocationAlwaysAndWhenInUseUsageDescription": "Street Shield uses background location to continue providing safety awareness even when the app is in the background.",
         "NSMicrophoneUsageDescription": "Street Shield uses the microphone for voice-activated commands and the 'Street Shield' trigger word for hands-free use.",
         "NSMotionUsageDescription": "Street Shield monitors motion sensors to detect activity changes, track steps, and enhance safety awareness insights."
       }
@@ -29,7 +28,6 @@
       "permissions": [
         "ACCESS_FINE_LOCATION",
         "ACCESS_COARSE_LOCATION",
-        "ACCESS_BACKGROUND_LOCATION",
         "RECORD_AUDIO",
         "WAKE_LOCK",
         "VIBRATE",

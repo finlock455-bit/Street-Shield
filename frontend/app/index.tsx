@@ -622,7 +622,7 @@ export default function SafeWalkApp() {
         
         // Handle emergency situations
         if (result.emergency_triggered) {
-          await triggerMedicalEmergency(result.health_alerts);
+          await triggerCriticalAlert(result.health_alerts);
         }
       }
     } catch (error) {
@@ -658,7 +658,7 @@ export default function SafeWalkApp() {
     );
   };
 
-  const triggerMedicalEmergency = async (alerts: any[]) => {
+  const triggerCriticalAlert = async (alerts: any[]) => {
     const criticalAlert = alerts.find(alert => alert.auto_emergency);
     if (criticalAlert && voiceAlertsEnabled) {
       await speakAlert(
@@ -1157,7 +1157,7 @@ export default function SafeWalkApp() {
     // 5. Voice feedback
     if (voiceAlertsEnabled) {
       await speakAlert(
-        "No signal detected. Emergency stored locally. Visual and audio alerts activated. Message will send when connection restored. If you have iPhone 14 or newer, satellite emergency has been initiated.",
+        "No signal detected. Alert stored locally. Visual and audio alerts activated. Message will send when connection restored. If you have iPhone 14 or newer, satellite connectivity has been initiated.",
         'critical'
       );
     }
@@ -1193,7 +1193,7 @@ export default function SafeWalkApp() {
   // Offline emergency signals - visual and audio
   const triggerOfflineEmergencySignals = async () => {
     // 1. Maximum volume alert
-    await speakAlert("EMERGENCY! EMERGENCY! EMERGENCY!", 'critical');
+    await speakAlert("ALERT! ALERT! ALERT!", 'critical');
     
     // 2. Continuous haptic feedback pattern
     for (let i = 0; i < 5; i++) {
@@ -1226,7 +1226,7 @@ export default function SafeWalkApp() {
         
         if (voiceAlertsEnabled) {
           await speakAlert(
-            "If you have iPhone 14 or newer, satellite emergency service is available. Follow on-screen instructions.",
+            "If you have iPhone 14 or newer, satellite connectivity is available. Follow on-screen instructions.",
             'critical'
           );
         }
@@ -1295,10 +1295,10 @@ export default function SafeWalkApp() {
               await AsyncStorage.removeItem('pendingEmergency');
               clearInterval(retryInterval);
               
-              await speakAlert("Connection restored. Emergency alert successfully sent to all contacts.", 'high');
+              await speakAlert("Connection restored. Alert successfully sent to all contacts.", 'high');
               await showNotification(
-                '✅ Emergency Sent',
-                'Delayed emergency alert delivered successfully'
+                'Alert Sent',
+                'Delayed alert delivered successfully'
               );
             }
           } catch (error) {
@@ -1320,7 +1320,7 @@ export default function SafeWalkApp() {
     setIsEmergencyModeActive(false);
     
     if (voiceAlertsEnabled) {
-      await speakAlert("Emergency mode deactivated. Returning to normal safety monitoring.");
+      await speakAlert("Alert mode deactivated. Returning to normal safety monitoring.");
     }
     
     // Return to normal monitoring interval
@@ -1412,7 +1412,7 @@ export default function SafeWalkApp() {
     }
     
     if (voiceAlertsEnabled) {
-      speakAlert("Hands-free emergency mode deactivated.");
+      speakAlert("Hands-free quick alert deactivated.");
     }
   };
 
@@ -1462,7 +1462,7 @@ export default function SafeWalkApp() {
     lastAmbientCheck.current = Date.now();
     
     // Silent activation - no voice announcement to preserve stealth
-    const listeningType = isVoiceInfoActive ? "Emergency + Voice Info" : "Emergency Only";
+    const listeningType = isVoiceInfoActive ? "Quick Alert + Voice Info" : "Quick Alert Only";
     console.log(`[Hands-Free] Starting ${duration}ms ${listeningType} listening window`);
     
     listeningTimeout.current = setTimeout(() => {
@@ -1772,7 +1772,7 @@ export default function SafeWalkApp() {
         case 'contacts':
           const contactCount = emergencyContacts.filter(c => c.length > 0).length;
           response = `You have ${contactCount} emergency contact${contactCount !== 1 ? 's' : ''} configured. ${
-            emergencyTriggerWord ? `Your emergency trigger word is ${emergencyTriggerWord}.` : "No trigger word set."
+            emergencyTriggerWord ? `Your quick alert trigger word is ${emergencyTriggerWord}.` : "No trigger word set."
           }`;
           break;
           
@@ -2901,7 +2901,7 @@ export default function SafeWalkApp() {
               🛡️ HANDS-FREE PROTECTION ACTIVE
             </Text>
             <Text style={styles.handsFreeDescription}>
-              Emergency trigger: "{emergencyTriggerWord}" {isVoiceInfoActive && ' • Voice info requests enabled'} • {isListeningForTrigger ? 'Currently listening' : 'Standby mode'}
+              Quick alert trigger: "{emergencyTriggerWord}" {isVoiceInfoActive && ' • Voice info requests enabled'} • {isListeningForTrigger ? 'Currently listening' : 'Standby mode'}
             </Text>
             <TouchableOpacity 
               style={styles.stopHandsFreeButton}
@@ -3232,6 +3232,9 @@ export default function SafeWalkApp() {
         {/* Footer */}
         <View style={styles.footer}>
           <View style={styles.footerDivider} />
+          <Text style={styles.footerDisclaimerBold}>
+            Not a professional safety service or professional device.
+          </Text>
           <TouchableOpacity onPress={() => setShowPrivacyPolicy(true)} data-testid="privacy-policy-link">
             <Text style={styles.footerLink}>Privacy Policy</Text>
           </TouchableOpacity>
@@ -3326,7 +3329,7 @@ export default function SafeWalkApp() {
                 </TouchableOpacity>
               </View>
               <Text style={styles.inputHint}>
-                Enter phone numbers that will be notified with your location. This is not a replacement for calling authorities directly.
+                Enter phone numbers that will be notified with your location. This is not a replacement for contacting professional services directly.
               </Text>
               {emergencyContacts.map((contact, index) => (
                 <View key={index} style={styles.contactRow}>
@@ -3493,7 +3496,7 @@ export default function SafeWalkApp() {
 
             <Text style={styles.privacySectionTitle}>9. Disclaimer</Text>
             <Text style={styles.privacyText}>
-              Street Shield is a safety awareness tool for informational purposes only. It is not a replacement for professional safety services, medical devices, or calling local authorities. Always prioritize your safety and call the appropriate services in a real situation.
+              Street Shield is a safety awareness tool for informational purposes only. It is not a replacement for professional safety services or professional devices. Always prioritize your safety and contact the appropriate services in a real situation.
             </Text>
 
             <Text style={[styles.privacyText, { marginTop: 20, marginBottom: 40, textAlign: 'center', color: '#555' }]}>
@@ -4756,7 +4759,16 @@ const styles = StyleSheet.create({
     width: '60%',
     height: 1,
     backgroundColor: 'rgba(0, 255, 255, 0.1)',
-    marginBottom: 20,
+    marginBottom: 15,
+  },
+  footerDisclaimerBold: {
+    color: '#ff0066',
+    fontSize: 10,
+    fontWeight: '700',
+    textAlign: 'center',
+    letterSpacing: 1,
+    textTransform: 'uppercase',
+    marginBottom: 12,
   },
   footerLink: {
     color: '#00ffff',

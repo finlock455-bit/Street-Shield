@@ -1594,23 +1594,23 @@ async def get_safety_history(user_id: str, limit: int = 50):
 
 @api_router.post("/emergency/vehicle-detected")
 async def report_emergency_vehicle(location: LocationData, detection_method: str = "audio"):
-    """Report emergency vehicle detection"""
+    """Report priority vehicle detection"""
     try:
         alert = EmergencyAlert(
-            alert_type="emergency_vehicle",
+            alert_type="vehicle_alert",
             location=location,
             radius=800,  # 800 meters
             severity="high",
-            message=f"Emergency vehicle detected via {detection_method}",
+            message=f"Priority vehicle detected via {detection_method}",
             expires_at=datetime.utcnow() + timedelta(minutes=10)
         )
         
         await db.emergency_alerts.insert_one(alert.dict())
         
-        return {"status": "success", "message": "Emergency vehicle alert created"}
+        return {"status": "success", "message": "Vehicle alert created"}
     except Exception as e:
-        logging.error(f"Error reporting emergency vehicle: {e}")
-        raise HTTPException(status_code=500, detail="Error reporting emergency vehicle")
+        logging.error(f"Error reporting vehicle detection: {e}")
+        raise HTTPException(status_code=500, detail="Error reporting vehicle detection")
 
 @api_router.post("/proximity/analyze")
 async def analyze_proximity_threats(
@@ -2265,7 +2265,7 @@ async def get_privacy_policy():
             {"heading": "Third-Party Services", "content": "Street Shield uses AI services for safety analysis and weather APIs for environmental data. These services receive anonymized location data only. No personally identifiable information is shared with these providers."},
             {"heading": "Your Rights", "content": "You can delete all locally stored data at any time by clearing the app data. You can revoke location permissions through your device settings. You may request deletion of any server-side data by contacting us."},
             {"heading": "Children's Privacy", "content": "Street Shield is designed for users aged 13 and above. We do not knowingly collect data from children under 13."},
-            {"heading": "Disclaimer", "content": "Street Shield is a safety awareness tool for informational purposes only. It is not a replacement for professional safety services, medical devices, or calling local authorities."},
+            {"heading": "Disclaimer", "content": "Street Shield is a safety awareness tool for informational purposes only. It is not a replacement for professional safety services or professional devices. Always prioritize your safety and contact the appropriate services when needed."},
         ],
         "contact": "support@streetshield.app"
     }
@@ -2357,6 +2357,83 @@ video{{width:100%;border-radius:8px;border:1px solid rgba(0,255,255,0.15);margin
 </div>
 </body>
 </html>""")
+
+@api_router.get("/privacy", response_class=HTMLResponse)
+async def public_privacy_policy():
+    """Public privacy policy HTML page for store submission."""
+    return HTMLResponse(content="""<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Street Shield - Privacy Policy</title>
+<style>
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;max-width:700px;margin:40px auto;padding:0 20px;color:#333;line-height:1.7}
+h1{color:#0a0a0f;border-bottom:2px solid #00bcd4;padding-bottom:10px}
+h2{color:#0a0a0f;margin-top:30px}
+p{margin:10px 0}
+.updated{color:#888;font-size:14px}
+.disclaimer{background:#f5f5f5;padding:15px;border-radius:8px;margin-top:30px;border-left:4px solid #ff5252}
+</style>
+</head>
+<body>
+<h1>Street Shield Privacy Policy</h1>
+<p class="updated">Last updated: April 23, 2026</p>
+
+<h2>1. Information We Collect</h2>
+<p>Street Shield collects location data (GPS coordinates) only while the app is actively in use and the shield is activated. We also collect device sensor data (accelerometer, pedometer) for activity insights. All data is processed locally on your device or via our secure servers.</p>
+
+<h2>2. How We Use Your Information</h2>
+<p>Your location data is used solely to provide real-time safety analysis and environmental awareness. Activity data (steps, motion) is used to provide personalized activity insights. We do not sell, share, or distribute your personal data to third parties.</p>
+
+<h2>3. Data Storage &amp; Security</h2>
+<p>Safety analysis data is stored temporarily on our encrypted servers and automatically deleted after 24 hours. Trusted contact information is stored locally on your device using encrypted storage. We use industry-standard encryption for all data transmissions.</p>
+
+<h2>4. Trusted Contacts</h2>
+<p>Phone numbers you provide as trusted contacts are stored locally on your device. When a quick alert is triggered, your location is shared only with those contacts. We do not retain or access your contacts list.</p>
+
+<h2>5. Third-Party Services</h2>
+<p>Street Shield uses AI services for safety analysis and weather APIs for environmental data. These services receive anonymized location data only. No personally identifiable information is shared with these providers.</p>
+
+<h2>6. Your Rights</h2>
+<p>You can delete all locally stored data at any time by clearing the app data. You can revoke location permissions through your device settings. You may request deletion of any server-side data by contacting us or using the in-app data deletion feature.</p>
+
+<h2>7. Children's Privacy</h2>
+<p>Street Shield is designed for users aged 13 and above. We do not knowingly collect data from children under 13.</p>
+
+<h2>8. Changes to This Policy</h2>
+<p>We may update this privacy policy from time to time. Users will be notified of significant changes through in-app notifications.</p>
+
+<div class="disclaimer">
+<strong>Disclaimer:</strong> Street Shield is a safety awareness tool for informational purposes only. It is not a replacement for professional safety services or professional devices. Always prioritize your safety and contact the appropriate services when needed.
+</div>
+
+<p style="margin-top:30px;color:#888;text-align:center">Contact: support@streetshield.app</p>
+</body>
+</html>""")
+
+@api_router.delete("/user/data")
+async def delete_user_data(user_id: str = "anonymous"):
+    """Delete all server-side data for a user. Supports Data Safety compliance."""
+    try:
+        alerts_deleted = await db.emergency_alerts.delete_many({"user_id": user_id})
+        settings_deleted = await db.emergency_settings.delete_many({"user_id": user_id})
+        journeys_deleted = await db.journeys.delete_many({"user_id": user_id})
+        analysis_deleted = await db.safety_analyses.delete_many({"user_id": user_id})
+        
+        return {
+            "status": "success",
+            "message": "All user data deleted",
+            "deleted": {
+                "alerts": alerts_deleted.deleted_count,
+                "settings": settings_deleted.deleted_count,
+                "journeys": journeys_deleted.deleted_count,
+                "analyses": analysis_deleted.deleted_count
+            }
+        }
+    except Exception as e:
+        logging.error(f"Error deleting user data: {e}")
+        raise HTTPException(status_code=500, detail="Error deleting user data")
 
 # Include the router in the main app
 app.include_router(api_router)
