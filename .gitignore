@@ -79,3 +79,12 @@ agenthub/agents/youtube/db
 android-sdk/
 
 model.patch
+-e 
+# Environment and credential files
+.env
+.env.*
+*.env
+credentials.json
+*.pem
+*.key
+.credentials
