@@ -597,7 +597,7 @@ export default function SafeWalkApp() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          ...biometrics,
+          biometric_data: biometrics,
           location: {
             latitude: location.latitude,
             longitude: location.longitude,
