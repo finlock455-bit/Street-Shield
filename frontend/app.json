@@ -32,7 +32,8 @@
         "WAKE_LOCK",
         "VIBRATE",
         "FOREGROUND_SERVICE"
-      ]
+      ],
+      "category": "LIFESTYLE"
     },
     "web": {
       "bundler": "metro",
