@@ -63,7 +63,7 @@ export const PrivacyPolicyModal: React.FC<PrivacyPolicyModalProps> = ({ visible,
 
         <Text style={styles.privacySectionTitle}>9. Disclaimer</Text>
         <Text style={styles.privacyText}>
-          Street Shield is a safety awareness tool for informational purposes only. It is not a replacement for professional safety services or professional devices. Always prioritize your safety and contact the appropriate services in a real situation.
+          This app is not a medical device or emergency service. It is intended for informational purposes only and should not be relied upon in situations requiring professional assistance. Always contact appropriate professional services when needed.
         </Text>
 
         <Text style={[styles.privacyText, { marginTop: 20, marginBottom: 40, textAlign: 'center', color: '#555' }]}>
