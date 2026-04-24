@@ -1930,10 +1930,10 @@ async def save_emergency_settings(settings: EmergencySettings):
             settings_dict["created_at"] = datetime.utcnow()
             await db.emergency_settings.insert_one(settings_dict)
         
-        return {"status": "success", "message": "Emergency settings saved"}
+        return {"status": "success", "message": "Alert settings saved"}
     except Exception as e:
-        logging.error(f"Error saving emergency settings: {e}")
-        raise HTTPException(status_code=500, detail="Error saving emergency settings")
+        logging.error(f"Error saving alert settings: {e}")
+        raise HTTPException(status_code=500, detail="Error saving alert settings")
 
 @api_router.get("/emergency/settings/{user_id}")
 async def get_emergency_settings(user_id: str):
@@ -1943,10 +1943,10 @@ async def get_emergency_settings(user_id: str):
         if settings:
             settings["_id"] = str(settings["_id"])
             return settings
-        return {"error": "No emergency settings found"}
+        return {"error": "No alert settings found"}
     except Exception as e:
-        logging.error(f"Error getting emergency settings: {e}")
-        raise HTTPException(status_code=500, detail="Error retrieving emergency settings")
+        logging.error(f"Error getting alert settings: {e}")
+        raise HTTPException(status_code=500, detail="Error retrieving alert settings")
 
 @api_router.post("/emergency/trigger")
 async def trigger_emergency(event: EmergencyEvent):

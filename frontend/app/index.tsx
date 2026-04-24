@@ -1105,11 +1105,11 @@ export default function SafeWalkApp() {
           console.log('✅ Online emergency triggered successfully:', result);
           
           if (voiceAlertsEnabled) {
-            await speakAlert(`Emergency alert sent to ${result.contacts_notified} contacts. Help is on the way.`, 'critical');
+            await speakAlert(`Quick alert sent to ${result.contacts_notified} contacts. Help is on the way.`, 'critical');
           }
           
           await showNotification(
-            '✅ Emergency Alert Sent',
+            '✅ Quick Alert Sent',
             `Notified ${result.contacts_notified} contacts via network`
           );
         } else {
@@ -1164,7 +1164,7 @@ export default function SafeWalkApp() {
     
     // 6. Show offline emergency notification
     await showNotification(
-      '🆘 OFFLINE EMERGENCY MODE',
+      '🆘 OFFLINE ALERT MODE',
       'No signal. Local alerts active. Will retry when connection available.'
     );
     
@@ -1375,7 +1375,7 @@ export default function SafeWalkApp() {
   // Smart hands-free voice trigger system
   const startHandsFreeMode = async () => {
     if (!emergencyTriggerWord || emergencyTriggerWord.length < 3) {
-      await speakAlert("No trigger word set. Please set up your emergency system first.");
+      await speakAlert("No trigger word set. Please set up your quick alert system first.");
       return;
     }
 
@@ -1494,7 +1494,7 @@ export default function SafeWalkApp() {
   // Manual voice trigger (for testing/immediate use)
   const startVoiceTriggerListening = async () => {
     if (!emergencyTriggerWord || emergencyTriggerWord.length < 3) {
-      await speakAlert("No trigger word set. Please set up your emergency system first.");
+      await speakAlert("No trigger word set. Please set up your quick alert system first.");
       return;
     }
 
@@ -1503,7 +1503,7 @@ export default function SafeWalkApp() {
       if (isHandsFreeMode) {
         setIsListeningForTrigger(true);
         if (voiceAlertsEnabled) {
-          await speakAlert(`Manual activation. Say ${emergencyTriggerWord} now to trigger emergency.`);
+          await speakAlert(`Manual activation. Say ${emergencyTriggerWord} now to trigger quick alert.`);
         }
         // Extend listening window for manual activation
         if (listeningTimeout.current) clearTimeout(listeningTimeout.current);
@@ -1518,7 +1518,7 @@ export default function SafeWalkApp() {
       triggerActivationRef.current = false;
       
       if (voiceAlertsEnabled) {
-        await speakAlert(`Voice trigger activated. Say ${emergencyTriggerWord} to trigger emergency mode. Listening for 30 seconds.`);
+        await speakAlert(`Voice trigger activated. Say ${emergencyTriggerWord} to trigger quick alert mode. Listening for 30 seconds.`);
       }
 
       listeningTimeout.current = setTimeout(() => {
@@ -1553,7 +1553,7 @@ export default function SafeWalkApp() {
     if (emergencyTriggerWord && emergencyTriggerWord.length >= 3) {
       triggerActivationRef.current = true;
       stopVoiceTriggerListening();
-      await speakAlert(`Emergency trigger word ${emergencyTriggerWord} detected. Activating emergency mode.`);
+      await speakAlert(`Quick alert trigger word ${emergencyTriggerWord} detected. Activating safety alert mode.`);
       triggerEmergencyMode();
       return true;
     }
@@ -1649,7 +1649,7 @@ export default function SafeWalkApp() {
         'battery level', 'battery status', 'battery', 'power level', 'power'
       ],
       contacts: [
-        'emergency contacts', 'contacts', 'who will be called', 'contact list'
+        'alert contacts', 'contacts', 'who will be called', 'contact list'
       ],
       help: [
         'help', 'what can you do', 'commands', 'voice commands', 'options', 'assist'
@@ -1771,13 +1771,13 @@ export default function SafeWalkApp() {
           
         case 'contacts':
           const contactCount = emergencyContacts.filter(c => c.length > 0).length;
-          response = `You have ${contactCount} emergency contact${contactCount !== 1 ? 's' : ''} configured. ${
+          response = `You have ${contactCount} alert contact${contactCount !== 1 ? 's' : ''} configured. ${
             emergencyTriggerWord ? `Your quick alert trigger word is ${emergencyTriggerWord}.` : "No trigger word set."
           }`;
           break;
           
         case 'help':
-          response = `Street Shield voice commands: Say Street Shield followed by your question. Examples: Street Shield, what is my safety score? Street Shield, where am I? Street Shield, any threats nearby? You can also ask about weather, health, time, battery, or emergency contacts. For emergencies, say your custom trigger word.`;
+          response = `Street Shield voice commands: Say Street Shield followed by your question. Examples: Street Shield, what is my safety score? Street Shield, where am I? Street Shield, any threats nearby? You can also ask about weather, health, time, battery, or alert contacts. For quick alerts, say your custom trigger word.`;
           break;
           
         default:
@@ -2254,7 +2254,7 @@ export default function SafeWalkApp() {
     let musicFriendlyMessage = message;
     
     if (priority === 'critical') {
-      musicFriendlyMessage = `Street Shield Emergency Alert: ${message}`;
+      musicFriendlyMessage = `Street Shield Safety Alert: ${message}`;
     } else if (priority === 'high') {
       musicFriendlyMessage = `Safety Alert: ${message}`;
     } else {
@@ -3003,7 +3003,7 @@ export default function SafeWalkApp() {
               <View style={styles.pulsingDot} />
             </View>
             <Text style={styles.listeningText}>
-              🎤 Voice Trigger Active - Say "{emergencyTriggerWord}" for emergency
+              🎤 Voice Trigger Active - Say "{emergencyTriggerWord}" for quick alert
             </Text>
             <TouchableOpacity 
               style={styles.stopListeningButton}
