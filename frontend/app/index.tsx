@@ -156,17 +156,17 @@ export default function SafeWalkApp() {
   const [stressLevel, setStressLevel] = useState<number>(0);
   const [stepCount, setStepCount] = useState<number>(0);
   
-  // Emergency system state
-  const [emergencyTriggerWord, setEmergencyTriggerWord] = useState<string>('');
-  const [isEmergencySetupOpen, setIsEmergencySetupOpen] = useState(false);
-  const [isEmergencyModeActive, setIsEmergencyModeActive] = useState(false);
-  const [emergencyContacts, setEmergencyContacts] = useState<string[]>([]);
+  // Alert system state
+  const [alertTriggerWord, setAlertTriggerWord] = useState<string>('');
+  const [isAlertSetupOpen, setIsAlertSetupOpen] = useState(false);
+  const [isAlertModeActive, setIsAlertModeActive] = useState(false);
+  const [trustedContacts, setTrustedContacts] = useState<string[]>([]);
   const [voiceListening, setVoiceListening] = useState(false);
 
   const locationSubscription = useRef<Location.LocationSubscription | null>(null);
   const analysisInterval = useRef<NodeJS.Timeout | null>(null);
   const audioRecording = useRef<Audio.Recording | null>(null);
-  const emergencyModeStartTime = useRef<number>(0);
+  const alertModeStartTime = useRef<number>(0);
 
   // Animated score ring refs
   const pulseAnim = useRef(new Animated.Value(0.6)).current;
@@ -325,15 +325,15 @@ export default function SafeWalkApp() {
         setVoiceAlertsEnabled(JSON.parse(voiceEnabled));
       }
       
-      // Load emergency settings
-      const triggerWord = await AsyncStorage.getItem('emergencyTriggerWord');
+      // Load alert settings
+      const triggerWord = await AsyncStorage.getItem('alertTriggerWord');
       if (triggerWord) {
-        setEmergencyTriggerWord(triggerWord);
+        setAlertTriggerWord(triggerWord);
       }
       
-      const contacts = await AsyncStorage.getItem('emergencyContacts');
+      const contacts = await AsyncStorage.getItem('trustedContacts');
       if (contacts) {
-        setEmergencyContacts(JSON.parse(contacts));
+        setTrustedContacts(JSON.parse(contacts));
       }
     } catch (error) {
       console.error('Error loading settings:', error);
@@ -620,8 +620,8 @@ export default function SafeWalkApp() {
           await processHealthAlert(alert);
         }
         
-        // Handle emergency situations
-        if (result.emergency_triggered) {
+        // Handle alert situations
+        if (result.alert_triggered) {
           await triggerCriticalAlert(result.health_alerts);
         }
       }
@@ -659,7 +659,7 @@ export default function SafeWalkApp() {
   };
 
   const triggerCriticalAlert = async (alerts: any[]) => {
-    const criticalAlert = alerts.find(alert => alert.auto_emergency);
+    const criticalAlert = alerts.find(alert => alert.auto_alert);
     if (criticalAlert && voiceAlertsEnabled) {
       await speakAlert(
         "Safety concern detected. Notifying your trusted contacts. Consider resting and checking in with someone nearby.",
@@ -960,11 +960,11 @@ export default function SafeWalkApp() {
     }
   };
 
-  // Emergency System Functions
-  const setupEmergencyTrigger = async () => {
-    setIsEmergencySetupOpen(true);
+  // Alert System Functions
+  const setupAlertTrigger = async () => {
+    setIsAlertSetupOpen(true);
     
-    // Voice guidance for emergency setup
+    // Voice guidance for alert setup
     if (voiceAlertsEnabled) {
       await speakAlert("Welcome to Safety Alert Setup. I'll guide you through configuring your personal safety notification system.");
       
@@ -982,7 +982,7 @@ export default function SafeWalkApp() {
     return phoneRegex.test(phone.replace(/\s/g, ''));
   };
 
-  const saveEmergencySettings = async (triggerWord: string, contacts: string[]) => {
+  const saveAlertSettings = async (triggerWord: string, contacts: string[]) => {
     try {
       // Validate contacts
       const validContacts = contacts.filter(contact => contact.length > 0);
@@ -996,7 +996,7 @@ export default function SafeWalkApp() {
       }
 
       // Save to backend
-      const emergencySettings = {
+      const alertSettings = {
         user_id: 'demo_user',
         trigger_word: triggerWord,
         contacts: validContacts,
@@ -1005,10 +1005,10 @@ export default function SafeWalkApp() {
         voice_confirmation_enabled: true
       };
 
-      const response = await fetch(`${BACKEND_URL}/api/emergency/settings`, {
+      const response = await fetch(`${BACKEND_URL}/api/alert/settings`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(emergencySettings)
+        body: JSON.stringify(alertSettings)
       });
 
       if (!response.ok) {
@@ -1016,31 +1016,31 @@ export default function SafeWalkApp() {
       }
 
       // Also save locally for offline access
-      await AsyncStorage.setItem('emergencyTriggerWord', triggerWord);
-      await AsyncStorage.setItem('emergencyContacts', JSON.stringify(validContacts));
+      await AsyncStorage.setItem('alertTriggerWord', triggerWord);
+      await AsyncStorage.setItem('trustedContacts', JSON.stringify(validContacts));
       
-      setEmergencyTriggerWord(triggerWord);
-      setEmergencyContacts(validContacts);
-      setIsEmergencySetupOpen(false);
+      setAlertTriggerWord(triggerWord);
+      setTrustedContacts(validContacts);
+      setIsAlertSetupOpen(false);
       
       if (voiceAlertsEnabled) {
         await speakAlert(`Safety alert setup complete. Trigger word: ${triggerWord}. ${validContacts.length} contact${validContacts.length > 1 ? 's' : ''} added.`, 'low');
       }
     } catch (error) {
-      console.error('Error saving emergency settings:', error);
+      console.error('Error saving alert settings:', error);
       if (voiceAlertsEnabled) {
         await speakAlert("There was an error saving your alert settings to the cloud, but they are saved locally. Please check your internet connection and try again.");
       }
     }
   };
 
-  const triggerEmergencyMode = async () => {
-    if (isEmergencyModeActive) return; // Prevent multiple triggers
+  const triggerAlertMode = async () => {
+    if (isAlertModeActive) return; // Prevent multiple triggers
     
-    setIsEmergencyModeActive(true);
-    emergencyModeStartTime.current = Date.now();
+    setIsAlertModeActive(true);
+    alertModeStartTime.current = Date.now();
     
-    // Immediate emergency response
+    // Immediate alert response
     await showNotification('ALERT ACTIVATED', 'Alert mode activated! Notifying your trusted contacts.');
     
     if (voiceAlertsEnabled) {
@@ -1048,10 +1048,10 @@ export default function SafeWalkApp() {
       await speakAlert("Alert activated. Notifying contacts now.", 'critical');
     }
 
-    // Send emergency alerts via backend
-    await sendEmergencyAlerts();
+    // Send alert notifications via backend
+    await sendAlertNotifications();
     
-    // Start emergency monitoring (increase frequency)
+    // Start alert monitoring (increase frequency)
     if (analysisInterval.current) {
       clearInterval(analysisInterval.current);
     }
@@ -1059,14 +1059,14 @@ export default function SafeWalkApp() {
       if (location) {
         performSafetyAnalysis(location);
       }
-    }, 5000); // Every 5 seconds in emergency mode
+    }, 5000); // Every 5 seconds in alert mode
   };
 
-  const sendEmergencyAlerts = async () => {
+  const sendAlertNotifications = async () => {
     try {
       if (!location) {
-        console.error('No location available for emergency alert');
-        await offlineEmergencyMode(); // Fallback to offline mode
+        console.error('No location available for alert notification');
+        await offlineAlertMode(); // Fallback to offline mode
         return;
       }
 
@@ -1074,27 +1074,27 @@ export default function SafeWalkApp() {
       const isOnline = await checkNetworkConnection();
       
       if (!isOnline) {
-        console.log('No network connection - activating offline emergency mode');
-        await offlineEmergencyMode();
+        console.log('No network connection - activating offline alert mode');
+        await offlineAlertMode();
         return;
       }
 
-      // Try online emergency notification via backend API
-      const emergencyEvent = {
+      // Try online alert notification via backend API
+      const alertEvent = {
         user_id: 'demo_user',
         location: location,
         trigger_method: 'voice_trigger',
-        trigger_word_used: emergencyTriggerWord
+        trigger_word_used: alertTriggerWord
       };
 
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout
 
       try {
-        const response = await fetch(`${BACKEND_URL}/api/emergency/trigger`, {
+        const response = await fetch(`${BACKEND_URL}/api/alert/trigger`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(emergencyEvent),
+          body: JSON.stringify(alertEvent),
           signal: controller.signal
         });
 
@@ -1102,7 +1102,7 @@ export default function SafeWalkApp() {
 
         if (response.ok) {
           const result = await response.json();
-          console.log('✅ Online emergency triggered successfully:', result);
+          console.log('✅ Online alert triggered successfully:', result);
           
           if (voiceAlertsEnabled) {
             await speakAlert(`Quick alert sent to ${result.contacts_notified} contacts. Help is on the way.`, 'critical');
@@ -1117,42 +1117,42 @@ export default function SafeWalkApp() {
         }
       } catch (fetchError) {
         console.log('Network request failed, falling back to offline mode');
-        await offlineEmergencyMode();
+        await offlineAlertMode();
       }
       
     } catch (error) {
-      console.error('Error sending emergency alerts:', error);
-      await offlineEmergencyMode();
+      console.error('Error sending alert notifications:', error);
+      await offlineAlertMode();
     }
   };
 
-  // OFFLINE EMERGENCY MODE - Works without cellular signal
-  const offlineEmergencyMode = async () => {
-    console.log('🆘 OFFLINE EMERGENCY MODE ACTIVATED');
+  // OFFLINE ALERT MODE - Works without cellular signal
+  const offlineAlertMode = async () => {
+    console.log('🆘 OFFLINE ALERT MODE ACTIVATED');
     
-    // 1. Store emergency data locally for later transmission
-    const offlineEmergencyData = {
+    // 1. Store alert data locally for later transmission
+    const offlineAlertData = {
       timestamp: new Date().toISOString(),
       location: location ? {
         latitude: location.latitude,
         longitude: location.longitude,
         accuracy: location.accuracy
       } : null,
-      contacts: emergencyContacts,
-      trigger_word: emergencyTriggerWord,
+      contacts: trustedContacts,
+      trigger_word: alertTriggerWord,
       status: 'pending_transmission'
     };
     
-    await AsyncStorage.setItem('pendingEmergency', JSON.stringify(offlineEmergencyData));
+    await AsyncStorage.setItem('pendingAlert', JSON.stringify(offlineAlertData));
     
-    // 2. Visual emergency signals (works offline)
-    await triggerOfflineEmergencySignals();
+    // 2. Visual alert signals (works offline)
+    await triggerOfflineAlertSignals();
     
-    // 3. Try satellite emergency (iPhone 14+ only)
-    await attemptSatelliteEmergency();
+    // 3. Try satellite alert (iPhone 14+ only)
+    await attemptSatelliteAlert();
     
     // 4. Try Bluetooth beacon to nearby devices
-    await broadcastBluetoothEmergency();
+    await broadcastBluetoothAlert();
     
     // 5. Voice feedback
     if (voiceAlertsEnabled) {
@@ -1162,14 +1162,14 @@ export default function SafeWalkApp() {
       );
     }
     
-    // 6. Show offline emergency notification
+    // 6. Show offline alert notification
     await showNotification(
       '🆘 OFFLINE ALERT MODE',
       'No signal. Local alerts active. Will retry when connection available.'
     );
     
     // 7. Schedule retry attempts
-    startEmergencyRetryLoop();
+    startAlertRetryLoop();
   };
 
   // Check network connectivity
@@ -1190,8 +1190,8 @@ export default function SafeWalkApp() {
     }
   };
 
-  // Offline emergency signals - visual and audio
-  const triggerOfflineEmergencySignals = async () => {
+  // Offline alert signals - visual and audio
+  const triggerOfflineAlertSignals = async () => {
     // 1. Maximum volume alert
     await speakAlert("ALERT! ALERT! ALERT!", 'critical');
     
@@ -1202,27 +1202,27 @@ export default function SafeWalkApp() {
     }
     
     // 3. Log for later review
-    console.log('🚨 OFFLINE EMERGENCY SIGNALS ACTIVATED');
+    console.log('🚨 OFFLINE ALERT SIGNALS ACTIVATED');
     console.log('Location:', location);
-    console.log('Contacts:', emergencyContacts);
+    console.log('Contacts:', trustedContacts);
     console.log('Time:', new Date().toISOString());
   };
 
-  // Attempt satellite emergency for compatible devices
-  const attemptSatelliteEmergency = async () => {
+  // Attempt satellite alert for compatible devices
+  const attemptSatelliteAlert = async () => {
     try {
-      // Check if device supports satellite emergency (iPhone 14+)
+      // Check if device supports satellite alert (iPhone 14+)
       if (Platform.OS === 'ios') {
-        console.log('📡 Attempting satellite emergency...');
+        console.log('📡 Attempting satellite alert...');
         
-        // Native iOS Emergency SOS via satellite
-        // This opens the native emergency interface on supported devices
-        const emergencyURL = `tel:${encodeURIComponent('112')}`; // International emergency
+        // Native iOS SOS via satellite
+        // This opens the native alert interface on supported devices
+        const alertURL = `tel:${encodeURIComponent('112')}`; // International SOS
         
-        // On iPhone 14+, this will prompt satellite emergency if no signal
-        // await Linking.openURL(emergencyURL);
+        // On iPhone 14+, this will prompt satellite alert if no signal
+        // await Linking.openURL(alertURL);
         
-        console.log('📡 Satellite emergency initiated (if supported by device)');
+        console.log('📡 Satellite alert initiated (if supported by device)');
         
         if (voiceAlertsEnabled) {
           await speakAlert(
@@ -1231,30 +1231,30 @@ export default function SafeWalkApp() {
           );
         }
       } else {
-        console.log('⚠️ Satellite emergency only available on iPhone 14+');
+        console.log('⚠️ Satellite alert only available on iPhone 14+');
       }
     } catch (error) {
-      console.error('Satellite emergency error:', error);
+      console.error('Satellite alert error:', error);
     }
   };
 
-  // Broadcast emergency via Bluetooth to nearby devices
-  const broadcastBluetoothEmergency = async () => {
+  // Broadcast alert via Bluetooth to nearby devices
+  const broadcastBluetoothAlert = async () => {
     try {
-      console.log('📻 Broadcasting Bluetooth emergency beacon...');
+      console.log('📻 Broadcasting Bluetooth alert beacon...');
       
-      // Store emergency beacon data
+      // Store alert beacon data
       const beaconData = {
-        type: 'EMERGENCY',
+        type: 'ALERT',
         app: 'StreetShield',
         location: location,
         timestamp: new Date().toISOString(),
-        contacts: emergencyContacts
+        contacts: trustedContacts
       };
       
-      await AsyncStorage.setItem('bluetoothEmergencyBeacon', JSON.stringify(beaconData));
+      await AsyncStorage.setItem('bluetoothAlertBeacon', JSON.stringify(beaconData));
       
-      console.log('📻 Emergency beacon data stored for Bluetooth broadcast');
+      console.log('📻 Alert beacon data stored for Bluetooth broadcast');
       
       // Note: Actual Bluetooth broadcasting requires native modules
       // This prepares data for when native build supports it
@@ -1263,36 +1263,36 @@ export default function SafeWalkApp() {
     }
   };
 
-  // Retry emergency transmission when connection restored
-  const startEmergencyRetryLoop = () => {
+  // Retry alert transmission when connection restored
+  const startAlertRetryLoop = () => {
     const retryInterval = setInterval(async () => {
       const isOnline = await checkNetworkConnection();
       
       if (isOnline) {
-        console.log('🌐 Connection restored! Sending pending emergency...');
+        console.log('🌐 Connection restored! Sending pending alert...');
         
-        // Get pending emergency
-        const pendingData = await AsyncStorage.getItem('pendingEmergency');
+        // Get pending alert
+        const pendingData = await AsyncStorage.getItem('pendingAlert');
         
         if (pendingData) {
-          const emergency = JSON.parse(pendingData);
+          const alertData = JSON.parse(pendingData);
           
           // Try to send via backend
           try {
-            const response = await fetch(`${BACKEND_URL}/api/emergency/trigger`, {
+            const response = await fetch(`${BACKEND_URL}/api/alert/trigger`, {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({
                 user_id: 'demo_user',
-                location: emergency.location,
+                location: alertData.location,
                 trigger_method: 'offline_delayed',
-                trigger_word_used: emergency.trigger_word,
-                original_timestamp: emergency.timestamp
+                trigger_word_used: alertData.trigger_word,
+                original_timestamp: alertData.timestamp
               })
             });
             
             if (response.ok) {
-              await AsyncStorage.removeItem('pendingEmergency');
+              await AsyncStorage.removeItem('pendingAlert');
               clearInterval(retryInterval);
               
               await speakAlert("Connection restored. Alert successfully sent to all contacts.", 'high');
@@ -1314,10 +1314,10 @@ export default function SafeWalkApp() {
     setTimeout(() => clearInterval(retryInterval), 300000); // Stop after 5 minutes
   };
 
-  // Removed reportEmergencyToAuthorities - now handled by backend API
+  // Removed reportToAuthorities - now handled by backend API
 
-  const deactivateEmergencyMode = async () => {
-    setIsEmergencyModeActive(false);
+  const deactivateAlertMode = async () => {
+    setIsAlertModeActive(false);
     
     if (voiceAlertsEnabled) {
       await speakAlert("Alert mode deactivated. Returning to normal safety monitoring.");
@@ -1374,7 +1374,7 @@ export default function SafeWalkApp() {
 
   // Smart hands-free voice trigger system
   const startHandsFreeMode = async () => {
-    if (!emergencyTriggerWord || emergencyTriggerWord.length < 3) {
+    if (!alertTriggerWord || alertTriggerWord.length < 3) {
       await speakAlert("No trigger word set. Please set up your quick alert system first.");
       return;
     }
@@ -1384,7 +1384,7 @@ export default function SafeWalkApp() {
       setAmbientListeningActive(true);
       
       if (voiceAlertsEnabled) {
-        await speakAlert(`Hands-free mode active. Listening for ${emergencyTriggerWord}.`, 'low');
+        await speakAlert(`Hands-free mode active. Listening for ${alertTriggerWord}.`, 'low');
       }
 
       // Start intelligent listening cycles
@@ -1493,7 +1493,7 @@ export default function SafeWalkApp() {
 
   // Manual voice trigger (for testing/immediate use)
   const startVoiceTriggerListening = async () => {
-    if (!emergencyTriggerWord || emergencyTriggerWord.length < 3) {
+    if (!alertTriggerWord || alertTriggerWord.length < 3) {
       await speakAlert("No trigger word set. Please set up your quick alert system first.");
       return;
     }
@@ -1503,7 +1503,7 @@ export default function SafeWalkApp() {
       if (isHandsFreeMode) {
         setIsListeningForTrigger(true);
         if (voiceAlertsEnabled) {
-          await speakAlert(`Manual activation. Say ${emergencyTriggerWord} now to trigger quick alert.`);
+          await speakAlert(`Manual activation. Say ${alertTriggerWord} now to trigger quick alert.`);
         }
         // Extend listening window for manual activation
         if (listeningTimeout.current) clearTimeout(listeningTimeout.current);
@@ -1518,7 +1518,7 @@ export default function SafeWalkApp() {
       triggerActivationRef.current = false;
       
       if (voiceAlertsEnabled) {
-        await speakAlert(`Voice trigger activated. Say ${emergencyTriggerWord} to trigger quick alert mode. Listening for 30 seconds.`);
+        await speakAlert(`Voice trigger activated. Say ${alertTriggerWord} to trigger quick alert mode. Listening for 30 seconds.`);
       }
 
       listeningTimeout.current = setTimeout(() => {
@@ -1550,11 +1550,11 @@ export default function SafeWalkApp() {
       return false;
     }
 
-    if (emergencyTriggerWord && emergencyTriggerWord.length >= 3) {
+    if (alertTriggerWord && alertTriggerWord.length >= 3) {
       triggerActivationRef.current = true;
       stopVoiceTriggerListening();
-      await speakAlert(`Quick alert trigger word ${emergencyTriggerWord} detected. Activating safety alert mode.`);
-      triggerEmergencyMode();
+      await speakAlert(`Quick alert trigger word ${alertTriggerWord} detected. Activating safety alert mode.`);
+      triggerAlertMode();
       return true;
     }
     return false;
@@ -1562,10 +1562,10 @@ export default function SafeWalkApp() {
 
   // Advanced trigger detection (for future implementation with real speech recognition)
   const detectTriggerInSpeech = (spokenText: string): boolean => {
-    if (!emergencyTriggerWord || !spokenText) return false;
+    if (!alertTriggerWord || !spokenText) return false;
     
     const normalizedSpoken = spokenText.toLowerCase().trim();
-    const normalizedTrigger = emergencyTriggerWord.toLowerCase().trim();
+    const normalizedTrigger = alertTriggerWord.toLowerCase().trim();
     
     // Exact match
     if (normalizedSpoken === normalizedTrigger) return true;
@@ -1770,9 +1770,9 @@ export default function SafeWalkApp() {
           break;
           
         case 'contacts':
-          const contactCount = emergencyContacts.filter(c => c.length > 0).length;
+          const contactCount = trustedContacts.filter(c => c.length > 0).length;
           response = `You have ${contactCount} alert contact${contactCount !== 1 ? 's' : ''} configured. ${
-            emergencyTriggerWord ? `Your quick alert trigger word is ${emergencyTriggerWord}.` : "No trigger word set."
+            alertTriggerWord ? `Your quick alert trigger word is ${alertTriggerWord}.` : "No trigger word set."
           }`;
           break;
           
@@ -1830,12 +1830,12 @@ export default function SafeWalkApp() {
     
     // Integrate with existing hands-free smart listening if active
     if (isHandsFreeMode) {
-      // Voice info rides along with emergency hands-free system
-      console.log('[Voice Info] Integrated with hands-free emergency system');
+      // Voice info rides along with alert hands-free system
+      console.log('[Voice Info] Integrated with hands-free alert system');
       return;
     }
     
-    // Independent voice info listening cycle (less frequent than emergency)
+    // Independent voice info listening cycle (less frequent than alert)
     const scheduleNextInfoListening = () => {
       if (!isVoiceInfoActive) return;
       
@@ -2160,7 +2160,7 @@ export default function SafeWalkApp() {
       // Adjust voice characteristics based on priority - AMBIENT APPROACH
       switch (priority) {
         case 'critical':
-          // Emergency: Clear but not shouting
+          // Critical: Clear but not shouting
           speechSettings.pitch = 1.05;
           speechSettings.rate = 0.9;  // Clear and deliberate
           speechSettings.volume = 1.0; // Full volume for emergencies
@@ -2233,14 +2233,14 @@ export default function SafeWalkApp() {
     const now = Date.now();
     
     // Smart alert filtering to prevent interruption spam
-    if (now - lastAlertTime < 30000 && alertType !== 'emergency' && alertType !== 'info_request') {
+    if (now - lastAlertTime < 30000 && alertType !== 'critical_alert' && alertType !== 'info_request') {
       return; // Don't interrupt music too frequently
     }
     
     // Determine priority based on alert type and weather severity
     let priority: 'low' | 'medium' | 'high' | 'critical' = 'medium';
     
-    if (alertType === 'emergency') {
+    if (alertType === 'critical_alert') {
       priority = 'critical';
     } else if (alertType === 'ice_warning' || alertType === 'severe_weather') {
       priority = 'high';
@@ -2464,16 +2464,16 @@ export default function SafeWalkApp() {
           </View>
         )}
 
-        {/* Emergency Mode Indicator */}
-        {isEmergencyModeActive && (
-          <View style={styles.emergencyBanner}>
+        {/* Alert Mode Indicator */}
+        {isAlertModeActive && (
+          <View style={styles.alertBanner}>
             <Ionicons name="warning" size={24} color="#fff" />
-            <Text style={styles.emergencyBannerText}>
+            <Text style={styles.alertBannerText}>
               ALERT MODE ACTIVE
             </Text>
             <TouchableOpacity 
               style={styles.deactivateButton}
-              onPress={deactivateEmergencyMode}
+              onPress={deactivateAlertMode}
             >
               <Text style={styles.deactivateButtonText}>Deactivate</Text>
             </TouchableOpacity>
@@ -2549,14 +2549,14 @@ export default function SafeWalkApp() {
 
             <TouchableOpacity
               style={styles.featureButton}
-              onPress={setupEmergencyTrigger}
+              onPress={setupAlertTrigger}
             >
               <View style={styles.featureIcon}>
                 <Ionicons name="warning" size={20} color="#ff0066" />
               </View>
               <Text style={styles.featureButtonText}>Quick Alert</Text>
               <Text style={styles.featureStatus}>
-                {emergencyTriggerWord ? 'READY' : 'SETUP'}
+                {alertTriggerWord ? 'READY' : 'SETUP'}
               </Text>
             </TouchableOpacity>
 
@@ -2604,12 +2604,12 @@ export default function SafeWalkApp() {
             </TouchableOpacity>
 
             {/* Voice Trigger Button */}
-            {emergencyTriggerWord && (
+            {alertTriggerWord && (
               <TouchableOpacity
                 style={[
                   styles.featureButton, 
                   isHandsFreeMode ? styles.handsFreeButton :
-                  isListeningForTrigger ? styles.listeningButton : styles.emergencyButton
+                  isListeningForTrigger ? styles.listeningButton : styles.alertButton
                 ]}
                 onPress={
                   isHandsFreeMode ? stopHandsFreeMode :
@@ -2637,13 +2637,13 @@ export default function SafeWalkApp() {
               </TouchableOpacity>
             )}
 
-            {/* Test Emergency Trigger Button */}
-            {emergencyTriggerWord && !isEmergencyModeActive && (
+            {/* Test Alert Trigger Button */}
+            {alertTriggerWord && !isAlertModeActive && (
               <TouchableOpacity
-                style={[styles.featureButton, styles.testEmergencyButton]}
+                style={[styles.featureButton, styles.testAlertButton]}
                 onPress={async () => {
-              await speakAlert(`Testing alert trigger: ${emergencyTriggerWord}`, 'high');
-                  setTimeout(() => triggerEmergencyMode(), 1000);
+              await speakAlert(`Testing alert trigger: ${alertTriggerWord}`, 'high');
+                  setTimeout(() => triggerAlertMode(), 1000);
                 }}
               >
                 <View style={styles.featureIcon}>
@@ -2662,9 +2662,9 @@ export default function SafeWalkApp() {
               </TouchableOpacity>
             )}
 
-            {/* Emergency Active Indicator */}
-            {isEmergencyModeActive && (
-              <View style={[styles.featureButton, styles.emergencyActiveButton]}>
+            {/* Alert Active Indicator */}
+            {isAlertModeActive && (
+              <View style={[styles.featureButton, styles.alertActiveButton]}>
                 <View style={styles.featureIcon}>
                   <Ionicons 
                     name="warning" 
@@ -2901,7 +2901,7 @@ export default function SafeWalkApp() {
               🛡️ HANDS-FREE PROTECTION ACTIVE
             </Text>
             <Text style={styles.handsFreeDescription}>
-              Quick alert trigger: "{emergencyTriggerWord}" {isVoiceInfoActive && ' • Voice info requests enabled'} • {isListeningForTrigger ? 'Currently listening' : 'Standby mode'}
+              Quick alert trigger: "{alertTriggerWord}" {isVoiceInfoActive && ' • Voice info requests enabled'} • {isListeningForTrigger ? 'Currently listening' : 'Standby mode'}
             </Text>
             <TouchableOpacity 
               style={styles.stopHandsFreeButton}
@@ -2934,62 +2934,62 @@ export default function SafeWalkApp() {
           </View>
         )}
 
-        {/* Emergency Mode Status Display */}
-        {isEmergencyModeActive && (
-          <View style={[styles.statusCard, styles.emergencyStatusCard]}>
-            <View style={styles.emergencyHeader}>
+        {/* Alert Mode Status Display */}
+        {isAlertModeActive && (
+          <View style={[styles.statusCard, styles.alertStatusCard]}>
+            <View style={styles.alertHeader}>
               <Ionicons name="warning" size={24} color="#F44336" />
-              <Text style={styles.emergencyStatusTitle}>ALERT MODE ACTIVE</Text>
+              <Text style={styles.alertStatusTitle}>ALERT MODE ACTIVE</Text>
               <View style={[styles.pulsingDot, { backgroundColor: '#F44336' }]} />
             </View>
             
-            <View style={styles.emergencyDetails}>
-              <View style={styles.emergencyDetailItem}>
+            <View style={styles.alertDetails}>
+              <View style={styles.alertDetailItem}>
                 <Ionicons name="people" size={18} color="#F44336" />
-                <Text style={styles.emergencyDetailText}>
-                  {emergencyContacts.length} Trusted Contact{emergencyContacts.length !== 1 ? 's' : ''} Notified
+                <Text style={styles.alertDetailText}>
+                  {trustedContacts.length} Trusted Contact{trustedContacts.length !== 1 ? 's' : ''} Notified
                 </Text>
               </View>
               
-              <View style={styles.emergencyDetailItem}>
+              <View style={styles.alertDetailItem}>
                 <Ionicons name="location" size={18} color="#F44336" />
-                <Text style={styles.emergencyDetailText}>
+                <Text style={styles.alertDetailText}>
                   Live location shared: {location ? `${location.latitude.toFixed(4)}, ${location.longitude.toFixed(4)}` : 'Getting location...'}
                 </Text>
               </View>
               
-              <View style={styles.emergencyDetailItem}>
+              <View style={styles.alertDetailItem}>
                 <Ionicons name="shield-checkmark" size={18} color="#F44336" />
-                <Text style={styles.emergencyDetailText}>
+                <Text style={styles.alertDetailText}>
                   Location data captured
                 </Text>
               </View>
               
-              <View style={styles.emergencyDetailItem}>
+              <View style={styles.alertDetailItem}>
                 <Ionicons name="pulse" size={18} color="#F44336" />
-                <Text style={styles.emergencyDetailText}>
+                <Text style={styles.alertDetailText}>
                   Enhanced monitoring every 5 seconds
                 </Text>
               </View>
             </View>
 
-            <View style={styles.emergencyContactsList}>
-              <Text style={styles.emergencyContactsTitle}>Contacts Notified:</Text>
-              {emergencyContacts.filter(c => c.length > 0).map((contact, index) => (
-                <Text key={index} style={styles.emergencyContact}>
+            <View style={styles.alertContactsList}>
+              <Text style={styles.alertContactsTitle}>Contacts Notified:</Text>
+              {trustedContacts.filter(c => c.length > 0).map((contact, index) => (
+                <Text key={index} style={styles.alertContact}>
                   ✓ {contact}
                 </Text>
               ))}
             </View>
             
             <TouchableOpacity 
-              style={styles.deactivateEmergencyButton}
-              onPress={deactivateEmergencyMode}
+              style={styles.deactivateAlertButton}
+              onPress={deactivateAlertMode}
             >
-              <Text style={styles.deactivateEmergencyText}>Deactivate Alert</Text>
+              <Text style={styles.deactivateAlertText}>Deactivate Alert</Text>
             </TouchableOpacity>
             
-            <Text style={styles.emergencyNote}>
+            <Text style={styles.alertNote}>
               Note: In production, contacts would receive SMS/push notifications with your real-time location.
             </Text>
           </View>
@@ -3003,7 +3003,7 @@ export default function SafeWalkApp() {
               <View style={styles.pulsingDot} />
             </View>
             <Text style={styles.listeningText}>
-              🎤 Voice Trigger Active - Say "{emergencyTriggerWord}" for quick alert
+              🎤 Voice Trigger Active - Say "{alertTriggerWord}" for quick alert
             </Text>
             <TouchableOpacity 
               style={styles.stopListeningButton}
@@ -3245,9 +3245,9 @@ export default function SafeWalkApp() {
         </View>
       </ScrollView>
 
-      {/* Emergency Setup Modal */}
+      {/* Alert Setup Modal */}
       <Modal
-        visible={isEmergencySetupOpen}
+        visible={isAlertSetupOpen}
         animationType="slide"
         presentationStyle="pageSheet"
       >
@@ -3256,7 +3256,7 @@ export default function SafeWalkApp() {
             <Text style={styles.modalTitle}>Safety Alert Setup</Text>
             <TouchableOpacity onPress={() => {
               Speech.stop(); // Stop any ongoing voice prompts
-              setIsEmergencySetupOpen(false);
+              setIsAlertSetupOpen(false);
               // Reset voice interaction state when closing
               setVoiceInteractionState({
                 setupIntroPlayed: false,
@@ -3292,7 +3292,7 @@ export default function SafeWalkApp() {
               </Text>
               <TextInput
                 style={styles.textInput}
-                value={emergencyTriggerWord}
+                value={alertTriggerWord}
                 onFocus={async () => {
                   if (voiceAlertsEnabled && !voiceInteractionState.triggerWordExplained) {
                     await speakAlert("Enter your alert trigger word. Make it memorable but unique.");
@@ -3300,7 +3300,7 @@ export default function SafeWalkApp() {
                   }
                 }}
                 onChangeText={(text) => {
-                  setEmergencyTriggerWord(text);
+                  setAlertTriggerWord(text);
                   // Only provide feedback when word is complete (no setTimeout spam)
                   if (text.length >= 4 && voiceAlertsEnabled && text !== voiceInteractionState.lastTriggerWord) {
                     // Debounce voice feedback
@@ -3331,7 +3331,7 @@ export default function SafeWalkApp() {
               <Text style={styles.inputHint}>
                 Enter phone numbers that will be notified with your location. This is not a replacement for contacting professional services directly.
               </Text>
-              {emergencyContacts.map((contact, index) => (
+              {trustedContacts.map((contact, index) => (
                 <View key={index} style={styles.contactRow}>
                   <TextInput
                     style={[
@@ -3348,9 +3348,9 @@ export default function SafeWalkApp() {
                       }
                     }}
                     onChangeText={(text) => {
-                      const newContacts = [...emergencyContacts];
+                      const newContacts = [...trustedContacts];
                       newContacts[index] = text;
-                      setEmergencyContacts(newContacts);
+                      setTrustedContacts(newContacts);
                       
                       // Simplified voice feedback - only for first valid contact
                       if (text.length >= 10 && validatePhoneNumber(text) && voiceAlertsEnabled && voiceInteractionState.lastContactIndex < index) {
@@ -3365,8 +3365,8 @@ export default function SafeWalkApp() {
                   />
                   <TouchableOpacity
                     onPress={() => {
-                      const newContacts = emergencyContacts.filter((_, i) => i !== index);
-                      setEmergencyContacts(newContacts);
+                      const newContacts = trustedContacts.filter((_, i) => i !== index);
+                      setTrustedContacts(newContacts);
                       // No voice feedback for removal - too noisy
                     }}
                   >
@@ -3378,7 +3378,7 @@ export default function SafeWalkApp() {
               <TouchableOpacity
                 style={styles.addContactButton}
                 onPress={async () => {
-                  setEmergencyContacts([...emergencyContacts, '']);
+                  setTrustedContacts([...trustedContacts, '']);
                   if (voiceAlertsEnabled) {
                     await speakAlert(`Adding a new trusted contact. The more contacts you have, the better your safety coverage.`);
                   }
@@ -3402,25 +3402,25 @@ export default function SafeWalkApp() {
               style={styles.cancelButton}
               onPress={() => {
                 Speech.stop(); // Stop any ongoing voice prompts
-                setIsEmergencySetupOpen(false);
+                setIsAlertSetupOpen(false);
               }}
             >
               <Text style={styles.cancelButtonText}>Cancel</Text>
             </TouchableOpacity>
             
             <TouchableOpacity
-              style={[styles.saveButton, (!emergencyTriggerWord || emergencyContacts.filter(c => c.length > 0).length === 0) && styles.saveButtonDisabled]}
+              style={[styles.saveButton, (!alertTriggerWord || trustedContacts.filter(c => c.length > 0).length === 0) && styles.saveButtonDisabled]}
               onPress={async () => {
-                const validContacts = emergencyContacts.filter(c => c.length > 0);
-                if (!emergencyTriggerWord || validContacts.length === 0) {
+                const validContacts = trustedContacts.filter(c => c.length > 0);
+                if (!alertTriggerWord || validContacts.length === 0) {
                   if (voiceAlertsEnabled) {
                     await speakAlert("Please complete both your trigger word and at least one trusted contact before saving.");
                   }
                   return;
                 }
-                await saveEmergencySettings(emergencyTriggerWord, validContacts);
+                await saveAlertSettings(alertTriggerWord, validContacts);
               }}
-              disabled={!emergencyTriggerWord || emergencyContacts.filter(c => c.length > 0).length === 0}
+              disabled={!alertTriggerWord || trustedContacts.filter(c => c.length > 0).length === 0}
             >
               <Text style={styles.saveButtonText}>Save Alert Settings</Text>
             </TouchableOpacity>
@@ -3790,7 +3790,7 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
   },
   // Alert Banner Styles
-  emergencyBanner: {
+  alertBanner: {
     backgroundColor: 'rgba(255, 0, 102, 0.2)',
     padding: 15,
     flexDirection: 'row',
@@ -3802,7 +3802,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#ff0066',
   },
-  emergencyBannerText: {
+  alertBannerText: {
     color: '#ff0066',
     fontSize: 12,
     fontWeight: '700',
@@ -3824,7 +3824,7 @@ const styles = StyleSheet.create({
     letterSpacing: 1,
     textTransform: 'uppercase',
   },
-  emergencyButton: {
+  alertButton: {
     backgroundColor: 'rgba(255, 0, 102, 0.15)',
     borderColor: '#ff0066',
   },
@@ -3856,11 +3856,11 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0, 255, 204, 0.15)',
     borderColor: '#00ffcc',
   },
-  testEmergencyButton: {
+  testAlertButton: {
     backgroundColor: 'rgba(255, 0, 102, 0.1)',
     borderColor: '#ff0066',
   },
-  emergencyActiveButton: {
+  alertActiveButton: {
     backgroundColor: 'rgba(255, 0, 102, 0.2)',
     borderWidth: 2,
     borderColor: '#ff0066',
@@ -4231,7 +4231,7 @@ const styles = StyleSheet.create({
     borderColor: '#00ffff',
     backgroundColor: 'rgba(0, 255, 255, 0.05)',
   },
-  emergencyTestButton: {
+  alertTestButton: {
     borderColor: 'rgba(255, 0, 102, 0.3)',
     backgroundColor: 'rgba(255, 0, 102, 0.05)',
   },
@@ -4510,18 +4510,18 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
   },
   // Alert Status Card Styles
-  emergencyStatusCard: {
+  alertStatusCard: {
     backgroundColor: 'rgba(255, 0, 102, 0.1)',
     borderColor: '#ff0066',
     borderWidth: 2,
   },
-  emergencyHeader: {
+  alertHeader: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 15,
   },
-  emergencyStatusTitle: {
+  alertStatusTitle: {
     color: '#ff0066',
     fontSize: 14,
     fontWeight: '700',
@@ -4530,10 +4530,10 @@ const styles = StyleSheet.create({
     letterSpacing: 2,
     textTransform: 'uppercase',
   },
-  emergencyDetails: {
+  alertDetails: {
     marginBottom: 15,
   },
-  emergencyDetailItem: {
+  alertDetailItem: {
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: 10,
@@ -4543,13 +4543,13 @@ const styles = StyleSheet.create({
     borderLeftWidth: 2,
     borderLeftColor: '#ff0066',
   },
-  emergencyDetailText: {
+  alertDetailText: {
     color: '#e0e0e0',
     fontSize: 12,
     marginLeft: 10,
     flex: 1,
   },
-  emergencyContactsList: {
+  alertContactsList: {
     backgroundColor: 'rgba(0, 0, 0, 0.3)',
     padding: 12,
     borderRadius: 4,
@@ -4557,7 +4557,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: 'rgba(0, 255, 204, 0.2)',
   },
-  emergencyContactsTitle: {
+  alertContactsTitle: {
     color: '#00ffff',
     fontSize: 11,
     fontWeight: '700',
@@ -4565,12 +4565,12 @@ const styles = StyleSheet.create({
     letterSpacing: 2,
     textTransform: 'uppercase',
   },
-  emergencyContact: {
+  alertContact: {
     color: '#00ffcc',
     fontSize: 13,
     marginBottom: 4,
   },
-  deactivateEmergencyButton: {
+  deactivateAlertButton: {
     backgroundColor: 'rgba(255, 0, 102, 0.2)',
     paddingHorizontal: 20,
     paddingVertical: 12,
@@ -4580,14 +4580,14 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#ff0066',
   },
-  deactivateEmergencyText: {
+  deactivateAlertText: {
     color: '#ff0066',
     fontSize: 12,
     fontWeight: '700',
     letterSpacing: 1,
     textTransform: 'uppercase',
   },
-  emergencyNote: {
+  alertNote: {
     color: '#555',
     fontSize: 11,
     textAlign: 'center',

@@ -101,9 +101,9 @@ class SafetyAnalysisResponse(BaseModel):
     timestamp: datetime = Field(default_factory=datetime.utcnow)
     ai_analysis: str = ""
 
-class EmergencyAlert(BaseModel):
+class AlertNotification(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
-    alert_type: str  # "emergency_vehicle", "weather", "traffic", "hazard"
+    alert_type: str  # "priority_vehicle", "weather", "traffic", "hazard"
     location: LocationData
     radius: float  # meters
     severity: str  # "low", "medium", "high", "critical"
@@ -115,14 +115,14 @@ class EmergencyAlert(BaseModel):
 class CommunityReport(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     location: LocationData
-    report_type: str  # "hazard", "emergency_vehicle", "safe_path", "unsafe_area"
+    report_type: str  # "hazard", "priority_vehicle", "safe_path", "unsafe_area"
     description: str
     severity: str = "medium"
     verified: bool = False
     timestamp: datetime = Field(default_factory=datetime.utcnow)
     user_id: Optional[str] = None
 
-class EmergencyContact(BaseModel):
+class TrustedContact(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     user_id: str
     name: Optional[str] = None
@@ -133,7 +133,7 @@ class EmergencyContact(BaseModel):
     created_at: datetime = Field(default_factory=datetime.utcnow)
     updated_at: datetime = Field(default_factory=datetime.utcnow)
 
-class EmergencySettings(BaseModel):
+class AlertSettings(BaseModel):
     user_id: str
     trigger_word: str
     contacts: List[str] = Field(default_factory=list)  # phone numbers
@@ -143,7 +143,7 @@ class EmergencySettings(BaseModel):
     created_at: datetime = Field(default_factory=datetime.utcnow)
     updated_at: datetime = Field(default_factory=datetime.utcnow)
 
-class EmergencyEvent(BaseModel):
+class AlertEvent(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     user_id: str
     location: LocationData
@@ -206,7 +206,7 @@ class BiometricData(BaseModel):
     # User profile for accurate analysis
     user_age: Optional[int] = Field(ge=10, le=120, default=30)
     user_fitness_level: str = "average"  # "poor", "below_average", "average", "above_average", "excellent"
-    user_medical_conditions: List[str] = Field(default_factory=list)  # ["hypertension", "diabetes", etc.]
+    user_health_conditions: List[str] = Field(default_factory=list)  # ["hypertension", "diabetes", etc.]
     # Sensor quality indicators
     sensor_accuracy: float = Field(ge=0.0, le=1.0, default=0.8)  # Sensor reliability
     measurement_duration: Optional[int] = None  # seconds of measurement
@@ -225,12 +225,12 @@ class EnvironmentalNoiseProfile(BaseModel):
 
 class HealthAlert(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
-    alert_type: str  # "heart_rate_spike", "stress_overload", "fatigue_warning", "medical_emergency"
+    alert_type: str  # "heart_rate_spike", "stress_overload", "fatigue_warning", "health_alert"
     severity: str  # "low", "medium", "high", "critical"
     message: str
     biometric_data: BiometricData
     recommended_action: str
-    auto_emergency: bool = False  # trigger emergency protocols
+    auto_alert: bool = False  # trigger alert protocols
     timestamp: datetime = Field(default_factory=datetime.utcnow)
 
 # Utility Functions
@@ -542,7 +542,7 @@ async def analyze_environmental_noise(location: LocationData, weather: WeatherDa
             dominant_frequencies = [250, 500, 1000, 2000]  # Urban frequency spectrum
         elif location_type == "highway":
             noise_sources = ["heavy_traffic", "trucks", "motorcycles", "electric_vehicles"]
-            critical_sounds = ["sirens", "horns", "emergency_vehicles", "tire_noise"]
+            critical_sounds = ["sirens", "horns", "alert_vehicles", "tire_noise"]
             dominant_frequencies = [125, 250, 500, 1000]
         elif location_type == "park":
             noise_sources = ["wind", "birds", "people", "cyclists", "e_scooters"]
@@ -550,7 +550,7 @@ async def analyze_environmental_noise(location: LocationData, weather: WeatherDa
             dominant_frequencies = [1000, 2000, 4000, 8000]
         else:
             noise_sources = ["ambient", "wind", "occasional_vehicles"]
-            critical_sounds = ["emergency_vehicles", "shouting", "electric_vehicle_approach"]
+            critical_sounds = ["alert_vehicles", "shouting", "electric_vehicle_approach"]
             dominant_frequencies = [500, 1000, 2000]
         
         # Determine optimal noise cancellation profile
@@ -563,7 +563,7 @@ async def analyze_environmental_noise(location: LocationData, weather: WeatherDa
         
         # Always prioritize safety sounds - CRITICAL for music listeners
         ambient_sound_priority = [
-            "sirens", "emergency_vehicles", "horns", "alarms", "shouting", 
+            "sirens", "alert_vehicles", "horns", "alarms", "shouting", 
             "approaching_footsteps", "electric_scooter_approach", "tire_noise", 
             "bike_bells", "electric_vehicle_approach", "brakes", "skidding"
         ]
@@ -584,17 +584,17 @@ async def analyze_environmental_noise(location: LocationData, weather: WeatherDa
             location_type="urban",
             predicted_noise_level=60.0,
             noise_cancellation_profile="safety_first",
-            ambient_sound_priority=["sirens", "emergency_vehicles", "alarms"]
+            ambient_sound_priority=["sirens", "alert_vehicles", "alarms"]
         )
 
 async def analyze_biometric_data(biometric_data: BiometricData, location: LocationData, safety_context: Dict) -> List[HealthAlert]:
-    """Advanced biometric analysis with medically accurate algorithms and personalized thresholds"""
+    """Advanced biometric analysis with clinically informed algorithms and personalized thresholds"""
     try:
         alerts = []
         age = biometric_data.user_age or 30
         fitness_level = biometric_data.user_fitness_level
         activity = biometric_data.activity_level
-        medical_conditions = biometric_data.user_medical_conditions or []
+        health_conditions = biometric_data.user_health_conditions or []
         
         # Calculate personalized heart rate zones based on age and fitness
         max_hr = 220 - age
@@ -614,7 +614,7 @@ async def analyze_biometric_data(biometric_data: BiometricData, location: Locati
         if biometric_data.heart_rate:
             hr = biometric_data.heart_rate
             
-            # Critical thresholds with medical accuracy
+            # Critical thresholds with clinical accuracy
             if hr > danger_hr or hr > 200:  # Immediate danger
                 alerts.append(HealthAlert(
                     alert_type="heart_rate_critical",
@@ -622,7 +622,7 @@ async def analyze_biometric_data(biometric_data: BiometricData, location: Locati
                     message=f"CRITICAL: Heart rate {hr} BPM exceeds safe limits for age {age}. Consider stopping activity immediately and resting.",
                     biometric_data=biometric_data,
                     recommended_action="STOP ALL ACTIVITY. Sit down and rest. Seek appropriate help if you feel unwell.",
-                    auto_emergency=True
+                    auto_alert=True
                 ))
             elif hr > target_hr_high + 20:  # Very high but not critical
                 alerts.append(HealthAlert(
@@ -640,7 +640,7 @@ async def analyze_biometric_data(biometric_data: BiometricData, location: Locati
                     biometric_data=biometric_data,
                     recommended_action="Monitor closely. Consider taking a break if persistent."
                 ))
-            elif hr < 40 and "bradycardia" not in medical_conditions:
+            elif hr < 40 and "bradycardia" not in health_conditions:
                 severity = "high" if hr < 35 else "medium"
                 alerts.append(HealthAlert(
                     alert_type="heart_rate_low",
@@ -676,7 +676,7 @@ async def analyze_biometric_data(biometric_data: BiometricData, location: Locati
                     message=f"CRITICAL: BP {systolic}/{diastolic} mmHg. Consider stopping activity and resting immediately.",
                     biometric_data=biometric_data,
                     recommended_action="Stop activity and rest. Seek appropriate help if you feel unwell.",
-                    auto_emergency=True
+                    auto_alert=True
                 ))
             # Stage 2 hypertension
             elif systolic >= 140 or diastolic >= 90:
@@ -714,7 +714,7 @@ async def analyze_biometric_data(biometric_data: BiometricData, location: Locati
                     message=f"CRITICAL: Blood oxygen {spo2}% is dangerously low{' (altitude adjusted)' if altitude > 1500 else ''}.",
                     biometric_data=biometric_data,
                     recommended_action="Stop activity and rest. Consider getting fresh air.",
-                    auto_emergency=True
+                    auto_alert=True
                 ))
             elif spo2 < normal_threshold:
                 alerts.append(HealthAlert(
@@ -770,8 +770,8 @@ async def analyze_biometric_data(biometric_data: BiometricData, location: Locati
                     recommended_action="Reduce pace significantly. Plan for rest breaks."
                 ))
         
-        # MEDICAL CONDITION SPECIFIC MONITORING
-        if "hypertension" in medical_conditions and biometric_data.heart_rate:
+        # HEALTH CONDITION SPECIFIC MONITORING
+        if "hypertension" in health_conditions and biometric_data.heart_rate:
             if biometric_data.heart_rate > (max_hr * 0.75):  # Lower threshold for hypertensive patients
                 alerts.append(HealthAlert(
                     alert_type="hypertension_hr_warning",
@@ -781,7 +781,7 @@ async def analyze_biometric_data(biometric_data: BiometricData, location: Locati
                     recommended_action="Reduce activity intensity. Monitor blood pressure if possible."
                 ))
         
-        if "diabetes" in medical_conditions and biometric_data.fatigue_level > 0.6:
+        if "diabetes" in health_conditions and biometric_data.fatigue_level > 0.6:
             alerts.append(HealthAlert(
                 alert_type="diabetic_fatigue_warning",
                 severity="medium",
@@ -1524,7 +1524,7 @@ async def get_nearby_alerts(lat: float, lon: float, radius: float = 1000):
         current_time = datetime.utcnow()
         
         # Find active alerts (simplified - in production you'd use geospatial queries)
-        alerts = await db.emergency_alerts.find({
+        alerts = await db.alert_notifications.find({
             "active": True,
             "expires_at": {"$gt": current_time}
         }).to_list(100)
@@ -1559,7 +1559,7 @@ async def submit_community_report(report: CommunityReport):
         
         # If it's a high-severity report, create an alert
         if report.severity == "high":
-            alert = EmergencyAlert(
+            alert = AlertNotification(
                 alert_type=report.report_type,
                 location=report.location,
                 radius=500,  # 500 meters
@@ -1567,7 +1567,7 @@ async def submit_community_report(report: CommunityReport):
                 message=f"Community reported {report.report_type}: {report.description}",
                 expires_at=datetime.utcnow() + timedelta(hours=2)
             )
-            await db.emergency_alerts.insert_one(alert.dict())
+            await db.alert_notifications.insert_one(alert.dict())
         
         return {"status": "success", "message": "Report submitted successfully"}
     except Exception as e:
@@ -1592,11 +1592,11 @@ async def get_safety_history(user_id: str, limit: int = 50):
         logging.error(f"Error getting safety history: {e}")
         raise HTTPException(status_code=500, detail="Error retrieving safety history")
 
-@api_router.post("/emergency/vehicle-detected")
-async def report_emergency_vehicle(location: LocationData, detection_method: str = "audio"):
+@api_router.post("/alert/vehicle-detected")
+async def report_priority_vehicle(location: LocationData, detection_method: str = "audio"):
     """Report priority vehicle detection"""
     try:
-        alert = EmergencyAlert(
+        alert = AlertNotification(
             alert_type="vehicle_alert",
             location=location,
             radius=800,  # 800 meters
@@ -1605,7 +1605,7 @@ async def report_emergency_vehicle(location: LocationData, detection_method: str
             expires_at=datetime.utcnow() + timedelta(minutes=10)
         )
         
-        await db.emergency_alerts.insert_one(alert.dict())
+        await db.alert_notifications.insert_one(alert.dict())
         
         return {"status": "success", "message": "Vehicle alert created"}
     except Exception as e:
@@ -1683,7 +1683,7 @@ async def analyze_biometrics(
     location: LocationData,
     safety_context: Optional[Dict] = {}
 ):
-    """Analyze biometric data for health monitoring and emergency detection"""
+    """Analyze biometric data for health monitoring and alert detection"""
     try:
         health_alerts = await analyze_biometric_data(biometric_data, location, safety_context)
         
@@ -1697,9 +1697,9 @@ async def analyze_biometrics(
             alert_doc = alert.dict()
             await db.health_alerts.insert_one(alert_doc)
             
-            # Trigger emergency protocols if needed
-            if alert.auto_emergency:
-                emergency_alert = EmergencyAlert(
+            # Trigger alert protocols if needed
+            if alert.auto_alert:
+                alert_notification = AlertNotification(
                     alert_type="safety_concern",
                     location=location,
                     radius=500,
@@ -1707,9 +1707,9 @@ async def analyze_biometrics(
                     message=f"Safety concern detected: {alert.message}",
                     expires_at=datetime.utcnow() + timedelta(hours=1)
                 )
-                await db.emergency_alerts.insert_one(emergency_alert.dict())
+                await db.alert_notifications.insert_one(alert_notification.dict())
         
-        return {"health_alerts": health_alerts, "emergency_triggered": any(alert.auto_emergency for alert in health_alerts)}
+        return {"health_alerts": health_alerts, "alert_triggered": any(alert.auto_alert for alert in health_alerts)}
     except Exception as e:
         logging.error(f"Error analyzing biometric data: {e}")
         raise HTTPException(status_code=500, detail="Error analyzing biometric data")
@@ -1907,39 +1907,39 @@ async def get_cycling_route_suggestions(lat: float, lon: float, destination_lat:
         logging.error(f"Error getting cycling route suggestions: {e}")
         raise HTTPException(status_code=500, detail="Error getting route suggestions")
 
-# Emergency Contact Management Endpoints
+# Trusted Contact Management Endpoints
 
-@api_router.post("/emergency/settings")
-async def save_emergency_settings(settings: EmergencySettings):
-    """Save user emergency settings including trigger word and contacts"""
+@api_router.post("/alert/settings")
+async def save_alert_settings(settings: AlertSettings):
+    """Save user alert settings including trigger word and contacts"""
     try:
         # Check if settings exist for this user
-        existing = await db.emergency_settings.find_one({"user_id": settings.user_id})
+        existing = await db.alert_settings.find_one({"user_id": settings.user_id})
         
         settings_dict = settings.dict()
         settings_dict["updated_at"] = datetime.utcnow()
         
         if existing:
             # Update existing settings
-            await db.emergency_settings.update_one(
+            await db.alert_settings.update_one(
                 {"user_id": settings.user_id},
                 {"$set": settings_dict}
             )
         else:
             # Create new settings
             settings_dict["created_at"] = datetime.utcnow()
-            await db.emergency_settings.insert_one(settings_dict)
+            await db.alert_settings.insert_one(settings_dict)
         
         return {"status": "success", "message": "Alert settings saved"}
     except Exception as e:
         logging.error(f"Error saving alert settings: {e}")
         raise HTTPException(status_code=500, detail="Error saving alert settings")
 
-@api_router.get("/emergency/settings/{user_id}")
-async def get_emergency_settings(user_id: str):
-    """Get user emergency settings"""
+@api_router.get("/alert/settings/{user_id}")
+async def get_alert_settings(user_id: str):
+    """Get user alert settings"""
     try:
-        settings = await db.emergency_settings.find_one({"user_id": user_id})
+        settings = await db.alert_settings.find_one({"user_id": user_id})
         if settings:
             settings["_id"] = str(settings["_id"])
             return settings
@@ -1948,22 +1948,22 @@ async def get_emergency_settings(user_id: str):
         logging.error(f"Error getting alert settings: {e}")
         raise HTTPException(status_code=500, detail="Error retrieving alert settings")
 
-@api_router.post("/emergency/trigger")
-async def trigger_emergency(event: EmergencyEvent):
+@api_router.post("/alert/trigger")
+async def trigger_alert(event: AlertEvent):
     """Trigger alert protocol - notify trusted contacts"""
     try:
-        # Get user's emergency settings
-        settings = await db.emergency_settings.find_one({"user_id": event.user_id})
+        # Get user's alert settings
+        settings = await db.alert_settings.find_one({"user_id": event.user_id})
         if not settings:
-            raise HTTPException(status_code=404, detail="No emergency settings found for user")
+            raise HTTPException(status_code=404, detail="No alert settings found for user")
         
-        # Create emergency event record
+        # Create alert event record
         event_dict = event.dict()
         event_dict["created_at"] = datetime.utcnow()
         
         # In a real implementation, this would:
-        # 1. Send SMS/push notifications to emergency contacts
-        # 2. Call emergency services based on location
+        # 1. Send SMS/push notifications to trusted contacts
+        # 2. Notify authorities based on location
         # 3. Share real-time location with contacts
         # 4. Log all communication attempts
         
@@ -1972,47 +1972,47 @@ async def trigger_emergency(event: EmergencyEvent):
         for contact in settings.get("contacts", []):
             # Simulate notification success
             contacts_notified.append(contact)
-            logging.info(f"Emergency alert sent to: {contact}")
+            logging.info(f"Alert notification sent to: {contact}")
         
         event_dict["contacts_notified"] = contacts_notified
         event_dict["authorities_contacted"] = settings.get("auto_call_authorities", True)
         
-        # Store emergency event
-        result = await db.emergency_events.insert_one(event_dict)
+        # Store alert event
+        result = await db.alert_events.insert_one(event_dict)
         event_dict["_id"] = str(result.inserted_id)
         
-        # Create emergency alert for community
-        alert = EmergencyAlert(
-            alert_type="personal_emergency",
+        # Create alert notification for community
+        alert = AlertNotification(
+            alert_type="personal_alert",
             location=event.location,
             radius=1000,  # 1km radius for community awareness
             severity="critical",
-            message="Emergency situation in progress - avoid area if possible",
+            message="Alert situation in progress - avoid area if possible",
             expires_at=datetime.utcnow() + timedelta(hours=2)
         )
-        await db.emergency_alerts.insert_one(alert.dict())
+        await db.alert_notifications.insert_one(alert.dict())
         
         return {
-            "status": "emergency_triggered",
+            "status": "alert_triggered",
             "event_id": str(result.inserted_id),
             "contacts_notified": len(contacts_notified),
             "authorities_contacted": event_dict["authorities_contacted"],
-            "message": "Emergency protocols activated. Help is on the way."
+            "message": "Alert protocols activated. Your contacts have been notified."
         }
         
     except HTTPException:
         raise
     except Exception as e:
-        logging.error(f"Error triggering emergency: {e}")
-        raise HTTPException(status_code=500, detail="Error processing emergency")
+        logging.error(f"Error triggering alert: {e}")
+        raise HTTPException(status_code=500, detail="Error processing alert")
 
-@api_router.post("/emergency/resolve/{event_id}")
-async def resolve_emergency(event_id: str, resolution_method: str = "user_confirmed_safe"):
-    """Mark emergency as resolved"""
+@api_router.post("/alert/resolve/{event_id}")
+async def resolve_alert(event_id: str, resolution_method: str = "user_confirmed_safe"):
+    """Mark alert as resolved"""
     try:
         from bson import ObjectId
         
-        result = await db.emergency_events.update_one(
+        result = await db.alert_events.update_one(
             {"_id": ObjectId(event_id)},
             {
                 "$set": {
@@ -2024,18 +2024,18 @@ async def resolve_emergency(event_id: str, resolution_method: str = "user_confir
         )
         
         if result.modified_count == 0:
-            raise HTTPException(status_code=404, detail="Emergency event not found")
+            raise HTTPException(status_code=404, detail="Alert event not found")
         
-        return {"status": "resolved", "message": "Emergency marked as resolved"}
+        return {"status": "resolved", "message": "Alert marked as resolved"}
     except Exception as e:
-        logging.error(f"Error resolving emergency: {e}")
-        raise HTTPException(status_code=500, detail="Error resolving emergency")
+        logging.error(f"Error resolving alert: {e}")
+        raise HTTPException(status_code=500, detail="Error resolving alert")
 
-@api_router.get("/emergency/history/{user_id}")
-async def get_emergency_history(user_id: str, limit: int = 50):
-    """Get user's emergency event history"""
+@api_router.get("/alert/history/{user_id}")
+async def get_alert_history(user_id: str, limit: int = 50):
+    """Get user's alert event history"""
     try:
-        events = await db.emergency_events.find({
+        events = await db.alert_events.find({
             "user_id": user_id
         }).sort("created_at", -1).limit(limit).to_list(limit)
         
@@ -2044,10 +2044,10 @@ async def get_emergency_history(user_id: str, limit: int = 50):
             if "_id" in event:
                 event["_id"] = str(event["_id"])
         
-        return {"emergency_events": events}
+        return {"alert_events": events}
     except Exception as e:
-        logging.error(f"Error getting emergency history: {e}")
-        raise HTTPException(status_code=500, detail="Error retrieving emergency history")
+        logging.error(f"Error getting alert history: {e}")
+        raise HTTPException(status_code=500, detail="Error retrieving alert history")
 
 @api_router.get("/")
 async def root():
@@ -2416,8 +2416,8 @@ p{margin:10px 0}
 async def delete_user_data(user_id: str = "anonymous"):
     """Delete all server-side data for a user. Supports Data Safety compliance."""
     try:
-        alerts_deleted = await db.emergency_alerts.delete_many({"user_id": user_id})
-        settings_deleted = await db.emergency_settings.delete_many({"user_id": user_id})
+        alerts_deleted = await db.alert_notifications.delete_many({"user_id": user_id})
+        settings_deleted = await db.alert_settings.delete_many({"user_id": user_id})
         journeys_deleted = await db.journeys.delete_many({"user_id": user_id})
         analysis_deleted = await db.safety_analyses.delete_many({"user_id": user_id})
         

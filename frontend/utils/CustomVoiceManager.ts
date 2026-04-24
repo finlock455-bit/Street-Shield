@@ -65,7 +65,7 @@ export class CustomVoiceManager {
     
     // Exact phrase matching
     const phraseMap: {[key: string]: string} = {
-      'emergency': 'emergency_alert',
+      'alert': 'alert_notification',
       'electric scooter': 'escooter_warning',
       'safety score': 'safety_score',
       'weather': 'weather_alert',

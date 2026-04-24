@@ -18,7 +18,7 @@ export const VoiceCloneSetup: React.FC<VoiceCloneSetupProps> = ({ onComplete, on
 
   const SAMPLE_SENTENCES = [
     "Welcome to Street Shield, your personal safety companion.",
-    "Emergency alert activated. Notifying your contacts now.",
+    "Quick alert activated. Notifying your contacts now.",
     "Your current safety score is seventy five. Conditions are good.",
     "Electric scooter approaching from behind. Move to the side.",
     "Weather conditions detected: light rain. Exercise caution on wet surfaces.",
