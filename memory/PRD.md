@@ -23,15 +23,16 @@ Street Shield is a mobile safety awareness app for pedestrians, runners, and cyc
 - Voice alerts with throttling
 - Offline safety simulation
 - "I Got Home Safe" shareable journey card
-- **Store compliance rebrand** (no medical/emergency terms)
+- **Store compliance rebrand** (no medical/emergency terms) — COMPLETE ✅
 - **Cyberpunk UI theme** (dark, neon cyan/pink, sharp edges, uppercase)
 - **Complete store listing guide** (/app/STORE_LISTING.md)
-- **OpenWeatherMap integration** (live weather, key added, activating — 2-10hr delay for new keys)
+- **OpenWeatherMap integration** (live weather)
 - **Privacy Policy** (in-app modal + backend API endpoint GET /api/privacy-policy)
-- **Voice Info System** — Fixed: visual response cards, command parsing bug, 30s throttle bypass for info requests
-- **Marketing Video Assets** — 10-scene animated HTML showcase (scenarios + USPs + logo) + 3-clip AI Sora 2 promo video stitched with ffmpeg, ends with user's logo
+- **Voice Info System** — Fixed: visual response cards, command parsing bug, 30s throttle bypass
+- **Marketing Video Assets** — 10-scene animated HTML showcase + 3-clip AI Sora 2 promo video
 - **App Footer** (privacy link, version, disclaimer)
-- All legacy non-theme colors removed (#4CAF50, #2196F3, #FF9800, etc.)
+- **Data Deletion endpoint** (DELETE /api/user/data) for compliance
+- All legacy non-theme colors removed
 
 ## Key Files
 - `/app/frontend/app/index.tsx` - Main app component
@@ -40,16 +41,19 @@ Street Shield is a mobile safety awareness app for pedestrians, runners, and cyc
 - `/app/frontend/translations/index.ts` - i18n (5 languages)
 - `/app/backend/server.py` - FastAPI backend
 - `/app/STORE_LISTING.md` - Play Store + App Store listing content
+- `/app/APP_REVIEW_GUIDE.md` - Play Store submission guide
 
 ## Key API Endpoints
 - `GET /api/health` - Health check
 - `GET /api/app-info` - App metadata
 - `GET /api/privacy-policy` - Privacy policy (8 sections, JSON)
+- `GET /api/privacy` - Public privacy policy HTML
 - `POST /api/safety/analyze` - AI safety analysis
 - `POST /api/health/biometric-analysis` - Activity insights
 - `POST /api/cycling/safety-score` - Cycling safety score
 - `POST /api/emergency/settings` - Save alert settings
 - `POST /api/journey/complete` - Complete journey data
+- `DELETE /api/user/data` - Data deletion (compliance)
 
 ## Store Submission Status
 - [x] Google Play description (4000 chars, ASO-optimized)
@@ -59,10 +63,11 @@ Street Shield is a mobile safety awareness app for pedestrians, runners, and cyc
 - [x] Compliance checklist (no medical/emergency claims)
 - [x] Category: Lifestyle > Personal Safety
 - [x] Privacy policy (in-app modal + API endpoint)
+- [x] All user-facing "emergency" text replaced with compliant terms
 - [ ] Screenshots (need native builds)
 
 ## Pending/Backlog
+- P0: Refactor index.tsx (~4800 lines -> components/hooks/styles)
 - P1: Complete i18n (i18n.t() for remaining hardcoded strings)
-- P2: Voice cloning (ElevenLabs) - needs user API key
+- P1: ElevenLabs voice cloning — needs user API key
 - P2: Native builds for real sensors
-- P3: Refactor index.tsx (~4600 lines -> components/hooks/styles)
