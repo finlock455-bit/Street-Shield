@@ -1,22 +1,20 @@
 # Street Shield - Changelog
 
-## 2026-04-24
-- **DEEP RENAME REFACTOR COMPLETE**: Eliminated ALL "emergency" and "medical" terminology from the entire codebase
-  - Frontend: Renamed ~200 occurrences (variables, state, functions, styles, comments, UI text)
-  - Backend: Renamed ~80 occurrences (models, routes, DB collections, functions, response messages)
-  - Translations: Updated all 5 language files
-  - API routes renamed: `/api/emergency/*` → `/api/alert/*`
-  - DB collections renamed: `emergency_settings` → `alert_settings`, `emergency_alerts` → `alert_notifications`
-  - Pydantic models renamed: `EmergencyAlert` → `AlertNotification`, `EmergencySettings` → `AlertSettings`
-  - `medical` → `health` in all backend health monitoring code
-  - Testing agent confirmed: ZERO forbidden terms in UI, all endpoints working
+## 2026-04-24 (Session 2)
+- **MODULAR REFACTOR COMPLETE**: Decomposed index.tsx from 4794 → 3267 lines (32% reduction)
+  - Extracted: `styles.ts` (1285 lines), `types.ts`, `constants.ts`
+  - New components: `Header.tsx`, `SafetyScoreRing.tsx`, `Footer.tsx`, `PrivacyPolicyModal.tsx`, `LanguagePickerModal.tsx`
+  - Testing agent confirmed: ZERO regressions, all UI/API functionality preserved
+
+## 2026-04-24 (Session 1)
+- **DEEP RENAME REFACTOR**: Eliminated ALL "emergency" and "medical" terms from entire codebase
+  - Frontend: ~200 occurrences (variables, functions, styles, UI text)
+  - Backend: ~80 occurrences (models, routes, DB collections, responses)
+  - API routes: `/api/emergency/*` → `/api/alert/*`
+  - DB collections: `emergency_settings` → `alert_settings`, `emergency_alerts` → `alert_notifications`
+  - Pydantic models: `EmergencyAlert` → `AlertNotification`, `EmergencySettings` → `AlertSettings`
 
 ## 2026-04-03 (Previous Sessions)
-- Cyberpunk UI theme implemented
-- OpenWeatherMap integration
-- Marketing video generation (Sora 2 + FFmpeg)
-- Privacy Policy modal + API endpoint
-- Voice Info System fixes
-- Data Deletion endpoint for compliance
-- APP_REVIEW_GUIDE.md created
-- All legacy non-theme colors replaced
+- Cyberpunk UI theme, OpenWeatherMap, Marketing videos (Sora 2 + FFmpeg)
+- Privacy Policy modal + API, Voice Info System fixes
+- Data Deletion endpoint, APP_REVIEW_GUIDE.md, Store listing guide
