@@ -12,27 +12,25 @@ Street Shield is a mobile safety awareness app for pedestrians, runners, and cyc
 
 ## What's Implemented
 - Full safety analysis core with AI scoring
-- **Animated safety score ring** (pulse, rotate, glow via Animated API)
-- **Animated Radar Pulse** (3 concentric rings expanding outward when shield active)
+- Animated safety score ring (pulse, rotate, glow)
+- Animated Radar Pulse (3 concentric rings)
 - Trusted contact system with voice trigger word
 - Cycling safety mode
 - Activity insights (rhythm, energy, alertness)
 - Haptic feedback for alerts
 - i18n (EN, ES, FR, DE, ZH)
-- SEO/ASO optimization (meta tags, Schema.org, Open Graph, FAQ schema)
+- SEO/ASO optimization
 - Voice alerts with throttling
 - Offline safety simulation
 - "I Got Home Safe" shareable journey card
-- **Store compliance rebrand** (no medical/emergency terms) — COMPLETE ✅
-- **Cyberpunk UI theme** (dark, neon cyan/pink, sharp edges, uppercase)
-- **Complete store listing guide** (/app/STORE_LISTING.md)
-- **OpenWeatherMap integration** (live weather)
-- **Privacy Policy** (in-app modal + backend API endpoint GET /api/privacy-policy)
-- **Voice Info System** — Fixed: visual response cards, command parsing bug, 30s throttle bypass
-- **Marketing Video Assets** — 10-scene animated HTML showcase + 3-clip AI Sora 2 promo video
-- **App Footer** (privacy link, version, disclaimer)
-- **Data Deletion endpoint** (DELETE /api/user/data) for compliance
-- All legacy non-theme colors removed
+- **DEEP RENAME COMPLETE** — All "emergency/medical" terms removed from entire codebase (variables, API routes, DB collections, UI, translations, comments)
+- Cyberpunk UI theme
+- Complete store listing guide
+- OpenWeatherMap integration
+- Privacy Policy (in-app modal + backend API)
+- Voice Info System with visual response cards
+- Marketing Video Assets (Sora 2)
+- Data Deletion endpoint for compliance
 
 ## Key Files
 - `/app/frontend/app/index.tsx` - Main app component
@@ -43,31 +41,33 @@ Street Shield is a mobile safety awareness app for pedestrians, runners, and cyc
 - `/app/STORE_LISTING.md` - Play Store + App Store listing content
 - `/app/APP_REVIEW_GUIDE.md` - Play Store submission guide
 
-## Key API Endpoints
+## Key API Endpoints (Post-Rename)
 - `GET /api/health` - Health check
 - `GET /api/app-info` - App metadata
-- `GET /api/privacy-policy` - Privacy policy (8 sections, JSON)
+- `GET /api/privacy-policy` - Privacy policy JSON
 - `GET /api/privacy` - Public privacy policy HTML
 - `POST /api/safety/analyze` - AI safety analysis
 - `POST /api/health/biometric-analysis` - Activity insights
 - `POST /api/cycling/safety-score` - Cycling safety score
-- `POST /api/emergency/settings` - Save alert settings
+- `POST /api/alert/settings` - Save alert settings (was /emergency/settings)
+- `GET /api/alert/settings/{user_id}` - Get alert settings
+- `POST /api/alert/trigger` - Trigger alert (was /emergency/trigger)
+- `POST /api/alert/resolve/{event_id}` - Resolve alert
+- `GET /api/alert/history/{user_id}` - Alert history
 - `POST /api/journey/complete` - Complete journey data
 - `DELETE /api/user/data` - Data deletion (compliance)
 
 ## Store Submission Status
-- [x] Google Play description (4000 chars, ASO-optimized)
+- [x] Play Store description (ASO-optimized)
 - [x] Apple App Store description + keywords
-- [x] Screenshot descriptions
-- [x] Review notes for app reviewers
-- [x] Compliance checklist (no medical/emergency claims)
+- [x] Compliance checklist — ZERO "emergency/medical" terms
 - [x] Category: Lifestyle > Personal Safety
-- [x] Privacy policy (in-app modal + API endpoint)
-- [x] All user-facing "emergency" text replaced with compliant terms
+- [x] Privacy policy (in-app + API)
+- [x] Deep rename complete (variables, routes, DB, UI, translations)
 - [ ] Screenshots (need native builds)
 
 ## Pending/Backlog
-- P0: Refactor index.tsx (~4800 lines -> components/hooks/styles)
-- P1: Complete i18n (i18n.t() for remaining hardcoded strings)
+- P0: Refactor index.tsx (~4800 lines → components/hooks/styles)
+- P1: Complete i18n (remaining hardcoded strings → i18n.t())
 - P1: ElevenLabs voice cloning — needs user API key
 - P2: Native builds for real sensors
