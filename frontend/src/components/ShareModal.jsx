@@ -114,16 +114,12 @@ export default function ShareModal({
 
     const sendSMS = (phone) => {
         const body = encodeURIComponent(buildBody());
-        const sep = /android|iphone|ipad|ipod|mobile/i.test(navigator.userAgent)
-            ? "?"
-            : "?";
-        window.location.href = `sms:${phone}${sep}body=${body}`;
+        window.location.href = `sms:${phone}?body=${body}`;
     };
 
     const sendMail = () => {
         const body = encodeURIComponent(buildBody());
         const subj = encodeURIComponent("🚨 SOS — Street Shield");
-        const to = contacts.map((c) => c.phone).join(",");
         window.location.href = `mailto:?subject=${subj}&body=${body}`;
     };
 

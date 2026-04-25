@@ -38,8 +38,18 @@ Reference design: cyberpunk dark mobile UI titled **STREET SHIELD — NEURAL SAF
 - ✅ Sonner toast notifications
 - ✅ Persisted state (Mongo) across reloads
 - ✅ Mobile-first design verified
-- ✅ Backend test suite — 14/14 passing (pytest at `/app/backend/tests/test_street_shield_api.py`)
-- ✅ Frontend flows — all working, zero console errors
+- ✅ Backend test suite — 14/14 passing
+
+### ✓ Iteration 2 — Find My Shield (Jan 2026)
+- ✅ ShareSession model + 4 endpoints (`/share/start`, `/ping`, GET, `/stop`)
+- ✅ SOS in QuickAlert opens **ShareModal** with copy / Email / WhatsApp / per-contact SMS buttons
+- ✅ Sender name persists to localStorage (`ss_sender_name`)
+- ✅ Live geolocation via `navigator.geolocation.watchPosition` → ping every ~15s
+- ✅ Public `/share/:token` page with dark-themed Leaflet map (OpenStreetMap, no key)
+  - Cyan pulsing marker, sender name, last-ping time, LIVE/ENDED badges
+  - Auto-refreshes every 5s, follows location updates
+- ✅ Stop Sharing → server marks session inactive (410 on subsequent pings)
+- ✅ 24/24 backend tests pass + 11/11 frontend flows verified
 
 ## API Surface (FastAPI)
 | Method | Endpoint | Purpose |
@@ -53,13 +63,17 @@ Reference design: cyberpunk dark mobile UI titled **STREET SHIELD — NEURAL SAF
 | GET | /api/alerts | List alerts |
 | POST | /api/alerts | Send SOS |
 | GET | /api/activity | Synthetic activity stats |
+| POST | /api/share/start | Create live-share session (returns token) |
+| POST | /api/share/{token}/ping | Update last location |
+| GET | /api/share/{token} | Read session (public) |
+| POST | /api/share/{token}/stop | End session |
 
 ## Prioritized Backlog
 ### P1 (Next iteration)
-- **Real geolocation map** in Radar (Leaflet or Mapbox) instead of synthetic blips
-- **SMS/Twilio integration** so SOS actually contacts emergency contacts
-- **Audio playback** for AI Audio (Howler + ambient loops)
-- **Real activity tracking** via browser MotionAPI/pedometer
+- **Twilio SMS** so the SOS message goes out automatically (vs. user needing to tap each contact)
+- **Real audio playback** for AI Audio (Howler.js + free ambient loops)
+- **Real activity tracking** via DeviceMotion/pedometer
+- **Higher-entropy share tokens** (`secrets.token_urlsafe(16)`) + TTL cleanup of stopped sessions
 
 ### P2 (Later)
 - AI threat assessment chatbot (Claude Sonnet) via Emergent LLM key
@@ -69,9 +83,9 @@ Reference design: cyberpunk dark mobile UI titled **STREET SHIELD — NEURAL SAF
 - Auth (login + per-user contacts)
 
 ## Next Tasks
-1. Show user current build for review
-2. Hook Twilio for real SMS SOS dispatch
-3. Add map background to Radar with reverse-geocoding
+1. Show user the new Find My Shield flow for review
+2. (Optional) Add Twilio when user has credentials
+3. Replace synthetic radar blips with real Bluetooth/WiFi proximity scan
 
 ## Key Files
 - `frontend/src/App.js` — router + splash gate
