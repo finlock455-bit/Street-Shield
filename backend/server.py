@@ -88,6 +88,26 @@ class Activity(BaseModel):
     last_scan_location: Optional[str] = None
 
 
+class ShareSession(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    token: str = Field(default_factory=lambda: uuid.uuid4().hex[:10])
+    sender_name: str = "Anonymous"
+    active: bool = True
+    last_location: Optional[Location] = None
+    last_ping_at: Optional[datetime] = None
+    started_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    stopped_at: Optional[datetime] = None
+
+
+class ShareStartRequest(BaseModel):
+    sender_name: Optional[str] = "Anonymous"
+    location: Optional[Location] = None
+
+
+class SharePingRequest(BaseModel):
+    location: Location
+
+
 # -----------------------
 # Helpers
 # -----------------------
@@ -208,6 +228,56 @@ async def get_activity():
         safe_routes=max(3, contact_count + alert_count),
         last_scan_location="Downtown Sector 4",
     )
+
+
+# Share sessions (live location)
+@api_router.post("/share/start", response_model=ShareSession)
+async def start_share(payload: ShareStartRequest):
+    sess = ShareSession(
+        sender_name=(payload.sender_name or "Anonymous").strip()[:60] or "Anonymous",
+        last_location=payload.location,
+        last_ping_at=datetime.now(timezone.utc) if payload.location else None,
+    )
+    await db.share_sessions.insert_one(_serialize_dt(sess.model_dump()))
+    return sess
+
+
+@api_router.post("/share/{token}/ping", response_model=ShareSession)
+async def ping_share(token: str, payload: SharePingRequest):
+    doc = await db.share_sessions.find_one({"token": token}, {"_id": 0})
+    if not doc:
+        raise HTTPException(status_code=404, detail="Session not found")
+    if not doc.get("active"):
+        raise HTTPException(status_code=410, detail="Session ended")
+    update = {
+        "last_location": payload.location.model_dump(),
+        "last_ping_at": datetime.now(timezone.utc).isoformat(),
+    }
+    await db.share_sessions.update_one({"token": token}, {"$set": update})
+    doc.update(update)
+    return ShareSession(**_parse_dt(doc, ("started_at", "stopped_at", "last_ping_at")))
+
+
+@api_router.get("/share/{token}", response_model=ShareSession)
+async def get_share(token: str):
+    doc = await db.share_sessions.find_one({"token": token}, {"_id": 0})
+    if not doc:
+        raise HTTPException(status_code=404, detail="Session not found")
+    return ShareSession(**_parse_dt(doc, ("started_at", "stopped_at", "last_ping_at")))
+
+
+@api_router.post("/share/{token}/stop", response_model=ShareSession)
+async def stop_share(token: str):
+    doc = await db.share_sessions.find_one({"token": token}, {"_id": 0})
+    if not doc:
+        raise HTTPException(status_code=404, detail="Session not found")
+    update = {
+        "active": False,
+        "stopped_at": datetime.now(timezone.utc).isoformat(),
+    }
+    await db.share_sessions.update_one({"token": token}, {"$set": update})
+    doc.update(update)
+    return ShareSession(**_parse_dt(doc, ("started_at", "stopped_at", "last_ping_at")))
 
 
 app.include_router(api_router)

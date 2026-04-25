@@ -10,6 +10,7 @@ import AIAudio from "@/pages/AIAudio";
 import Activity from "@/pages/Activity";
 import CyclingMode from "@/pages/CyclingMode";
 import VoiceInfo from "@/pages/VoiceInfo";
+import SharePublic from "@/pages/SharePublic";
 import { Toaster } from "sonner";
 
 function App() {
@@ -47,6 +48,7 @@ function App() {
                     <Route path="/activity" element={<Activity />} />
                     <Route path="/cycling" element={<CyclingMode />} />
                     <Route path="/voice-info" element={<VoiceInfo />} />
+                    <Route path="/share/:token" element={<SharePublic />} />
                     <Route path="*" element={<Navigate to="/" replace />} />
                 </Routes>
             </BrowserRouter>

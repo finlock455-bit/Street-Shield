@@ -20,4 +20,11 @@ export const ShieldAPI = {
     sendAlert: (data) => api.post("/alerts", data).then((r) => r.data),
 
     getActivity: () => api.get("/activity").then((r) => r.data),
+
+    startShare: (data) => api.post("/share/start", data).then((r) => r.data),
+    pingShare: (token, data) =>
+        api.post(`/share/${token}/ping`, data).then((r) => r.data),
+    stopShare: (token) =>
+        api.post(`/share/${token}/stop`).then((r) => r.data),
+    getShare: (token) => api.get(`/share/${token}`).then((r) => r.data),
 };
